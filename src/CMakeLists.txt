@@ -44,7 +44,7 @@ target_include_directories(streaming PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}/core/common
 )
 
-target_link_libraries(streaming streamrecord result)
+target_link_libraries(streaming streamrecord result pthread)
 
 # target_include_directories(result PUBLIC 
 #   ${CMAKE_SOURCE_DIR}/include/result 

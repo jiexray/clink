@@ -12,6 +12,7 @@
 #include "../../streaming/partitioner/ForwardPartitioner.hpp"
 #include "../../streaming/operators/SimpleUdfStreamOperatorFactory.hpp"
 #include "../../streaming/operators/StreamMap.hpp"
+#include "../../streaming/operators/StreamSource.hpp"
 #include <cstring>
 
 template <class T> class StreamEdge;
@@ -42,8 +43,15 @@ public:
 
     template <class IN, class OUT>                          
     void                                        set_stream_operator(std::string key,
-                                                                        std::shared_ptr<OneInputStreamOperator<IN, OUT>> stream_operator);
+                                                                        std::shared_ptr<StreamOperator<OUT>> stream_operator);
     template <class IN, class OUT>
-    std::shared_ptr<OneInputStreamOperator<IN, OUT>>          
+    std::shared_ptr<StreamOperator<OUT>>          
                                                 get_stream_operator(std::string key);
+    
+    // template <class IN, class OUT>                          
+    // void                                        set_stream_operator(std::string key,
+    //                                                                     std::shared_ptr<OneInputStreamOperator<IN, OUT>> stream_operator);
+    // template <class IN, class OUT>
+    // std::shared_ptr<OneInputStreamOperator<IN, OUT>>          
+    //                                             get_stream_operator(std::string key);
 };

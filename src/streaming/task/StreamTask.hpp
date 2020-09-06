@@ -39,7 +39,7 @@ public:
 
     /* Life cycle methods */
     virtual void                                init() {};
-    void                                        process_input();
+    virtual void                                process_input();
 
     /* Core work methods */
     void                                        before_invoke();

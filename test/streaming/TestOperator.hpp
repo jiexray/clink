@@ -22,8 +22,9 @@
 #include "../../deployment/InputGateDeploymentDescriptor.hpp"
 #include "../../deployment/ResultPartitionDeploymentDescriptor.hpp"
 
-#include "../../streaming/operators/SourceOperator.hpp"
 #include "../../streaming/operators/StreamMap.hpp"
+#include "../../streaming/operators/StreamSourceContexts.hpp"
+#include "../../streaming/operators/StreamSource.hpp"
 #include "../../streaming/operators/OneInputStreamOperator.hpp"
 #include "../../streaming/operators/StreamOperatorFactory.hpp"
 #include "../../streaming/operators/SimpleStreamOperatorFactory.hpp"
@@ -54,11 +55,19 @@ void isBufferEqualToString(BufferBase* buf, std::string str) {
     }
 }
 
-template class MapFunction<std::string, std::string>;
+// template class MapFunction<std::string, std::string>;
 // concat the first char and the last char
 class StringMapFunction: public MapFunction<std::string, std::string>{
     std::shared_ptr<std::string> map(std::string& value){
         return std::make_shared<std::string>(value.begin(), value.begin() + 2);
+    }
+};
+
+class MySourceFunction: public SourceFunction<std::string> {
+    void run(std::shared_ptr<SourceContext<std::string>> ctx) {
+        for(int i = 0; i < 10; i++) {
+            ctx->collect(std::make_shared<std::string>("12345"));
+        }
     }
 };
 
@@ -100,7 +109,7 @@ public:
         int* partition_idxs = new int[5] {0};
         /* set consumed_subpartition_index to 0 */
         std::shared_ptr<InputGateDeploymentDescriptor> input_gate_deployment_descriptor = std::make_shared<InputGateDeploymentDescriptor>(0, partition_idxs, 1);
-        std::shared_ptr<BufferPool> buffer_pool = std::make_shared<BufferPool>(50, 10);
+        std::shared_ptr<BufferPool> buffer_pool = std::make_shared<BufferPool>(200, 6);
         std::shared_ptr<ResultPartitionManager> result_partition_manager = std::make_shared<ResultPartitionManager>();
 
         // Result partition should initialize first, and the input gate follows it.
@@ -120,10 +129,13 @@ public:
 
 
         std::shared_ptr<ResultWriter<std::string>> result_writer_0 = std::make_shared<ResultWriter<std::string>>(partition_0, "test-input-gate-and-result-partition-data-transfer");
-        std::shared_ptr<StreamRecord<std::string>> record_1 = std::make_shared<StreamRecord<std::string>>("1234");
+        std::shared_ptr<StreamRecord<std::string>>* records = new std::shared_ptr<StreamRecord<std::string>>[10];
 
-        result_writer_0->emit(record_1, 0);
-        result_writer_0->flush(0);
+        for(int i = 0; i < 10; i++) {
+            records[i] = std::make_shared<StreamRecord<std::string>>("1" + std::to_string(i) + "-test-data");
+            result_writer_0->emit(records[i], 0);
+        }
+        
 
         /*   TEST CODE FOR StreamTaskNetworkInput */
 
@@ -136,8 +148,11 @@ public:
         std::shared_ptr<StreamTaskNetworkOutput<std::string, std::string>> stream_task_network_output = std::make_shared<StreamTaskNetworkOutput<std::string, std::string>>(stream_map);
 
         /* Test the emit_next() function in stream_network_input  */
-        InputStatus input_status = int_stream_network_input->emit_next(stream_task_network_output); 
-        TS_ASSERT_EQUALS(input_status, InputStatus::MORE_AVAILABLE);
+        for (int i = 0; i < 10; i++) {
+            InputStatus input_status = int_stream_network_input->emit_next(stream_task_network_output); 
+        }
+        
+        // TS_ASSERT_EQUALS(input_status, InputStatus::MORE_AVAILABLE);
     } 
 
     // TODO: testStreamTaskInputWithDataTransferWithBufferSplit
@@ -218,14 +233,28 @@ public:
         std::shared_ptr<StreamOperator<std::string>> stream_op = op_chain->get_head_operator(); 
     }
 
-    void testOperatorDynamicBinding(void) {
-        std::shared_ptr<StreamMap<std::string, std::string>> string_map_op = std::make_shared<StreamMap<std::string, std::string>>(std::make_shared<StringMapFunction>());
-        std::shared_ptr<StreamOperator<std::string>> str_op = std::make_shared<AbstractUdfStreamOperator<MapFunction<std::string, std::string>, std::string>>(std::make_shared<StringMapFunction>());
-        std::shared_ptr<AbstractUdfStreamOperator<StringMapFunction, std::string>> udf_str_op = std::make_shared<AbstractUdfStreamOperator<StringMapFunction, std::string>>(std::make_shared<StringMapFunction>());
-        // std::shared_ptr<AbstractUdfStreamOperator<StringMapFunction, std::string>> udf_str_op = 
-        std::shared_ptr<AbstractUdfStreamOperator<Function, std::string>> udf_str_op_2 = std::make_shared<StreamMap<std::string, std::string>>(std::make_shared<StringMapFunction>());
-        std::shared_ptr<StreamOperator<std::string>> str_op_2 = std::make_shared<StreamMap<std::string, std::string>>(std::make_shared<StringMapFunction>());
-        // str_op = udf_str_op_2;
+    void testStreamSourceCreate( void ) {
+        /* Create ResultWriterOutput */
+        std::shared_ptr<BufferPool> buffer_pool = std::make_shared<BufferPool>(50, 5);
+        std::shared_ptr<ResultPartitionManager> result_partition_manager = std::make_shared<ResultPartitionManager>();
+
+        // Result partition should initialize first, and the input gate follows it.
+        ResultPartitionFactory result_partition_factory(result_partition_manager);
+        /* Each ResultPartition has 4 Subpartitions */
+        std::shared_ptr<ResultPartition> partition_0 = result_partition_factory.create("test", 0, 
+                                                                                    std::make_shared<ResultPartitionDeploymentDescriptor>(4), buffer_pool);
+
+        std::shared_ptr<ChannelSelector<std::string>> channel_selector = std::make_shared<ForwardPartitioner<std::string>>();
+        std::shared_ptr<ChannelSelectorResultWriter<std::string>> channel_selector_result_writer = 
+                std::make_shared<ChannelSelectorResultWriter<std::string>>(partition_0, "test", channel_selector);
+        std::shared_ptr<Output<std::string>> output = std::make_shared<ResultWriterOutput<std::string>>(channel_selector_result_writer);
+
+
+        std::shared_ptr<SourceContext<std::string>> source_ctx = StreamSourceContexts::get_source_context<std::string>(TimeCharacteristic::ProcessingTime, output);
+
+        std::shared_ptr<MySourceFunction> source_function = std::make_shared<MySourceFunction>();
+        std::shared_ptr<StreamSource<std::string>> source_operator = std::make_shared<StreamSource<std::string>>(source_function);
+        source_operator->run();
     }
 };
 

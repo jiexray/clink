@@ -36,6 +36,9 @@ void ResultWriter<T>::copy_to_buffer_builder(int target_channel, std::shared_ptr
             result = this->m_record_serializer->serialize(record, buffer_builder, false);
         }
     }
+
+    // TODO: setup a flusher, current always flush
+    flush(target_channel);
 }
 
 /**

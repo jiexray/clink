@@ -55,7 +55,7 @@ void StreamTask<OUT>::request_partitions() {
 
 template<class OUT>
 void StreamTask<OUT>::invoke() {
-
+    
 }
 
 template class StreamTask<std::string>;

@@ -19,7 +19,6 @@ StreamTaskNetworkInput<T>::StreamTaskNetworkInput(std::shared_ptr<InputGate> inp
 // TODO: test
 template <class T>
 InputStatus StreamTaskNetworkInput<T>::emit_next(std::shared_ptr<DataOutput<T>> output) {
-    // TODO, now I need to deserialize a StreamRecord from Buffer!
     while (true)
     {
         if (this->m_current_record_deserializer != nullptr) {

@@ -10,6 +10,7 @@
 #include "../../streaming/partitioner/ForwardPartitioner.hpp"
 #include "../../streaming/task/StreamTask.hpp"
 #include "../../streaming/task/OneInputStreamTask.hpp"
+#include "../../streaming/task/SourceStreamTask.hpp"
 #include "../../runtime/RuntimeEnvironment.hpp"
 #include "../../result/ResultPartitionFactory.hpp"
 #include "../../result/consumer/InputGateFactory.hpp"
@@ -26,6 +27,18 @@ class StringMapFunction: public MapFunction<std::string, std::string>{
     char* serialize() override {return (char*)this;}
 
     std::shared_ptr<MapFunction<std::string, std::string>> deserialize() override { return std::make_shared<StringMapFunction>();}
+};
+
+class MySourceFunction: public SourceFunction<std::string> {
+    void run(std::shared_ptr<SourceContext<std::string>> ctx) {
+        for(int i = 0; i < 10; i++) {
+            ctx->collect(std::make_shared<std::string>("1" + std::to_string(i) + "-test-data"));
+        }
+    }
+
+    char* serialize() override {return (char*)this;}
+
+    std::shared_ptr<SourceFunction<std::string>> deserialize() override { return std::make_shared<MySourceFunction>();}
 };
 
 class TestGraph: public CxxTest::TestSuite{
@@ -79,16 +92,34 @@ public:
         TS_ASSERT_EQUALS(*(gen_int.get()), 10);
     }
 
-    void testConfigurationAddOperator( void ) {
+    void testConfigurationAddStreamMap( void ) {
         std::shared_ptr<StreamRecord<std::string>> record_1 = std::make_shared<StreamRecord<std::string>>("12345");
         std::shared_ptr<OneInputStreamOperator<std::string, std::string>> stream_map_1 = 
                         std::make_shared<StreamMap<std::string, std::string>>(std::make_shared<StringMapFunction>());
         std::shared_ptr<Configuration> test_conf = std::make_shared<Configuration>();
         test_conf->set_stream_operator<std::string, std::string>("test-operator", stream_map_1);
-        std::shared_ptr<OneInputStreamOperator<std::string, std::string>> gen_stream_map = test_conf->get_stream_operator<std::string, std::string>("test-operator");
+        std::shared_ptr<OneInputStreamOperator<std::string, std::string>> gen_stream_map = 
+            std::dynamic_pointer_cast<OneInputStreamOperator<std::string, std::string>>(test_conf->get_stream_operator<std::string, std::string>("test-operator"));
         TS_ASSERT_EQUALS(gen_stream_map == nullptr, false);
         gen_stream_map->process_element(record_1);
         TS_ASSERT_EQUALS(stream_map_1.get() == gen_stream_map.get(), false);
+    }
+
+    void testConfigurationAddStreamSource( void ) {
+        std::cout << "test testConfigurationAddStreamSource()" << std::endl;
+        std::shared_ptr<StreamSource<std::string>> stream_source = std::make_shared<StreamSource<std::string>>(std::make_shared<MySourceFunction>());
+        std::shared_ptr<Configuration> test_conf = std::make_shared<Configuration>();
+        std::shared_ptr<StreamOperatorFactory<std::string>> operator_factory = SimpleStreamOperatorFactory<std::string>::of(stream_source);
+
+        test_conf->set_operator_factory<std::string, std::string>(StreamConfig::OPERATOR_FACTORY, operator_factory);
+        std::shared_ptr<StreamOperatorFactory<std::string>> gen_operator_factory = test_conf->get_operator_factory<std::string, std::string>(StreamConfig::OPERATOR_FACTORY);
+        TS_ASSERT_EQUALS(gen_operator_factory == nullptr, false);
+
+        std::shared_ptr<StreamSource<std::string>> gen_stream_source = 
+            std::dynamic_pointer_cast<StreamSource<std::string>>(std::dynamic_pointer_cast<SimpleUdfStreamOperatorFactory<std::string>>(gen_operator_factory)->get_operator());
+        
+        TS_ASSERT_EQUALS(gen_stream_source == nullptr, false);
+        // gen_stream_source->run();
     }
 
     void testConfigurationAddOperatorFactory( void ) {
@@ -202,5 +233,164 @@ public:
         stream_task->process_input();
         stream_task->process_input();
     }
+
+
+    void testSourceStreamTaskInit( void ) {
+        std::cout << "test testSourceStreamTaskInit()" << std::endl;
+        std::shared_ptr<StreamSource<std::string>> stream_source = std::make_shared<StreamSource<std::string>>(std::make_shared<MySourceFunction>());
+        std::shared_ptr<StreamOperatorFactory<std::string>> operator_factory_1 = SimpleStreamOperatorFactory<std::string>::of(stream_source);
+        std::shared_ptr<AbstractUdfStreamOperator<Function, std::string>> stream_map_2 = std::make_shared<StreamMap<std::string, std::string>>(std::make_shared<StringMapFunction>());
+        std::shared_ptr<StreamOperatorFactory<std::string>> operator_factory_2 = SimpleStreamOperatorFactory<std::string>::of(stream_map_2);
+
+        std::string node_name_1("source");
+        std::string node_name_2("map-1");
+        std::shared_ptr<StreamNode<std::string>> src_node = std::make_shared<StreamNode<std::string>>(0, operator_factory_1, node_name_1);
+        std::shared_ptr<StreamNode<std::string>> target_node = std::make_shared<StreamNode<std::string>>(1, operator_factory_2, node_name_2);
+
+        std::shared_ptr<StreamPartitioner<std::string>> stream_partitioner = std::make_shared<ForwardPartitioner<std::string>>();
+
+        std::shared_ptr<StreamEdge<std::string>> edge = std::make_shared<StreamEdge<std::string>>(src_node, target_node, stream_partitioner);
+
+
+        std::shared_ptr<BufferPool> buffer_pool = std::make_shared<BufferPool>(100, 5);
+        std::shared_ptr<ResultPartitionManager> result_partition_manager = std::make_shared<ResultPartitionManager>();
+
+        int* partition_idxs = new int[5] {1};
+        
+        ResultPartitionFactory result_partition_factory(result_partition_manager);
+
+        /* Create RuntimeEnvironment */
+        int job_id = 0;
+        int job_vertex_id = 0;
+        int execution_id = 0;
+        int num_of_result_partitions = 1;
+        int num_of_input_gates = 0;
+        std::shared_ptr<ResultPartition> *result_partitions = new std::shared_ptr<ResultPartition>[num_of_result_partitions];
+        std::shared_ptr<InputGate> *input_gates = nullptr; // source task no input gates
+        for (int i = 0; i < num_of_result_partitions; i++) {
+            result_partitions[i] =  result_partition_factory.create("test-result-partition", i, std::make_shared<ResultPartitionDeploymentDescriptor>(1), buffer_pool);
+        }
+       
+        /* set configuration */
+        std::shared_ptr<Configuration> test_conf = std::make_shared<Configuration>();
+        test_conf->set_edge<std::string>(StreamConfig::EDGE_NAME, edge);
+        test_conf->set_operator_factory<std::string, std::string>(StreamConfig::OPERATOR_FACTORY, operator_factory_1);
+        test_conf->set_value<int>(StreamConfig::NUMBER_OF_INPUTS, std::make_shared<int>(1));
+
+        std::shared_ptr<TaskInfo> task_info = std::make_shared<TaskInfo>("test-source-task", "test-source-task-0", 0, 1);
+
+        std::shared_ptr<Environment> env = std::make_shared<RuntimeEnvironment>(job_id, job_vertex_id, execution_id, result_partitions, num_of_result_partitions,
+                                                                                input_gates, num_of_input_gates, test_conf, task_info);
+
+        /* Create Result Partition */
+        // Result partition should initialize first, and the input gate follows it.
+
+        /* Each ResultPartition has 4 Subpartitions */
+        std::shared_ptr<ResultPartition> partition_0 = result_partition_factory.create("test-result-partition-1", 1, 
+                                                                                    std::make_shared<ResultPartitionDeploymentDescriptor>(4), buffer_pool);
+        
+        std::shared_ptr<StreamTask<std::string>> stream_task = std::make_shared<SourceStreamTask<std::string>>(env);
+        stream_task->before_invoke();
+
+        stream_task->process_input();
+    }
+
+    void testSourceTaskConnectStreamTask( void ) {
+        std::cout << "test testSourceTaskConnectStreamTask()" << std::endl;
+        std::shared_ptr<StreamSource<std::string>> stream_source = std::make_shared<StreamSource<std::string>>(std::make_shared<MySourceFunction>());
+        std::shared_ptr<StreamOperatorFactory<std::string>> operator_factory_1 = SimpleStreamOperatorFactory<std::string>::of(stream_source);
+        std::shared_ptr<AbstractUdfStreamOperator<Function, std::string>> stream_map_2 = std::make_shared<StreamMap<std::string, std::string>>(std::make_shared<StringMapFunction>());
+        std::shared_ptr<StreamOperatorFactory<std::string>> operator_factory_2 = SimpleStreamOperatorFactory<std::string>::of(stream_map_2);
+        std::shared_ptr<AbstractUdfStreamOperator<Function, std::string>> stream_map_3 = std::make_shared<StreamMap<std::string, std::string>>(std::make_shared<StringMapFunction>());
+        std::shared_ptr<StreamOperatorFactory<std::string>> operator_factory_3 = SimpleStreamOperatorFactory<std::string>::of(stream_map_3);
+
+        std::string node_name_1("source");
+        std::string node_name_2("map-1");
+        std::string node_name_3("map-1");
+
+        
+        std::shared_ptr<StreamNode<std::string>> node_1 = std::make_shared<StreamNode<std::string>>(0, operator_factory_1, node_name_1);
+        std::shared_ptr<StreamNode<std::string>> node_2 = std::make_shared<StreamNode<std::string>>(1, operator_factory_2, node_name_2);
+        std::shared_ptr<StreamNode<std::string>> node_3 = std::make_shared<StreamNode<std::string>>(2, operator_factory_3, node_name_3);
+
+        /* Create edge_1 (source -> map-1) */
+        std::shared_ptr<StreamEdge<std::string>> edge_1 = std::make_shared<StreamEdge<std::string>>(node_1, node_2, std::make_shared<ForwardPartitioner<std::string>>());
+        /* Create edge_2 (map-1 -> map-2) */
+        std::shared_ptr<StreamEdge<std::string>> edge_2 = std::make_shared<StreamEdge<std::string>>(node_2, node_3, std::make_shared<ForwardPartitioner<std::string>>());
+
+
+        std::shared_ptr<BufferPool> buffer_pool = std::make_shared<BufferPool>(200, 3);
+        std::shared_ptr<ResultPartitionManager> result_partition_manager = std::make_shared<ResultPartitionManager>();
+
+        /* InputGate and ResultPartition factory */
+        InputGateFactory input_gate_factory(result_partition_manager);
+
+        ResultPartitionFactory result_partition_factory(result_partition_manager);
+
+        /* Create runtime environment for StreamTask_1 */
+        /* Create RuntimeEnvironment */
+        int job_id = 0;
+        int job_vertex_id = 0;
+        int execution_id = 0;
+        int num_of_result_partitions = 1;
+        int num_of_input_gates = 0; // Source Task no input gate
+        std::shared_ptr<ResultPartition> *result_partitions_1 = new std::shared_ptr<ResultPartition>[num_of_result_partitions];
+        for (int i = 0; i < num_of_result_partitions; i++) {
+            result_partitions_1[i] =  result_partition_factory.create("test-result-partition", i, std::make_shared<ResultPartitionDeploymentDescriptor>(1), buffer_pool);
+        }
+        
+        /* set configuration */
+        std::shared_ptr<Configuration> conf_1 = std::make_shared<Configuration>();
+        conf_1->set_edge<std::string>(StreamConfig::EDGE_NAME, edge_1);
+        conf_1->set_operator_factory<std::string, std::string>(StreamConfig::OPERATOR_FACTORY, operator_factory_1);
+        conf_1->set_value<int>(StreamConfig::NUMBER_OF_INPUTS, std::make_shared<int>(1));
+
+        std::shared_ptr<TaskInfo> task_info_1 = std::make_shared<TaskInfo>("test-source-task", "test-source-task-0", 0, 1);
+
+        std::shared_ptr<Environment> env_1 = std::make_shared<RuntimeEnvironment>(job_id, job_vertex_id, execution_id, result_partitions_1, num_of_result_partitions,
+                                                                                nullptr, num_of_input_gates, conf_1, task_info_1);
+
+        /* Create runtime environment for StreamTask_2 */
+        job_id = 1;
+        job_vertex_id = 1;
+        execution_id = 1;
+        num_of_result_partitions = 1;
+        num_of_input_gates = 1;
+        std::shared_ptr<ResultPartition> *result_partitions_2 = new std::shared_ptr<ResultPartition>[num_of_result_partitions];
+        std::shared_ptr<InputGate> *input_gates_2 = new std::shared_ptr<InputGate>[num_of_input_gates];
+
+        for (int i = 0; i < num_of_result_partitions; i++) {
+            // source-task use partition_idx: 0
+            result_partitions_2[i] =  result_partition_factory.create("test-result-partition", i + 1, std::make_shared<ResultPartitionDeploymentDescriptor>(1), buffer_pool);
+        }
+        for (int i = 0; i < num_of_input_gates; i++) {
+            // connect to source-task's partition_idx: 0
+            input_gates_2[i] = input_gate_factory.create("test-input-gate", i, std::make_shared<InputGateDeploymentDescriptor>(0, new int{0}, 1));
+        }
+
+        /* set configuration */
+        std::shared_ptr<Configuration> conf_2 = std::make_shared<Configuration>();
+        conf_2->set_edge<std::string>(StreamConfig::EDGE_NAME, edge_2);
+        conf_2->set_operator_factory<std::string, std::string>(StreamConfig::OPERATOR_FACTORY, operator_factory_2);
+        conf_2->set_value<int>(StreamConfig::NUMBER_OF_INPUTS, std::make_shared<int>(1));
+
+        std::shared_ptr<TaskInfo> task_info_2 = std::make_shared<TaskInfo>("test-map-task", "test-map-task-0", 0, 1);
+
+        std::shared_ptr<Environment> env_2 = std::make_shared<RuntimeEnvironment>(job_id, job_vertex_id, execution_id, result_partitions_2, num_of_result_partitions,
+                                                                                input_gates_2, num_of_input_gates, conf_2, task_info_2);
+
+        std::shared_ptr<StreamTask<std::string>> source_task = std::make_shared<SourceStreamTask<std::string>>(env_1);
+        std::shared_ptr<StreamTask<std::string>> map_task = std::make_shared<OneInputStreamTask<std::string, std::string>>(env_2);
+
+        source_task->before_invoke();
+        map_task->before_invoke();
+
+        source_task->process_input();
+
+        for (int i = 0; i < 10; i++) {
+            map_task->process_input();
+        }
+        
+    } 
 };
 

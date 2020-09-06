@@ -135,7 +135,7 @@ void Configuration::set_operator_factory(std::string key,
 
         // serialize the operator
         std::shared_ptr<StreamOperator<OUT>> stream_operator = udf_operator_factory->get_operator();
-        set_stream_operator<IN, OUT>(key + "_operator", std::dynamic_pointer_cast<OneInputStreamOperator<IN, OUT>>(stream_operator));
+        set_stream_operator<IN, OUT>(key + "_operator", stream_operator);
 
     } else {
         throw std::runtime_error("Not support other stream operator factory except for SimpleUdfStreamOperatorFactory.");
@@ -145,7 +145,7 @@ void Configuration::set_operator_factory(std::string key,
 template <class IN, class OUT>
 std::shared_ptr<StreamOperatorFactory<OUT>> Configuration::get_operator_factory(std::string key) {
     if (m_conf_data.find(key) != m_conf_data.end()) {
-        std::shared_ptr<OneInputStreamOperator<IN, OUT>> stream_operator = get_stream_operator<IN, OUT>(key + "_operator");
+        std::shared_ptr<StreamOperator<OUT>> stream_operator = get_stream_operator<IN, OUT>(key + "_operator");
 
         if (stream_operator == nullptr) {
             throw std::runtime_error("Error when deserialize operator factory, stream operator is null");
@@ -168,7 +168,7 @@ std::shared_ptr<StreamOperatorFactory<OUT>> Configuration::get_operator_factory(
 }
 
 template <class IN, class OUT>                          
-void Configuration::set_stream_operator(std::string key, std::shared_ptr<OneInputStreamOperator<IN, OUT>> stream_operator) {
+void Configuration::set_stream_operator(std::string key, std::shared_ptr<StreamOperator<OUT>> stream_operator) {
     if (this->m_conf_data.find(key) != this->m_conf_data.end()) {
         throw std::runtime_error("key " + key + " has already inserted into the conf_data");
     }
@@ -184,22 +184,33 @@ void Configuration::set_stream_operator(std::string key, std::shared_ptr<OneInpu
         char* map_function_in_char = map_function->serialize();
         this->m_conf_data.insert(std::make_pair(key + "_user-function", map_function_in_char));
 
+    } else if (std::dynamic_pointer_cast<StreamSource<OUT>>(stream_operator) != nullptr) {
+        // std::cout << "[DEBUG] serialize StreamSource operator" << std::endl;
+        std::shared_ptr<StreamSource<OUT>> source_operator = std::dynamic_pointer_cast<StreamSource<OUT>>(stream_operator);
+
+        std::shared_ptr<SourceFunction<OUT>> source_function = source_operator->get_user_function();
+        char* source_function_in_char = source_function->serialize();
+        this->m_conf_data.insert(std::make_pair(key + "_user-function", source_function_in_char));
+
     } else {
-        throw std::runtime_error("Not support other stream operator except for StreamMap");
+        throw std::runtime_error("Not support other stream operator except for StreamMap, StreamSource");
     }
 }
 
 
 template <class IN, class OUT>
-std::shared_ptr<OneInputStreamOperator<IN, OUT>>  Configuration::get_stream_operator(std::string key){
+std::shared_ptr<StreamOperator<OUT>>  Configuration::get_stream_operator(std::string key){
     std::string func_key = key + "_user-function";
     if (m_conf_data.find(func_key) != m_conf_data.end()) {
         Function* func_ptr = (Function*) (m_conf_data[func_key]);
         if (dynamic_cast<MapFunction<IN, OUT>*>(func_ptr) != nullptr) {
             std::shared_ptr<MapFunction<IN, OUT>> gen_func = (dynamic_cast<MapFunction<IN, OUT>*>(func_ptr))->deserialize();
             return std::make_shared<StreamMap<IN, OUT>>(gen_func);
+        } else if(dynamic_cast<SourceFunction<OUT>*>(func_ptr) != nullptr) {
+            std::shared_ptr<SourceFunction<OUT>> gen_func = (dynamic_cast<SourceFunction<OUT>*>(func_ptr))->deserialize();
+            return std::make_shared<StreamSource<OUT>>(gen_func);
         } else {
-            throw std::runtime_error("Stream operator deserialization only support MapFunction");
+            throw std::runtime_error("Stream operator deserialization only support MapFunction, StreamSource");
         }
     } else {
         return nullptr;
@@ -212,6 +223,6 @@ template void Configuration::set_operator_factory<std::string, std::string>(std:
 template std::shared_ptr<StreamOperatorFactory<std::string>> Configuration::get_operator_factory<std::string, std::string>(std::string key);
 
 template void Configuration::set_stream_operator<std::string, std::string>(std::string key,
-                                            std::shared_ptr<OneInputStreamOperator<std::string, std::string>> stream_operator);
+                                            std::shared_ptr<StreamOperator<std::string>> stream_operator);
 
-template std::shared_ptr<OneInputStreamOperator<std::string, std::string>>  Configuration::get_stream_operator<std::string, std::string>(std::string key);
+template std::shared_ptr<StreamOperator<std::string>>  Configuration::get_stream_operator<std::string, std::string>(std::string key);

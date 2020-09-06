@@ -16,7 +16,7 @@ class IOReadableWritable;
 class TypeDeserializer
 {
 private:
-    std::deque<BufferBase*>     m_last_buffers; // m_last_buffers caches all incomplete buffer, 
+    std::deque<BufferBase*>                     m_last_buffers; // m_last_buffers caches all incomplete buffer, 
                                                                 // waiting for the last buffer to revive the whole object
     int                                         m_record_size;
 
@@ -44,5 +44,8 @@ public:
 
     /* Properties */
     int                                         get_record_size() {return m_record_size;}
+    std::string                                 dump_state() {return "number of buffers: " + std::to_string(m_last_buffers.size()) + 
+                                                                    ", read position: " + std::to_string(m_position) + 
+                                                                    ", remaining buffers: " + std::to_string(m_remaining);}
 };
 

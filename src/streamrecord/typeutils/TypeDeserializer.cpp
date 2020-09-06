@@ -18,7 +18,11 @@ DeserializationResult TypeDeserializer::get_next_record(std::shared_ptr<IOReadab
 
         m_record_size = read_short();
         // check the end of one buffer
-        check_end_with_one_byte();
+        // BUG: we do not need to check the end of one buffer. For, if currently there is only 
+        //      one byte in the buffer, we can just read it for the data can be splitted.
+        //      We just need to check the one buffer if we finish one read, for there cannot locate
+        //      a data-len in short (2 bytes).
+        // check_end_with_one_byte();
     } 
 
     if (m_record_size <= m_remaining) {
@@ -57,6 +61,9 @@ int TypeDeserializer::read_int() {
 }
 
 int TypeDeserializer::read_short() {
+    if (m_last_buffers.empty()) {
+        throw std::runtime_error("read error, empty buffer lists");
+    }
     char* buf = new char[2];
 
     for (int i = 0; i < 2; i++) {
@@ -67,10 +74,9 @@ int TypeDeserializer::read_short() {
         m_remaining--;
         evict_used_buffer(false);
     }
+    
 
     int v = SerializeUtils::deserialize_short(buf);
-
-    evict_used_buffer(false);
 
     return v;
 }
@@ -116,6 +122,11 @@ double TypeDeserializer::read_double() {
  * TODO: Recycle the buffer if needed.
  */
 void TypeDeserializer::evict_used_buffer(bool is_finish_read) {
+    if (m_last_buffers.empty()) {
+        // TODO: add logging 
+        std::cout << "[INFO] TypeDeserializer::evict_used_buffer(): useless buffer evict" << std::endl;
+        return;
+    }
     BufferBase* first_buf = m_last_buffers.front();
     int buf_size = first_buf->get_max_capacity();
     // only one byte left is also a completed buf, nothing to read
@@ -138,6 +149,8 @@ void TypeDeserializer::evict_used_buffer(bool is_finish_read) {
 
 void TypeDeserializer::check_end_with_one_byte() {
     if ((int)m_last_buffers.size() == 0) {
+        // TODO: add logging
+        std::cout << "[INFO] TypeDeserializer::check_end_with_one_byte(): useless buffer evict" << std::endl;
         return;
     }
     BufferBase* first_buf = m_last_buffers.front();

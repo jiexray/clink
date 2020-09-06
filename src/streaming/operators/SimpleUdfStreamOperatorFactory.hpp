@@ -29,7 +29,7 @@ public:
     }
 
     /* Properties */
-    std::shared_ptr<AbstractUdfStreamOperator<Function, OUT>> get_operator() {return m_operator;}
+    std::shared_ptr<AbstractUdfStreamOperator<Function, OUT>> get_operator() {return m_operator;} // just for serialization
 };
 
 

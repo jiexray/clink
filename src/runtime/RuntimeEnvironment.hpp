@@ -42,7 +42,7 @@ public:
 
     // Fields relevent to the I/O system. Should go into Task
     std::shared_ptr<ResultPartition>        get_writer(int idx) {return m_result_partitions[idx];}
-    std::shared_ptr<InputGate>              get_input_gate(int idx) {return m_input_gates[idx];}
+    std::shared_ptr<InputGate>              get_input_gate(int idx) {return m_input_gates == nullptr ? nullptr : m_input_gates[idx];}
     std::shared_ptr<Configuration>          get_task_configuration() {return m_task_configuration;}
     std::shared_ptr<TaskInfo>               get_task_info() {return m_task_info;}
 };
