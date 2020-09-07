@@ -3,6 +3,7 @@
  */
 #pragma once
 
+
 template <class OUT>
 class StreamOperator
 {

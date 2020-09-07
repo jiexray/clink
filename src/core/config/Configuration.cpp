@@ -26,6 +26,9 @@ std::shared_ptr<std::string> Configuration::get_value<std::string>(std::string k
 
 template<>
 void Configuration::set_value<int>(std::string key, std::shared_ptr<int> value) {
+    if (value == nullptr) 
+        return;
+
     if (this->m_conf_data.find(key) != this->m_conf_data.end()) {
         throw std::runtime_error("key " + key + " has already inserted into the conf_data");
     }
@@ -57,6 +60,9 @@ std::shared_ptr<int> Configuration::get_value<int>(std::string key) {
 
 template<class T>
 void Configuration::set_edge(std::string key, std::shared_ptr<StreamEdge<T>> edge){
+    if (edge == nullptr) 
+        return;
+
     if (this->m_conf_data.find(key) != this->m_conf_data.end()) {
         throw std::runtime_error("key " + key + " has already inserted into the conf_data");
     }
@@ -192,8 +198,15 @@ void Configuration::set_stream_operator(std::string key, std::shared_ptr<StreamO
         char* source_function_in_char = source_function->serialize();
         this->m_conf_data.insert(std::make_pair(key + "_user-function", source_function_in_char));
 
+    } else if (std::dynamic_pointer_cast<StreamSink<IN>>(stream_operator) != nullptr){
+        // std::cout << "[DEBUG] serialize StreamSource operator" << std::endl;
+        std::shared_ptr<StreamSink<IN>> sink_operator = std::dynamic_pointer_cast<StreamSink<IN>>(stream_operator);
+
+        std::shared_ptr<SinkFunction<IN>> sink_function = sink_operator->get_user_function();
+        char* sink_function_in_char = sink_function->serialize();
+        this->m_conf_data.insert(std::make_pair(key + "_user-function", sink_function_in_char));
     } else {
-        throw std::runtime_error("Not support other stream operator except for StreamMap, StreamSource");
+        throw std::runtime_error("Not support other stream operator except for StreamMap, StreamSource, StreamSink");
     }
 }
 
@@ -209,8 +222,11 @@ std::shared_ptr<StreamOperator<OUT>>  Configuration::get_stream_operator(std::st
         } else if(dynamic_cast<SourceFunction<OUT>*>(func_ptr) != nullptr) {
             std::shared_ptr<SourceFunction<OUT>> gen_func = (dynamic_cast<SourceFunction<OUT>*>(func_ptr))->deserialize();
             return std::make_shared<StreamSource<OUT>>(gen_func);
+        } else if(dynamic_cast<SinkFunction<IN>*>(func_ptr) != nullptr) {
+            std::shared_ptr<SinkFunction<IN>> gen_func = (dynamic_cast<SinkFunction<IN>*>(func_ptr))->deserialize();
+            return std::make_shared<StreamSink<IN>>(gen_func);            
         } else {
-            throw std::runtime_error("Stream operator deserialization only support MapFunction, StreamSource");
+            throw std::runtime_error("Stream operator deserialization only support StreamMap, StreamSource, StreamSink");
         }
     } else {
         return nullptr;
@@ -226,3 +242,4 @@ template void Configuration::set_stream_operator<std::string, std::string>(std::
                                             std::shared_ptr<StreamOperator<std::string>> stream_operator);
 
 template std::shared_ptr<StreamOperator<std::string>>  Configuration::get_stream_operator<std::string, std::string>(std::string key);
+

@@ -1,5 +1,6 @@
 #include "ResultWriter.hpp"
 
+
 template<class T>
 ResultWriter<T>::ResultWriter(std::shared_ptr<ResultPartition> result_partition, std::string task_name):
 m_target_result_partition(result_partition),

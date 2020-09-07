@@ -7,8 +7,13 @@ template <class OUT>
 StreamTask<OUT>::StreamTask(std::shared_ptr<Environment> env): AbstractInvokable(env) {
     m_configuration = std::make_shared<StreamConfig>(env->get_task_configuration());
     std::shared_ptr<StreamEdge<OUT>> edge = m_configuration->get_out_edge<OUT>();
-    
-    this->m_result_writer = create_result_writer(edge, 0, env->get_task_info()->get_task_name());
+
+    if (edge != nullptr) {
+        this->m_result_writer = create_result_writer(edge, 0, env->get_task_info()->get_task_name());
+    } else {
+        std::cout << "[INFO] Task " << env->get_task_info()->get_task_name() << " do not have out edges" << std::endl;
+    }
+
 }
 
 /**

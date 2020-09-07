@@ -11,6 +11,8 @@
 
 template <class OUT> class StreamTask;
 
+// template <class F, class OUT = std::string> class AbstractUdfStreamOperator;
+
 template <class F, class OUT>
 class AbstractUdfStreamOperator : virtual public StreamOperator<OUT>
 {
@@ -32,4 +34,3 @@ public:
         this->m_output = output;
     }
 };
-

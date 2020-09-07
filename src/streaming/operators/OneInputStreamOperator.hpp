@@ -9,6 +9,7 @@
 #include <memory>
 #include <iostream>
 
+
 template <class IN, class OUT>
 class OneInputStreamOperator : virtual public StreamOperator<OUT>
 //: public StreamOperator<OUT>

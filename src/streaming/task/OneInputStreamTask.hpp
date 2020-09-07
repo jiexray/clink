@@ -9,7 +9,7 @@
 #include "../io/StreamTaskNetworkOutput.hpp"
 #include "../io/StreamOneInputProcessor.hpp"
 
-template <class IN, class OUT>
+template <class IN, class OUT = std::string>
 class OneInputStreamTask: public StreamTask<OUT> 
 {
 public:

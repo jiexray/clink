@@ -13,6 +13,7 @@
 #include "../../streaming/operators/SimpleUdfStreamOperatorFactory.hpp"
 #include "../../streaming/operators/StreamMap.hpp"
 #include "../../streaming/operators/StreamSource.hpp"
+#include "../../streaming/operators/StreamSink.hpp"
 #include <cstring>
 
 template <class T> class StreamEdge;
@@ -35,16 +36,16 @@ public:
     template <class T>
     std::shared_ptr<StreamEdge<T>>              get_edge(std::string key);
 
-    template <class IN, class OUT>
+    template <class IN, class OUT = std::string>
     void                                        set_operator_factory(std::string key, 
                                                                     std::shared_ptr<StreamOperatorFactory<OUT>> operator_factory);
-    template <class IN, class OUT>
+    template <class IN, class OUT = std::string>
     std::shared_ptr<StreamOperatorFactory<OUT>> get_operator_factory(std::string key);
 
-    template <class IN, class OUT>                          
+    template <class IN, class OUT = std::string>                          
     void                                        set_stream_operator(std::string key,
                                                                         std::shared_ptr<StreamOperator<OUT>> stream_operator);
-    template <class IN, class OUT>
+    template <class IN, class OUT = std::string>
     std::shared_ptr<StreamOperator<OUT>>          
                                                 get_stream_operator(std::string key);
     
