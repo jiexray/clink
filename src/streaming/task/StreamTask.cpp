@@ -60,7 +60,10 @@ void StreamTask<OUT>::request_partitions() {
 
 template<class OUT>
 void StreamTask<OUT>::invoke() {
-    
+    before_invoke();
+
+    // TODO: start processing record
+    std::cout << "StreamTask " << get_name() << " start to process record" << std::endl;
 }
 
 template class StreamTask<std::string>;

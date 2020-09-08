@@ -10,6 +10,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 add_library(result "")
 add_library(streamrecord "")
 add_library(streaming "")
+add_library(runtime "")
 
 # install (TARGETS result
 #   PUBLIC_HEADER

@@ -17,6 +17,11 @@ public:
     m_task_name(task_name), m_task_name_with_subtasks(task_name_with_subtasks), m_index_of_subtask(index_of_subtask),
     m_number_of_parallel_subtasks(number_of_parallel_subtasks) {}
 
+    TaskInfo(std::string task_name, int index_of_subtask, int number_of_parallel_subtasks):
+    m_task_name(task_name), m_index_of_subtask(index_of_subtask), m_number_of_parallel_subtasks(number_of_parallel_subtasks) {
+        m_task_name_with_subtasks = task_name + " (" + std::to_string(index_of_subtask + 1) + "/" + std::to_string(number_of_parallel_subtasks) + ")";
+    }
+
     /* Properties */
     std::string         get_task_name() { return m_task_name;}
     std::string         get_task_name_with_sub_tasks() {return m_task_name_with_subtasks;}

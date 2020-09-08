@@ -7,15 +7,15 @@
  */
 #pragma once
 #include "OperatorChain.hpp"
-#include "../io/StreamInputProcessor.hpp"
-#include "../io/StreamTaskInput.hpp"
-#include "../io/DataOutput.hpp"
+#include "StreamInputProcessor.hpp"
+#include "StreamTaskInput.hpp"
+#include "DataOutput.hpp"
 
-#include "../../result/ResultWriter.hpp"
-#include "../../result/ChannelSelectorResultWriter.hpp"
-#include "../../runtime/AbstractInvokable.hpp"
-#include "../graph/StreamEdge.hpp"
-#include "config/StreamConfig.hpp"
+#include "ResultWriter.hpp"
+#include "ChannelSelectorResultWriter.hpp"
+#include "AbstractInvokable.hpp"
+#include "StreamEdge.hpp"
+#include "StreamConfig.hpp"
 #include <memory>
 
 template <class OUT> class OperatorChain;
@@ -53,5 +53,5 @@ public:
     std::shared_ptr<StreamConfig>               get_configuration() {return m_configuration;}
     std::shared_ptr<StreamOperator<OUT>>        get_head_operator() {return m_head_operator;}
     std::shared_ptr<ResultWriter<OUT>>          get_result_writer() {return m_result_writer;}
-};
-
+    std::string                                 get_name() {return this->get_environment()->get_task_info()->get_task_name_with_sub_tasks();}
+}; 

@@ -46,8 +46,7 @@ public:
     void                                        set_stream_operator(std::string key,
                                                                         std::shared_ptr<StreamOperator<OUT>> stream_operator);
     template <class IN, class OUT = std::string>
-    std::shared_ptr<StreamOperator<OUT>>          
-                                                get_stream_operator(std::string key);
+    std::shared_ptr<StreamOperator<OUT>>        get_stream_operator(std::string key);
     
     // template <class IN, class OUT>                          
     // void                                        set_stream_operator(std::string key,

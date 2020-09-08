@@ -40,11 +40,36 @@ target_include_directories(streaming PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}/streaming/io
   ${CMAKE_CURRENT_SOURCE_DIR}/streaming/functions
   ${CMAKE_CURRENT_SOURCE_DIR}/streaming/partitioner
+  ${CMAKE_CURRENT_SOURCE_DIR}/streaming/graph
   ${CMAKE_CURRENT_SOURCE_DIR}/core/config
   ${CMAKE_CURRENT_SOURCE_DIR}/core/common
+  ${CMAKE_CURRENT_SOURCE_DIR}/result
+  ${CMAKE_CURRENT_SOURCE_DIR}/result/consumer
+  ${CMAKE_CURRENT_SOURCE_DIR}/runtime
 )
 
 target_link_libraries(streaming streamrecord result pthread)
+
+# ------------------------
+#   build runtime module
+# ------------------------
+target_sources(runtime 
+  PRIVATE
+    runtime/Task.cpp
+)
+target_include_directories(runtime PUBLIC
+  ${CMAKE_CURRENT_SOURCE_DIR}/core/common
+  ${CMAKE_CURRENT_SOURCE_DIR}/core/config
+  ${CMAKE_CURRENT_SOURCE_DIR}/result
+  ${CMAKE_CURRENT_SOURCE_DIR}/result/consumer
+  ${CMAKE_CURRENT_SOURCE_DIR}/runtime/executiongraph
+  ${CMAKE_CURRENT_SOURCE_DIR}/runtime/shuffle
+  ${CMAKE_CURRENT_SOURCE_DIR}/deployment
+)
+
+target_link_libraries(runtime streaming pthread result streamrecord)
+
+
 
 # target_include_directories(result PUBLIC 
 #   ${CMAKE_SOURCE_DIR}/include/result 

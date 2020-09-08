@@ -23,6 +23,8 @@ set(TEST_HEADER_DIRS ${CMAKE_SOURCE_DIR}/src/buffer
   ${CMAKE_SOURCE_DIR}/src/runtime
   ${CMAKE_SOURCE_DIR}/src/core/config
   ${CMAKE_SOURCE_DIR}/src/core/common
+  ${CMAKE_SOURCE_DIR}/runtime/executiongraph
+  ${CMAKE_SOURCE_DIR}/runtime/shuffle
   )
 
 if(CXXTEST_FOUND)
@@ -48,5 +50,9 @@ if(CXXTEST_FOUND)
   # streaming graph test
   CXXTEST_ADD_TEST(unitest_streaming_graph streaming_graph_test.cpp ${CMAKE_CURRENT_SOURCE_DIR}/streaming/TestGraph.hpp)
   target_link_libraries(unitest_streaming_graph streaming streamrecord result)
+
+  # runtime task test
+  CXXTEST_ADD_TEST(unitest_runtime_task runtime_task_test.cpp ${CMAKE_CURRENT_SOURCE_DIR}/runtime/TestTask.hpp)
+  target_link_libraries(unitest_runtime_task runtime streaming result streamrecord)
 
 endif()

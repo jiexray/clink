@@ -5,7 +5,10 @@
             "includePath": [
                 "${workspaceFolder}/**",
                 "/home/tian/software/vscode/projects/clink/deps/cxxtest-4.4/cxxtest",
-                "/home/tian/software/vscode/projects/clink/src/**"
+                "/home/tian/software/vscode/projects/clink/src/**",
+                "/home/tian/software/vscode/projects/clink/src/result",
+                "/home/tian/software/vscode/projects/clink/src/result/consumer",
+                "/home/tian/software/vscode/projects/clink/src/deployment"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",
