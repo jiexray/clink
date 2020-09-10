@@ -27,6 +27,7 @@ private:
     int                                 m_job_id;
     int                                 m_vertex_id;
     int                                 m_execution_id;
+    int                                 m_allocation_id;
     std::shared_ptr<TaskInfo>           m_task_info;
     std::string                         m_task_name_with_subtask;
     std::shared_ptr<Configuration>      m_task_configuration;
@@ -48,11 +49,10 @@ private:
     typedef std::vector<std::shared_ptr<InputGateDeploymentDescriptor>> InputGateDeploymentDescriptorList;
 public:
     Task(std::shared_ptr<JobInformation> job_information, std::shared_ptr<TaskInformation> task_information,
-            int execution_id, int subtask_idx, 
+            int execution_id, int allocation_id, int subtask_idx, 
             ResultPartitionDeploymentDescriptorList & result_partition_descriptors,
             InputGateDeploymentDescriptorList & input_gate_descriptors,
             std::shared_ptr<ShuffleEnvironment> shuffle_environment,
-            std::string name_of_invokable_class,
             std::shared_ptr<BufferPool> buffer_pool);
 
     void                                        do_run();
@@ -61,6 +61,12 @@ public:
     void                                        start_task_thread();
     
     static std::shared_ptr<AbstractInvokable>   load_and_instantiate_invokable(std::string class_name, std::shared_ptr<Environment> env);
+
+    /* Properties */
+    int                                         get_job_id() {return m_job_id;}
+    int                                         get_execution_id() {return m_execution_id;}
+    int                                         get_allocation_id() {return m_allocation_id;}
+    std::shared_ptr<TaskInfo>                   get_task_info() {return m_task_info;}
 };
 
 

@@ -1,15 +1,15 @@
 #include "Task.hpp"
 
 Task::Task(std::shared_ptr<JobInformation> job_information, std::shared_ptr<TaskInformation> task_information,
-        int execution_id, int subtask_idx, 
+        int execution_id, int allocation_id, int subtask_idx, 
         ResultPartitionDeploymentDescriptorList & result_partition_descriptors,
         InputGateDeploymentDescriptorList & input_gate_descriptors,
         std::shared_ptr<ShuffleEnvironment> shuffle_environment,
-        std::string name_of_invokable_class,
         std::shared_ptr<BufferPool> buffer_pool){
     /* Basic information */
     this->m_job_id                  = job_information->get_job_id();
     this->m_vertex_id               = task_information->get_job_vertex_id();
+    this->m_allocation_id           = allocation_id;
     this->m_task_configuration      = task_information->get_task_configuration();
     this->m_execution_id            = execution_id;
     this->m_task_info               = std::make_shared<TaskInfo>(
@@ -17,7 +17,7 @@ Task::Task(std::shared_ptr<JobInformation> job_information, std::shared_ptr<Task
                                         subtask_idx,
                                         task_information->get_number_of_subtasks());
     this->m_task_name_with_subtask  = m_task_info->get_task_name_with_sub_tasks();
-    this->m_name_of_invokable_class = name_of_invokable_class;
+    this->m_name_of_invokable_class = task_information->get_invokable_class_name();
     this->m_buffer_pool             = buffer_pool;
 
     /* Initializer ResultPartition and InputGates */

@@ -56,6 +56,8 @@ target_link_libraries(streaming streamrecord result pthread)
 target_sources(runtime 
   PRIVATE
     runtime/Task.cpp
+    runtime/taskexecutor/TaskSlotTable.cpp
+    runtime/taskexecutor/TaskExecutor.cpp
 )
 target_include_directories(runtime PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}/core/common
