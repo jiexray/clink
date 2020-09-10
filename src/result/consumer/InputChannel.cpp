@@ -1,10 +1,21 @@
 #include "InputChannel.hpp"
 
+/* For test */
 InputChannel::InputChannel(std::shared_ptr<InputGate> input_gate, int channel_idx, int partition_idx, 
                 std::shared_ptr<ResultPartitionManager> partition_manager):
 m_input_gate(input_gate),
 m_partition_manager(partition_manager),
 m_partition_idx(partition_idx){
+    this->m_partition_id = "test-" + partition_idx;
+    m_channel_info = std::make_shared<InputChannelInfo>(input_gate->get_gate_idx(), channel_idx);
+}
+
+
+InputChannel::InputChannel(std::shared_ptr<InputGate> input_gate, int channel_idx, std::string partition_id,
+                std::shared_ptr<ResultPartitionManager> partition_manager):
+m_input_gate(input_gate),
+m_partition_manager(partition_manager),
+m_partition_id(partition_id){
     m_channel_info = std::make_shared<InputChannelInfo>(input_gate->get_gate_idx(), channel_idx);
 }
 
@@ -21,7 +32,8 @@ void InputChannel::notify_data_available() {
  */
 void InputChannel::request_subpartition(int subpartition_idx) {
     if (m_subpartition_view == nullptr) {
-        m_subpartition_view = m_partition_manager->create_subpartition_view(m_partition_idx, subpartition_idx, shared_from_this());
+        // m_subpartition_view = m_partition_manager->create_subpartition_view(m_partition_idx, subpartition_idx, shared_from_this());
+        m_subpartition_view = m_partition_manager->create_subpartition_view(m_partition_id, subpartition_idx, shared_from_this());
     }
 }
 

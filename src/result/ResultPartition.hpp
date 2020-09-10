@@ -34,6 +34,9 @@ public:
     int                                                 get_partition_idx() {return m_partition_idx;}
     std::shared_ptr<ResultSubpartition>                 get_subpartition(int subpartition_idx);
     int                                                 get_number_of_subpartitions() {return (int) m_subpartitions.size();}
+
+    // partition_id is the unique identification of the ResultPartition, use this to register / request ResultPartition
+    std::string                                         get_partition_id() {return m_owning_task_name + "-" + std::to_string(m_partition_idx);}
     
 
     /* Request BufferBuilder from buffer pool / Add BufferConsumer to subpartition */ 

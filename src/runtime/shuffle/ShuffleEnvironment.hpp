@@ -55,6 +55,7 @@ inline std::shared_ptr<InputGate>* LocalShuffleEnvironment::create_input_gates(s
 inline std::shared_ptr<ResultPartition>* LocalShuffleEnvironment::create_result_partitions(std::string owner_name, 
                                                                 ResultPartitionDeploymentDescriptorList  result_partition_descriptors,
                                                                 std::shared_ptr<BufferPool> buffer_pool) {
+    std::cout << "LocalShuffleEnvironment::create_result_partitions() task name " << owner_name << ", result partition count " << result_partition_descriptors.size() << std::endl;
     int number_of_result_partitions = (int)result_partition_descriptors.size();
     std::shared_ptr<ResultPartition>* result_partitions = new std::shared_ptr<ResultPartition>[number_of_result_partitions];
 

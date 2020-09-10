@@ -23,8 +23,9 @@ set(TEST_HEADER_DIRS ${CMAKE_SOURCE_DIR}/src/buffer
   ${CMAKE_SOURCE_DIR}/src/runtime
   ${CMAKE_SOURCE_DIR}/src/core/config
   ${CMAKE_SOURCE_DIR}/src/core/common
-  ${CMAKE_SOURCE_DIR}/runtime/executiongraph
-  ${CMAKE_SOURCE_DIR}/runtime/shuffle
+  ${CMAKE_SOURCE_DIR}/src/runtime/executiongraph
+  ${CMAKE_SOURCE_DIR}/src/runtime/shuffle
+  ${CMAKE_SOURCE_DIR}/src/runtime/taskexecutor
   )
 
 if(CXXTEST_FOUND)

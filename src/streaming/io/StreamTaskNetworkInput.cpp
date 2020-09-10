@@ -42,7 +42,6 @@ InputStatus StreamTaskNetworkInput<T>::emit_next(std::shared_ptr<DataOutput<T>> 
                 return InputStatus::MORE_AVAILABLE;
             }
         }
-
         std::shared_ptr<BufferOrEvent> boe = this->m_input_gate->poll_next();
 
         if (boe != nullptr) {
@@ -50,9 +49,8 @@ InputStatus StreamTaskNetworkInput<T>::emit_next(std::shared_ptr<DataOutput<T>> 
             m_current_record_deserializer = m_record_deserializers[m_last_channel];
 
             if (m_current_record_deserializer == nullptr) {
-                throw new std::runtime_error("record deserializer of " + std::to_string(m_last_channel) + " is null");
+                throw std::runtime_error("record deserializer of " + std::to_string(m_last_channel) + " is null");
             }
-
             m_current_record_deserializer->set_next_buffer(boe->get_buffer());
 
             // buffer may be already for deserializing, continue to deserialize the buffer

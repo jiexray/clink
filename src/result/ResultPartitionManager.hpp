@@ -6,6 +6,7 @@
  */
 #pragma once
 #include <map>
+#include <string>
 #include "ResultPartition.hpp"
 #include "ResultSubpartition.hpp"
 #include "SubpartitionAvailableListener.hpp"
@@ -16,16 +17,22 @@ class SubpartitionAvailableListener;
 class ResultPartitionManager
 {
 private:
-    std::map<int, std::shared_ptr<ResultPartition>> m_registered_partitions; // TODO: need synchronize!
+    std::map<std::string, std::shared_ptr<ResultPartition>> m_registered_partitions; // TODO: need synchronize!
 public:
     ResultPartitionManager(/* args */) {};
     ~ResultPartitionManager() {};
 
+    // NOTE: (9.9) register result partition with result_partition_id, not partition_idx
+
     /* Register / retrieve ResultPartition */
-    void                                    register_result_partition(std::shared_ptr<ResultPartition> partition);
-    std::shared_ptr<ResultPartition>        get_result_partition(int partition_idx);
+    void                                    register_result_partition(std::string task_name, std::shared_ptr<ResultPartition> partition);
+    void                                    register_result_partition(std::shared_ptr<ResultPartition> partition);  // for test
+    std::shared_ptr<ResultPartition>        get_result_partition(std::string partition_id);
+    std::shared_ptr<ResultPartition>        get_result_partition(int partition_idx); // for test
 
 
-    std::shared_ptr<ResultSubpartitionView> create_subpartition_view(int partition_idx, int subpartition_idx, 
+    std::shared_ptr<ResultSubpartitionView> create_subpartition_view(std::string partition_id, int subpartition_idx, 
+                                                                        std::shared_ptr<SubpartitionAvailableListener> available_listener);
+    std::shared_ptr<ResultSubpartitionView> create_subpartition_view(int partition_idx, int subpartition_idx,       // for test
                                                                         std::shared_ptr<SubpartitionAvailableListener> view_reader);
 };

@@ -55,6 +55,7 @@ void StreamTask<OUT>::request_partitions() {
     std::shared_ptr<InputGate> input_gate = get_environment()->get_input_gate(0);
     if (input_gate != nullptr) {
         input_gate->request_partitions();
+        std::cout << "[INFO] StreamTask " << get_name() << " finish requesting partitions" << std::endl;
     }
 }
 
@@ -63,7 +64,7 @@ void StreamTask<OUT>::invoke() {
     before_invoke();
 
     // TODO: start processing record
-    std::cout << "StreamTask " << get_name() << " start to process record" << std::endl;
+    std::cout << "[INFO] StreamTask " << get_name() << " start to process record" << std::endl;
 }
 
 template class StreamTask<std::string>;

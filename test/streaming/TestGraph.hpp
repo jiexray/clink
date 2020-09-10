@@ -175,6 +175,7 @@ public:
 
 
     void testStreamTaskInit( void ) {
+        std::cout << "test testStreamTaskInit()" << std::endl;
         std::shared_ptr<AbstractUdfStreamOperator<Function, std::string>> stream_map_1 = std::make_shared<StreamMap<std::string, std::string>>(std::make_shared<StringMapFunction>());
         std::shared_ptr<StreamOperatorFactory<std::string>> operator_factory_1 = SimpleStreamOperatorFactory<std::string>::of(stream_map_1);
         std::shared_ptr<AbstractUdfStreamOperator<Function, std::string>> stream_map_2 = std::make_shared<StreamMap<std::string, std::string>>(std::make_shared<StringMapFunction>());
@@ -210,7 +211,7 @@ public:
             result_partitions[i] =  result_partition_factory.create("test-result-partition", i, std::make_shared<ResultPartitionDeploymentDescriptor>(1), buffer_pool);
         }
         for (int i = 0; i < num_of_input_gates; i++) {
-            input_gates[i] = input_gate_factory.create("test-input-gate", i, std::make_shared<InputGateDeploymentDescriptor>(0, partition_idxs, 1));
+            input_gates[i] = input_gate_factory.create("test-input-gate", i, std::make_shared<InputGateDeploymentDescriptor>(0, new std::string{"fake-test-task-0"}, 1));
         }
         /* set configuration */
         std::shared_ptr<Configuration> test_conf = std::make_shared<Configuration>();
@@ -218,7 +219,7 @@ public:
         test_conf->set_operator_factory<std::string, std::string>(StreamConfig::OPERATOR_FACTORY, operator_factory_1);
         test_conf->set_value<int>(StreamConfig::NUMBER_OF_INPUTS, std::make_shared<int>(1));
 
-        std::shared_ptr<TaskInfo> task_info = std::make_shared<TaskInfo>("test-task", "test-0", 0, 1);
+        std::shared_ptr<TaskInfo> task_info = std::make_shared<TaskInfo>("test-task", "test-task-0", 0, 1);
 
         std::shared_ptr<Environment> env = std::make_shared<RuntimeEnvironment>(job_id, job_vertex_id, execution_id, result_partitions, num_of_result_partitions,
                                                                                 input_gates, num_of_input_gates, test_conf, task_info);
@@ -227,7 +228,7 @@ public:
         // Result partition should initialize first, and the input gate follows it.
 
         /* Each ResultPartition has 4 Subpartitions */
-        std::shared_ptr<ResultPartition> partition_0 = result_partition_factory.create("test-result-partition-1", 1, 
+        std::shared_ptr<ResultPartition> partition_0 = result_partition_factory.create("fake-test-task", 0, 
                                                                                     std::make_shared<ResultPartitionDeploymentDescriptor>(4), buffer_pool);
         
         std::shared_ptr<StreamTask<std::string>> stream_task = std::make_shared<OneInputStreamTask<std::string, std::string>>(env);
@@ -240,7 +241,7 @@ public:
 
         result_writer_0->emit(record_1, 0);
         result_writer_0->emit(record_2, 0);
-        result_writer_0->flush(0);
+        // result_writer_0->flush(0);
 
         stream_task->process_input();
         stream_task->process_input();
@@ -308,6 +309,7 @@ public:
     }
 
     void testSinkStreamTaskInit( void ){
+        std::cout << "test testSinkStreamTaskInit()" << std::endl;
         std::shared_ptr<StreamSink<std::string>> sink_operator = std::make_shared<StreamSink<std::string>>(std::make_shared<MySinkFunction>());
         std::shared_ptr<StreamOperatorFactory<std::string>> operator_factory = SimpleStreamOperatorFactory<std::string>::of(sink_operator);
 
@@ -331,7 +333,7 @@ public:
         std::shared_ptr<InputGate> *input_gates = new std::shared_ptr<InputGate>[num_of_input_gates];
        
         for (int i = 0; i < num_of_input_gates; i++) {
-            input_gates[i] = input_gate_factory.create("test-input-gate", i, std::make_shared<InputGateDeploymentDescriptor>(0, partition_idxs, 1));
+            input_gates[i] = input_gate_factory.create("test-input-gate", i, std::make_shared<InputGateDeploymentDescriptor>(0, new std::string{"fake-test-task-0"}, 1));
         }
         /* set configuration */
         std::shared_ptr<Configuration> test_conf = std::make_shared<Configuration>();
@@ -348,7 +350,7 @@ public:
         // Result partition should initialize first, and the input gate follows it.
 
         /* Each ResultPartition has 4 Subpartitions */
-        std::shared_ptr<ResultPartition> partition_0 = result_partition_factory.create("test-result-partition-1", 1, 
+        std::shared_ptr<ResultPartition> partition_0 = result_partition_factory.create("fake-test-task", 0, 
                                                                                     std::make_shared<ResultPartitionDeploymentDescriptor>(4), buffer_pool);
         
         std::shared_ptr<StreamTask<std::string>> stream_task = std::make_shared<OneInputStreamTask<std::string>>(env);
@@ -407,7 +409,7 @@ public:
         int num_of_input_gates = 0; // Source Task no input gate
         std::shared_ptr<ResultPartition> *result_partitions_1 = new std::shared_ptr<ResultPartition>[num_of_result_partitions];
         for (int i = 0; i < num_of_result_partitions; i++) {
-            result_partitions_1[i] =  result_partition_factory.create("test-result-partition", i, std::make_shared<ResultPartitionDeploymentDescriptor>(1), buffer_pool);
+            result_partitions_1[i] =  result_partition_factory.create("test-source-task", i, std::make_shared<ResultPartitionDeploymentDescriptor>(1), buffer_pool);
         }
         
         /* set configuration */
@@ -432,11 +434,11 @@ public:
 
         for (int i = 0; i < num_of_result_partitions; i++) {
             // source-task use partition_idx: 0
-            result_partitions_2[i] =  result_partition_factory.create("test-result-partition", i + 1, std::make_shared<ResultPartitionDeploymentDescriptor>(1), buffer_pool);
+            result_partitions_2[i] =  result_partition_factory.create("test-map-task", i, std::make_shared<ResultPartitionDeploymentDescriptor>(1), buffer_pool);
         }
         for (int i = 0; i < num_of_input_gates; i++) {
             // connect to source-task's partition_idx: 0
-            input_gates_2[i] = input_gate_factory.create("test-input-gate", i, std::make_shared<InputGateDeploymentDescriptor>(0, new int{0}, 1));
+            input_gates_2[i] = input_gate_factory.create("test-map-task", i, std::make_shared<InputGateDeploymentDescriptor>(0, new std::string{"test-source-task-0"}, 1));
         }
 
         /* set configuration */

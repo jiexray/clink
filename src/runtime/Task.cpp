@@ -21,11 +21,14 @@ Task::Task(std::shared_ptr<JobInformation> job_information, std::shared_ptr<Task
     this->m_buffer_pool             = buffer_pool;
 
     /* Initializer ResultPartition and InputGates */
+    std::cout << "[Debug] start create result partitions and input gates" << std::endl;
     this->m_number_of_result_partitions     = (int) result_partition_descriptors.size();
     this->m_result_partitions               = shuffle_environment->create_result_partitions(m_task_name_with_subtask, result_partition_descriptors, m_buffer_pool);
+    std::cout << "[Debug] finish create result partitions" << std::endl;
 
     this->m_number_of_input_gates           = (int) input_gate_descriptors.size();
     this->m_input_gates                     = shuffle_environment->create_input_gates(m_task_name_with_subtask, input_gate_descriptors);
+    std::cout << "[Debug] finish create input gates" << std::endl;
 }
 
 /**

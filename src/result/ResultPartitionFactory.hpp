@@ -15,6 +15,8 @@ class ResultPartitionFactory
 {
 private:
     std::shared_ptr<ResultPartitionManager>     m_result_partition_manager;
+    int                                         m_buffer_per_channel;
+    
 public:
     ResultPartitionFactory(std::shared_ptr<ResultPartitionManager>);
     ~ResultPartitionFactory() {};
@@ -44,7 +46,7 @@ inline std::shared_ptr<ResultPartition> ResultPartitionFactory::create(
     std::shared_ptr<ResultPartition> partition = std::make_shared<ResultPartition>(task_name, partition_idx, number_of_subpartitions, buffer_pool);
     partition->setup();
 
-    m_result_partition_manager->register_result_partition(partition);
+    m_result_partition_manager->register_result_partition(task_name, partition);
 
     return partition;    
 }
