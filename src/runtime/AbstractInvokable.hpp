@@ -19,4 +19,5 @@ public:
 
     /* Core methods */
     virtual void                        invoke() = 0;
+    virtual void                        cancel() = 0;
 };

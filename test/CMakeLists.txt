@@ -19,6 +19,7 @@ set(TEST_HEADER_DIRS ${CMAKE_SOURCE_DIR}/src/buffer
   ${CMAKE_SOURCE_DIR}/src/streaming/partitioner
   ${CMAKE_SOURCE_DIR}/src/streaming/task
   ${CMAKE_SOURCE_DIR}/src/streaming/task/config
+  ${CMAKE_SOURCE_DIR}/src/streaming/task/mailbox
   ${CMAKE_SOURCE_DIR}/src/streaming/graph
   ${CMAKE_SOURCE_DIR}/src/runtime
   ${CMAKE_SOURCE_DIR}/src/core/config

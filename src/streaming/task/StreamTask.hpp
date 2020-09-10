@@ -16,6 +16,7 @@
 #include "AbstractInvokable.hpp"
 #include "StreamEdge.hpp"
 #include "StreamConfig.hpp"
+#include "MailboxProcessor.hpp"
 #include <memory>
 
 template <class OUT> class OperatorChain;
@@ -32,6 +33,7 @@ protected:
     std::shared_ptr<StreamOperator<OUT>>        m_head_operator;
     std::shared_ptr<OperatorChain<OUT>>         m_operator_chain;
     std::shared_ptr<StreamConfig>               m_configuration;
+    std::shared_ptr<MailboxProcessor>           m_mailbox_processor;
 public:
     // for test
     StreamTask() {};
@@ -45,6 +47,7 @@ public:
     void                                        before_invoke();
     void                                        request_partitions();
     void                                        invoke() override;
+    void                                        cancel() override;
 
     /* Util functions */
     std::shared_ptr<ResultWriter<OUT>>          create_result_writer(std::shared_ptr<StreamEdge<OUT>> edge, int output_idx, std::string task_name);
@@ -55,3 +58,16 @@ public:
     std::shared_ptr<ResultWriter<OUT>>          get_result_writer() {return m_result_writer;}
     std::string                                 get_name() {return this->get_environment()->get_task_info()->get_task_name_with_sub_tasks();}
 }; 
+
+template <class OUT>
+class StreamTaskDefaultMailboxAction: public MailboxDefaultAction {
+private:
+    std::shared_ptr<StreamTask<OUT>> m_stream_task;
+public:
+    StreamTaskDefaultMailboxAction(std::shared_ptr<StreamTask<OUT>> stream_task): m_stream_task(stream_task){}
+
+    void run_default_action() {
+        std::cout << "StreamTask process_input()" << std::endl;
+        // m_stream_task->process_input();
+    }
+};

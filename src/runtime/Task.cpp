@@ -68,6 +68,12 @@ void Task::start_task_thread() {
     std::cout << "[INFO] Task " << m_task_name_with_subtask << " begins to work" << std::endl;
     m_executing_thread = std::make_shared<std::thread>(&Task::run, this);
 
+    // m_executing_thread->join();
+}
+
+void Task::cancel_task() {
+    std::cout << "[INFO] cancel Task " << m_task_name_with_subtask << std::endl;
+    m_invokable->cancel();
     m_executing_thread->join();
 }
 

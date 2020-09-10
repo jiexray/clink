@@ -16,6 +16,7 @@
 #include "../../result/ResultPartitionFactory.hpp"
 #include "../../result/consumer/InputGateFactory.hpp"
 #include "../../core/config/Configuration.hpp"
+#include "MailboxProcessor.hpp"
 
 
 template class MapFunction<std::string, std::string>;
@@ -50,6 +51,14 @@ class MySinkFunction: public SinkFunction<std::string> {
     char* serialize() override {return (char*)this;}
 
     std::shared_ptr<SinkFunction<std::string>> deserialize() override { return std::make_shared<MySinkFunction>();}
+};
+
+
+class TestMailboxDefaultAction : public MailboxDefaultAction {
+public:
+    void run_default_action() override {
+        std::cout << "TestMailboxDefaultAction::run_default_action()" << std::endl;
+    }
 };
 
 
@@ -465,5 +474,21 @@ public:
         }
         
     } 
+
+    void testMailbox( void ) {
+        std::shared_ptr<TaskMailbox> mailbox = std::make_shared<TaskMailbox>(nullptr);
+        
+        std::shared_ptr<MailboxProcessor> mailbox_processor = std::make_shared<MailboxProcessor>(
+                                                                        std::make_shared<TestMailboxDefaultAction>(), 
+                                                                        mailbox);
+
+        int loop_time = 10;
+        for (int i = 0; i < loop_time; i++) {
+            mailbox_processor->run_mailbox_step();
+        }
+        mailbox_processor->all_actions_completed();
+        bool step_result = mailbox_processor->run_mailbox_step();
+        TS_ASSERT_EQUALS(step_result, false);
+    }
 };
 

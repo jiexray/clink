@@ -13,7 +13,6 @@ StreamTask<OUT>::StreamTask(std::shared_ptr<Environment> env): AbstractInvokable
     } else {
         std::cout << "[INFO] Task " << env->get_task_info()->get_task_name() << " do not have out edges" << std::endl;
     }
-
 }
 
 /**
@@ -44,6 +43,9 @@ void StreamTask<OUT>::process_input() {
 
 template<class OUT>
 void StreamTask<OUT>::before_invoke() {
+    this->m_mailbox_processor = std::make_shared<MailboxProcessor>(std::make_shared<StreamTaskDefaultMailboxAction<OUT>>(this->shared_from_this()), 
+                                                                    std::make_shared<TaskMailbox>(nullptr));
+
     init();
 
     // request partitions
@@ -63,8 +65,13 @@ template<class OUT>
 void StreamTask<OUT>::invoke() {
     before_invoke();
 
-    // TODO: start processing record
     std::cout << "[INFO] StreamTask " << get_name() << " start to process record" << std::endl;
+    m_mailbox_processor->run_mailbox_loop();
+}
+
+template <class OUT>
+void StreamTask<OUT>::cancel() {
+    m_mailbox_processor->all_actions_completed();
 }
 
 template class StreamTask<std::string>;

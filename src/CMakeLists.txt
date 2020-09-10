@@ -24,6 +24,10 @@ target_sources(streamrecord
     streamrecord/typeutils/TypeSerializerFactory.cpp
 )
 
+# ------------------------
+#   build streaming module
+# ------------------------
+
 target_sources(streaming
   PRIVATE
     streaming/task/OperatorChain.cpp
@@ -31,6 +35,8 @@ target_sources(streaming
     streaming/operators/SimpleStreamOperatorFactory.cpp
     streaming/io/StreamTaskNetworkInput.cpp
     streaming/task/config/StreamConfig.cpp
+    streaming/task/mailbox/TaskMailbox.cpp
+    streaming/task/mailbox/MailboxProcessor.cpp
     core/config/Configuration.cpp
 )
 target_include_directories(streaming PUBLIC
@@ -41,8 +47,10 @@ target_include_directories(streaming PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}/streaming/functions
   ${CMAKE_CURRENT_SOURCE_DIR}/streaming/partitioner
   ${CMAKE_CURRENT_SOURCE_DIR}/streaming/graph
+  ${CMAKE_CURRENT_SOURCE_DIR}/streaming/task/mailbox
   ${CMAKE_CURRENT_SOURCE_DIR}/core/config
   ${CMAKE_CURRENT_SOURCE_DIR}/core/common
+  ${CMAKE_CURRENT_SOURCE_DIR}/core/util
   ${CMAKE_CURRENT_SOURCE_DIR}/result
   ${CMAKE_CURRENT_SOURCE_DIR}/result/consumer
   ${CMAKE_CURRENT_SOURCE_DIR}/runtime

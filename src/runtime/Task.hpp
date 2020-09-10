@@ -59,6 +59,7 @@ public:
     void                                        run() {do_run();}
 
     void                                        start_task_thread();
+    void                                        cancel_task();
     
     static std::shared_ptr<AbstractInvokable>   load_and_instantiate_invokable(std::string class_name, std::shared_ptr<Environment> env);
 
