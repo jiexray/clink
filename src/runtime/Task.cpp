@@ -19,6 +19,7 @@ Task::Task(std::shared_ptr<JobInformation> job_information, std::shared_ptr<Task
     this->m_task_name_with_subtask  = m_task_info->get_task_name_with_sub_tasks();
     this->m_name_of_invokable_class = task_information->get_invokable_class_name();
     this->m_buffer_pool             = buffer_pool;
+    this->m_executing_thread        = nullptr;
 
     /* Initializer ResultPartition and InputGates */
     std::cout << "[Debug] start create result partitions and input gates" << std::endl;
@@ -49,6 +50,7 @@ void Task::do_run() {
     //   load Invokable (StreamTask)
     // -----------------------------------------
     this->m_invokable = load_and_instantiate_invokable(m_name_of_invokable_class, env);
+    std::cout << "[DEBUG] Task " << m_task_name_with_subtask << " loaded invokable " << m_name_of_invokable_class << std::endl;
 
     // -----------------------------------------
     //   actual task core work
@@ -68,12 +70,13 @@ void Task::start_task_thread() {
     std::cout << "[INFO] Task " << m_task_name_with_subtask << " begins to work" << std::endl;
     m_executing_thread = std::make_shared<std::thread>(&Task::run, this);
 
-    // m_executing_thread->join();
 }
 
 void Task::cancel_task() {
-    std::cout << "[INFO] cancel Task " << m_task_name_with_subtask << std::endl;
+    std::cout << "[DEBUG] Task " << m_task_name_with_subtask << " cancel_task()" << std::endl;
     m_invokable->cancel();
+    std::cout << "[DEBUG] Task " << m_task_name_with_subtask << " cancel_task() after stream task cancel" << std::endl;
+
     m_executing_thread->join();
 }
 

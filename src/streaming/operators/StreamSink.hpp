@@ -15,6 +15,7 @@ public:
     StreamSink(std::shared_ptr<SinkFunction<IN>> sink_function): AbstractUdfStreamOperator<Function, OUT>(sink_function){}
 
     void process_element(std::shared_ptr<StreamRecord<IN>> record) {
+        // std::cout << "[DEBUG] StreamSink::process_element()" << std::endl;
         (std::dynamic_pointer_cast<SinkFunction<IN>>(this->m_user_function))->invoke(*(record->get_value()));
     }
 

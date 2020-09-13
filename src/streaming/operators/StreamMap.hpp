@@ -28,7 +28,7 @@ public:
             std::cout << "[ERROR] Output is null in StreamMap" << std::endl;
             return;
         }
-        // this->m_output->collect(out_stream_record);
+        this->m_output->collect(out_stream_record);
     }
 
     // void setup(std::shared_ptr<StreamTask<OUT>> containingTask, std::shared_ptr<Output<OUT>> output) override {

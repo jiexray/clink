@@ -21,8 +21,6 @@ void TaskExecutor::submit_task(std::shared_ptr<TaskDeploymentDescriptor> tdd) {
     for (int i = 0; i < tdd->get_number_of_input_gates(); i++) {
         input_gates.push_back(tdd->get_input_gates()[i]);
     }
-    std::cout << "[DEBUG] result partitions " << tdd->get_number_of_result_partitions() << ", input gates " << tdd->get_number_of_input_gates() << std::endl;
-
     // create BufferPool
     // TODO: One Task has a Network BufferPool (BufferPoolFactory), each ResultPartition has a local BufferPool.
     int total_number_of_subpartitions = 0;
@@ -31,8 +29,6 @@ void TaskExecutor::submit_task(std::shared_ptr<TaskDeploymentDescriptor> tdd) {
         total_number_of_subpartitions += tdd->get_result_partitions()[i]->get_number_of_subpartitions();
     }
     std::shared_ptr<BufferPool> buffer_pool = std::make_shared<BufferPool>(total_number_of_subpartitions * 2, 256);
-
-    std::cout << "[DEBUG] total number of subpartitions " << total_number_of_subpartitions << std::endl;
 
     // create task
     std::shared_ptr<Task> task = std::make_shared<Task>(
@@ -49,24 +45,39 @@ void TaskExecutor::submit_task(std::shared_ptr<TaskDeploymentDescriptor> tdd) {
 
     // add task to TaskSlotTable
     bool task_added = m_task_slot_table->add_task(task);
+    std::cout << "[INFO] task " << task->get_task_info()->get_task_name_with_sub_tasks() << " is already submit successfully" << std::endl;
 
-    if (task_added) {
-        task->start_task_thread();
+    // if (task_added) {
+    //     task->start_task_thread();
 
-        std::cout << "[INFO] task " << task->get_task_info()->get_task_name_with_sub_tasks() << " is already submit successfully" << std::endl;
-    } else {
-        std::string message = "TaskManager already contains a task for id " + std::to_string(task->get_execution_id()) + ".";
-        std::cout << "[INFO] "  << message << std::endl;
-        throw std::runtime_error(message);
-    }    
+    //     std::cout << "[INFO] task " << task->get_task_info()->get_task_name_with_sub_tasks() << " is already submit successfully" << std::endl;
+    // } else {
+    //     std::string message = "TaskManager already contains a task for id " + std::to_string(task->get_execution_id()) + ".";
+    //     std::cout << "[INFO] "  << message << std::endl;
+    //     throw std::runtime_error(message);
+    // }    
 
+}
+
+void TaskExecutor::start_task(int execution_id) {
+    std::shared_ptr<Task> task = m_task_slot_table->get_task(execution_id);
+    if(task == nullptr) {
+        std::cout << "Cannot find task with execution_id " << execution_id << std::endl;
+        throw std::invalid_argument("Cannot find task with execution_id " + std::to_string(execution_id));
+    }
+    std::cout << "[INFO] start task " << task->get_task_info()->get_task_name_with_sub_tasks() << std::endl; 
+    task->start_task_thread();
 }
 
 
 void TaskExecutor::cancel_task(int execution_id) {
     std::shared_ptr<Task> task = m_task_slot_table->get_task(execution_id);
-    // TODO: Stop tast
+    if(task == nullptr) {
+        std::cout << "Cannot find task with execution_id " << execution_id << std::endl;
+        throw std::invalid_argument("Cannot find task with execution_id " + std::to_string(execution_id));
+    }
     std::cout << "[INFO] stop task " << task->get_task_info()->get_task_name_with_sub_tasks() << std::endl; 
+    task->cancel_task();
 }
 
 

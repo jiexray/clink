@@ -20,6 +20,7 @@ public:
 
     void        submit_task(std::shared_ptr<TaskDeploymentDescriptor> tdd);
 
+    void        start_task(int execution_id);
     void        cancel_task(int execution_id);
     
     void        allocate_slot(int slot_id, int job_id, int allocation_id);

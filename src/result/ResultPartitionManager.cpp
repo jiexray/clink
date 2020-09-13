@@ -37,8 +37,14 @@ std::shared_ptr<ResultSubpartitionView> ResultPartitionManager::create_subpartit
 
 
 std::shared_ptr<ResultPartition> ResultPartitionManager::get_result_partition (std::string partition_id) {
+    // std::cout << "[DEBUG] ResultPartitionManager::get_result_partition() registered partitions: " << m_registered_partitions.size() << std::endl;
+    // std::map<std::string, std::shared_ptr<ResultPartition>>::iterator it = m_registered_partitions.begin();
+    // while(it != m_registered_partitions.end()) {
+    //     std::cout << "[DEBUG] ResultPartitionManager::get_result_partition() partition id: " << it->first << std::endl;
+    //     it++; 
+    // }
     if (m_registered_partitions.find(partition_id) == m_registered_partitions.end()) {
-        throw std::invalid_argument("No partition with partition index [" + partition_id + "]");
+        throw std::invalid_argument("No partition with partition id [" + partition_id + "]");
     }
     return m_registered_partitions[partition_id];
 }

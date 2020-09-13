@@ -43,6 +43,8 @@ void SourceStreamTask<OUT>::process_input() {
     source_thread = std::make_shared<std::thread>(&SourceStreamTask::source_thread_run, this);
 
     source_thread->join();
+
+    this->cancel();
 }
 
 template <class OUT>

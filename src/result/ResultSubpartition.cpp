@@ -94,7 +94,20 @@ std::shared_ptr<BufferAndBacklog> ResultSubpartition::poll_buffer() {
  * from this subpartition.
  */
 std::shared_ptr<ResultSubpartitionView> ResultSubpartition::create_read_view(std::shared_ptr<SubpartitionAvailableListener> available_listener) {
+    std::unique_lock<std::mutex> buffers_lock(m_buffers_mtx);
+    bool is_notify;
     m_read_view = std::make_shared<ResultSubpartitionView>(shared_from_this(), available_listener);
+
+    is_notify = !m_buffers.empty();
+    buffers_lock.unlock();
+
+    // When creating the read view, we check the buffer queue. If there is something in the buffer queue, we 
+    // proacive flush. For it may wait for flushing.
+    if (is_notify) {
+        std::cout << "[DEBUG] notify_data_available when creating read view of result paritition in Task " << m_parent->get_owning_task_name() << std::endl;
+        notify_data_available();
+    }
+
     return m_read_view;
 }
 
@@ -159,6 +172,13 @@ int ResultSubpartition::get_buffers_in_backlog() {
  
 
 void ResultSubpartition::notify_data_available() {
-    m_read_view->notify_data_available();
+    // if (m_read_view == nullptr) {
+    //     std::string owner_name = this->m_parent->get_owning_task_name();
+    //     std::cout << "[INFO] Task " << owner_name << " has no registered downstream input channel, m_read_view is null" << std::endl;
+    //     throw std::runtime_error("no registered downstream input channel, m_read_view is null");
+    // }
+    if (m_read_view != nullptr) {
+        m_read_view->notify_data_available();
+    }
     // std::cout << "m_read_view->notify_data_available()" << std::endl;
 }

@@ -28,6 +28,7 @@ class StreamTask : public AbstractInvokable, public std::enable_shared_from_this
 {
 private:
     std::shared_ptr<ResultWriter<OUT>>          m_result_writer;
+    int volatile                                m_is_running;
 protected:
     std::shared_ptr<StreamInputProcessor>       m_input_processor;
     std::shared_ptr<StreamOperator<OUT>>        m_head_operator;
@@ -67,7 +68,7 @@ public:
     StreamTaskDefaultMailboxAction(std::shared_ptr<StreamTask<OUT>> stream_task): m_stream_task(stream_task){}
 
     void run_default_action() {
-        std::cout << "StreamTask process_input()" << std::endl;
-        // m_stream_task->process_input();
+        // std::cout << "StreamTask process_input()" << std::endl;
+        m_stream_task-> process_input();
     }
 };

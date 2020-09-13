@@ -6,6 +6,8 @@
  */
 #pragma once
 #include <map>
+#include <algorithm>
+#include <iterator>
 #include <string>
 #include "ResultPartition.hpp"
 #include "ResultSubpartition.hpp"

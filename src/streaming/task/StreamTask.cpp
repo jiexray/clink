@@ -5,6 +5,7 @@
  */
 template <class OUT>
 StreamTask<OUT>::StreamTask(std::shared_ptr<Environment> env): AbstractInvokable(env) {
+    m_is_running = true;
     m_configuration = std::make_shared<StreamConfig>(env->get_task_configuration());
     std::shared_ptr<StreamEdge<OUT>> edge = m_configuration->get_out_edge<OUT>();
 
@@ -57,7 +58,6 @@ void StreamTask<OUT>::request_partitions() {
     std::shared_ptr<InputGate> input_gate = get_environment()->get_input_gate(0);
     if (input_gate != nullptr) {
         input_gate->request_partitions();
-        std::cout << "[INFO] StreamTask " << get_name() << " finish requesting partitions" << std::endl;
     }
 }
 
@@ -71,6 +71,12 @@ void StreamTask<OUT>::invoke() {
 
 template <class OUT>
 void StreamTask<OUT>::cancel() {
+    std::cout << "StreamTask<OUT>::cancel()" << std::endl; 
+    m_is_running = false;
+    if (m_mailbox_processor == nullptr) {
+        throw std::runtime_error("mailbox processor is null");
+    }
+    std::cout << "stop mailbox processor" << std::endl; 
     m_mailbox_processor->all_actions_completed();
 }
 

@@ -43,6 +43,10 @@ public:
 
 inline std::shared_ptr<InputGate>* LocalShuffleEnvironment::create_input_gates(std::string owner_name, InputGateDeploymentDescriptorList & input_gate_descriptors) {
     int number_of_input_gates = (int)input_gate_descriptors.size();
+    if (number_of_input_gates == 0) {
+        std::cout << "[DEBUG] Task " << owner_name << " do not have input gates" << std::endl;
+        return nullptr;
+    }
     std::shared_ptr<InputGate>* input_gates = new std::shared_ptr<InputGate>[number_of_input_gates];
 
     for (size_t i = 0; i < input_gate_descriptors.size(); i++) {
@@ -55,8 +59,11 @@ inline std::shared_ptr<InputGate>* LocalShuffleEnvironment::create_input_gates(s
 inline std::shared_ptr<ResultPartition>* LocalShuffleEnvironment::create_result_partitions(std::string owner_name, 
                                                                 ResultPartitionDeploymentDescriptorList  result_partition_descriptors,
                                                                 std::shared_ptr<BufferPool> buffer_pool) {
-    std::cout << "LocalShuffleEnvironment::create_result_partitions() task name " << owner_name << ", result partition count " << result_partition_descriptors.size() << std::endl;
     int number_of_result_partitions = (int)result_partition_descriptors.size();
+    if (number_of_result_partitions == 0) {
+        std::cout << "[DEBUG] Task " << owner_name << " do not have result partitions" << std::endl;
+        return nullptr;
+    }
     std::shared_ptr<ResultPartition>* result_partitions = new std::shared_ptr<ResultPartition>[number_of_result_partitions];
 
     for (size_t i = 0; i < result_partition_descriptors.size(); i++) {
