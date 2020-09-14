@@ -36,7 +36,7 @@ void bufferPoolBlockingRequestAndRecycle(std::shared_ptr<BufferPool> bufferPool,
         std::shared_ptr<BufferBuilder> bufferBuilder = bufferPool->request_buffer_builder_blocking();
         std::this_thread::sleep_for(std::chrono::milliseconds(rand() % 100));
         if (bufferBuilder != nullptr) {
-            // std::cout << "Thread: [" << tid << "] recycle a buffer" << std::endl;
+            std::cout << "Thread: [" << tid << "] recycle a buffer" << std::endl;
             bufferPool->recycle(bufferBuilder);
             // wait for next request
             std::this_thread::sleep_for(std::chrono::milliseconds(rand() % 100 + 100));
@@ -171,7 +171,6 @@ public:
     }
 
     void testBufferPoolMultithreadRequestAndRecycle( void ) {
-        TS_SKIP("Skip non blocking bufferpool request and recycle");
         std::shared_ptr<BufferPool> bufferPool = std::make_shared<BufferPool>(1, 100);
 
         std::thread t1(bufferPoolRequestAndRecycle, bufferPool), t2(bufferPoolRequestAndRecycle, bufferPool), t3(bufferPoolRequestAndRecycle, bufferPool);
@@ -182,7 +181,6 @@ public:
     }
 
     void testBufferPoolBlockingRequestAndRecycle( void ) {
-        TS_SKIP("Skip blocking bufferpool request and recycle");
         std::shared_ptr<BufferPool> bufferPool = std::make_shared<BufferPool>(1, 100);
 
         std::thread t1(bufferPoolBlockingRequestAndRecycle, bufferPool, 1),
@@ -218,8 +216,10 @@ public:
         BufferBuilder* bufferBuilder = new BufferBuilder(buffer);
 
         char data[10] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
-        TS_ASSERT_THROWS_NOTHING(bufferBuilder->append(data, 0, 1));
-        TS_ASSERT_THROWS(bufferBuilder->append(data, 0, 2), std::invalid_argument);
+        int ret = bufferBuilder->append(data, 0, 1);
+        TS_ASSERT_EQUALS(ret, 1)
+        ret = bufferBuilder->append(data, 0, 2);
+        TS_ASSERT_EQUALS(ret, 0);
     }
 };
 

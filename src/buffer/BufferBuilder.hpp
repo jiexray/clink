@@ -12,21 +12,19 @@
 #include <memory>
 #include <stdexcept>
 #include <algorithm>
+#include <atomic>
 
 class BufferBuilder
 {
 private:
     Buffer*                         m_buffer;
-    // TODO: the writer marker should be a atomic value, both builder and consumer from two different threads 
-    //       may get access to this value.
-    int*                            m_write_position_marker_ptr;
+    std::atomic_int*                m_write_position_marker_ptr;
 
 public:
     BufferBuilder(Buffer* buffer);
     ~BufferBuilder() {}
 
     /* Properties */
-    int                             get_write_position() {return *m_write_position_marker_ptr;}
     Buffer*                         get_buffer() {return m_buffer;}
     bool                            is_full() {return m_buffer->get_max_capacity() == *m_write_position_marker_ptr;}
 
@@ -37,14 +35,19 @@ public:
     /* create / delelte buffer consumer */
     std::shared_ptr<BufferConsumer> create_buffer_consumer();
     void                            recycle_buffer_consumer();
+
+    /* manipulate write_position_marker */
+    int                             get_write_position() {return *m_write_position_marker_ptr;}
+    void                            move_write_position(int offset) {(*m_write_position_marker_ptr) += offset;}
 };
 
 
 inline BufferBuilder::BufferBuilder(Buffer* buffer):
-m_buffer(buffer) {m_write_position_marker_ptr = new int{0};}
+m_buffer(buffer) {m_write_position_marker_ptr = new std::atomic_int{0};}
 
 inline int BufferBuilder::append(const char* const source, int offset, int length) {
     int buffer_capacity = m_buffer->get_max_capacity();
+    // NOTE: this get and set of writer_marker is ok, for the writer marker is only modified in this file.
     int available = buffer_capacity - *m_write_position_marker_ptr;
     int to_copy = std::min(available, length);
 
@@ -74,7 +77,6 @@ inline int BufferBuilder::append(const char* const source, int offset, int lengt
 
 inline std::shared_ptr<BufferConsumer> BufferBuilder::create_buffer_consumer() {
     return std::make_shared<BufferConsumer>(m_buffer, m_write_position_marker_ptr, 0);
-    // return std::make_shared<BufferConsumer>(m_buffer, m_write_position_marker, 0);
 }
 
 

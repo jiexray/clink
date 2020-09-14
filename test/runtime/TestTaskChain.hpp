@@ -203,9 +203,9 @@ public:
          * Create StreamTask, start partition_request
          */
         task_exeuctor->start_task(102);
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+        // std::this_thread::sleep_for(std::chrono::seconds(1));
         task_exeuctor->start_task(103);
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+        // std::this_thread::sleep_for(std::chrono::seconds(1));
         task_exeuctor->start_task(104);
 
         std::this_thread::sleep_for(std::chrono::seconds(5));
