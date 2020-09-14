@@ -3,6 +3,7 @@ cmake_minimum_required (VERSION 3.13)
 
 set(CMAKE_PREFIX_PATH ${CMAKE_SOURCE_DIR}/deps/cxxtest-4.4)
 find_package(CxxTest REQUIRED)
+# set(CXXTEST_TESTGEN_ARGS "--error-printer --no-eh")
 
 # all include files
 set(TEST_HEADER_DIRS ${CMAKE_SOURCE_DIR}/src/buffer
@@ -27,6 +28,7 @@ set(TEST_HEADER_DIRS ${CMAKE_SOURCE_DIR}/src/buffer
   ${CMAKE_SOURCE_DIR}/src/runtime/executiongraph
   ${CMAKE_SOURCE_DIR}/src/runtime/shuffle
   ${CMAKE_SOURCE_DIR}/src/runtime/taskexecutor
+  ${CMAKE_SOURCE_DIR}/deps/spdlog/include
   )
 
 if(CXXTEST_FOUND)
@@ -57,4 +59,7 @@ if(CXXTEST_FOUND)
   CXXTEST_ADD_TEST(unitest_runtime_task runtime_task_test.cpp ${CMAKE_CURRENT_SOURCE_DIR}/runtime/TestTask.hpp)
   target_link_libraries(unitest_runtime_task runtime streaming result streamrecord)
 
+  # runtime task-chain test
+  CXXTEST_ADD_TEST(unitest_runtime_task_chain runtime_task_chain_test.cpp ${CMAKE_CURRENT_SOURCE_DIR}/runtime/TestTaskChain.hpp)
+  target_link_libraries(unitest_runtime_task_chain runtime streaming result streamrecord)
 endif()

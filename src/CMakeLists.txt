@@ -1,6 +1,53 @@
 # src cmake file
 cmake_minimum_required (VERSION 3.13)
 
+# all include files
+set(ALL_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/src/buffer
+  ${CMAKE_SOURCE_DIR}/src/result 
+  ${CMAKE_SOURCE_DIR}/src/result/consumer
+  ${CMAKE_SOURCE_DIR}/src/deployment
+  ${CMAKE_SOURCE_DIR}/src/streaming/partitioner
+  ${CMAKE_SOURCE_DIR}/src/streamrecord
+  ${CMAKE_SOURCE_DIR}/src/streamrecord/types
+  ${CMAKE_SOURCE_DIR}/src/streamrecord/typeutils
+  ${CMAKE_SOURCE_DIR}/src/streaming/functions
+  ${CMAKE_SOURCE_DIR}/src/streaming/io
+  ${CMAKE_SOURCE_DIR}/src/streaming/operators
+  ${CMAKE_SOURCE_DIR}/src/streaming/partitioner
+  ${CMAKE_SOURCE_DIR}/src/streaming/task
+  ${CMAKE_SOURCE_DIR}/src/streaming/task/config
+  ${CMAKE_SOURCE_DIR}/src/streaming/task/mailbox
+  ${CMAKE_SOURCE_DIR}/src/streaming/graph
+  ${CMAKE_SOURCE_DIR}/src/runtime
+  ${CMAKE_SOURCE_DIR}/src/core/config
+  ${CMAKE_SOURCE_DIR}/src/core/common
+  ${CMAKE_SOURCE_DIR}/src/runtime/executiongraph
+  ${CMAKE_SOURCE_DIR}/src/runtime/shuffle
+  ${CMAKE_SOURCE_DIR}/src/runtime/taskexecutor
+  )
+
+target_sources(core
+  PRIVATE
+    core/config/Configuration.cpp
+    core/config/Constant.cpp
+)
+target_include_directories(core PUBLIC
+  ${CMAKE_CURRENT_SOURCE_DIR}/streaming/task
+  ${CMAKE_CURRENT_SOURCE_DIR}/streaming/task/config
+  ${CMAKE_CURRENT_SOURCE_DIR}/streaming/operators
+  ${CMAKE_CURRENT_SOURCE_DIR}/streaming/io
+  ${CMAKE_CURRENT_SOURCE_DIR}/streaming/functions
+  ${CMAKE_CURRENT_SOURCE_DIR}/streaming/partitioner
+  ${CMAKE_CURRENT_SOURCE_DIR}/streaming/graph
+  ${CMAKE_CURRENT_SOURCE_DIR}/streaming/task/mailbox
+  ${CMAKE_CURRENT_SOURCE_DIR}/core/config
+  ${CMAKE_CURRENT_SOURCE_DIR}/core/common
+  ${CMAKE_CURRENT_SOURCE_DIR}/result
+  ${CMAKE_CURRENT_SOURCE_DIR}/result/consumer
+  ${CMAKE_CURRENT_SOURCE_DIR}/core/util
+  ${CMAKE_CURRENT_SOURCE_DIR}/runtime
+)
+
 target_sources(result
   PRIVATE
     result/ResultPartition.cpp
@@ -23,6 +70,10 @@ target_sources(streamrecord
     streamrecord/typeutils/TypeDeserializer.cpp
     streamrecord/typeutils/TypeSerializerFactory.cpp
 )
+target_include_directories(streamrecord PUBLIC
+  ${CMAKE_CURRENT_SOURCE_DIR}/core/config
+)
+target_link_libraries(streamrecord core)
 
 # ------------------------
 #   build streaming module
@@ -37,7 +88,6 @@ target_sources(streaming
     streaming/task/config/StreamConfig.cpp
     streaming/task/mailbox/TaskMailbox.cpp
     streaming/task/mailbox/MailboxProcessor.cpp
-    core/config/Configuration.cpp
 )
 target_include_directories(streaming PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}/streaming/task
@@ -56,16 +106,21 @@ target_include_directories(streaming PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}/runtime
 )
 
-target_link_libraries(streaming streamrecord result pthread)
+target_link_libraries(streaming streamrecord result pthread core)
 
 # ------------------------
 #   build runtime module
 # ------------------------
+# set(SPDLOG_DIR /home/tian/software/vscode/projects/clink/deps/spdlog/build)
+
+find_package(spdlog REQUIRED)
+
 target_sources(runtime 
   PRIVATE
     runtime/Task.cpp
     runtime/taskexecutor/TaskSlotTable.cpp
     runtime/taskexecutor/TaskExecutor.cpp
+    runtime/shuffle/ShuffleEnvironment.cpp
 )
 target_include_directories(runtime PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}/core/common
@@ -77,7 +132,7 @@ target_include_directories(runtime PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}/deployment
 )
 
-target_link_libraries(runtime streaming pthread result streamrecord)
+target_link_libraries(runtime streaming pthread result streamrecord spdlog::spdlog)
 
 
 

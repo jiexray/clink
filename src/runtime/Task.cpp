@@ -1,5 +1,9 @@
 #include "Task.hpp"
 
+std::shared_ptr<spdlog::logger>  Task::m_logger = spdlog::get("Task") == nullptr ? 
+                                                        spdlog::basic_logger_mt("Task", Constant::get_log_file_name()) :
+                                                        spdlog::get("Task");
+
 Task::Task(std::shared_ptr<JobInformation> job_information, std::shared_ptr<TaskInformation> task_information,
         int execution_id, int allocation_id, int subtask_idx, 
         ResultPartitionDeploymentDescriptorList & result_partition_descriptors,
@@ -22,14 +26,14 @@ Task::Task(std::shared_ptr<JobInformation> job_information, std::shared_ptr<Task
     this->m_executing_thread        = nullptr;
 
     /* Initializer ResultPartition and InputGates */
-    std::cout << "[Debug] start create result partitions and input gates" << std::endl;
     this->m_number_of_result_partitions     = (int) result_partition_descriptors.size();
     this->m_result_partitions               = shuffle_environment->create_result_partitions(m_task_name_with_subtask, result_partition_descriptors, m_buffer_pool);
-    std::cout << "[Debug] finish create result partitions" << std::endl;
 
     this->m_number_of_input_gates           = (int) input_gate_descriptors.size();
     this->m_input_gates                     = shuffle_environment->create_input_gates(m_task_name_with_subtask, input_gate_descriptors);
-    std::cout << "[Debug] finish create input gates" << std::endl;
+
+    spdlog::set_pattern(Constant::SPDLOG_PATTERN);
+    spdlog::set_level(Constant::SPDLOG_LEVEL);
 }
 
 /**
@@ -39,6 +43,7 @@ void Task::do_run() {
     // -----------------------------------------
     //   setup result partitions and input gates
     // -----------------------------------------
+    SPDLOG_LOGGER_INFO(m_logger, "Task {} start running", m_task_name_with_subtask);
 
     // -----------------------------------------
     //   initialize Environment
@@ -50,7 +55,7 @@ void Task::do_run() {
     //   load Invokable (StreamTask)
     // -----------------------------------------
     this->m_invokable = load_and_instantiate_invokable(m_name_of_invokable_class, env);
-    std::cout << "[DEBUG] Task " << m_task_name_with_subtask << " loaded invokable " << m_name_of_invokable_class << std::endl;
+    SPDLOG_LOGGER_DEBUG(m_logger, "Task {} loaded invokable {}", m_task_name_with_subtask, m_name_of_invokable_class);
 
     // -----------------------------------------
     //   actual task core work
@@ -61,21 +66,19 @@ void Task::do_run() {
     // -----------------------------------------
     //   finialize of a successful execution
     // -----------------------------------------
-    // TODO
-    std::cout << "[INFO] finish task " << m_task_name_with_subtask << std::endl;
+    SPDLOG_LOGGER_INFO(m_logger, "Finish task {}", m_task_name_with_subtask);
 }
 
 
 void Task::start_task_thread() {
-    std::cout << "[INFO] Task " << m_task_name_with_subtask << " begins to work" << std::endl;
+    SPDLOG_LOGGER_INFO(m_logger, "Task {} begins to work", m_task_name_with_subtask);
     m_executing_thread = std::make_shared<std::thread>(&Task::run, this);
 
 }
 
 void Task::cancel_task() {
-    std::cout << "[DEBUG] Task " << m_task_name_with_subtask << " cancel_task()" << std::endl;
+    SPDLOG_LOGGER_INFO(m_logger, "Task {} cancel task", m_task_name_with_subtask);
     m_invokable->cancel();
-    std::cout << "[DEBUG] Task " << m_task_name_with_subtask << " cancel_task() after stream task cancel" << std::endl;
 
     m_executing_thread->join();
 }

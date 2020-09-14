@@ -8,7 +8,8 @@
                 "/home/tian/software/vscode/projects/clink/src/**",
                 "/home/tian/software/vscode/projects/clink/src/result",
                 "/home/tian/software/vscode/projects/clink/src/result/consumer",
-                "/home/tian/software/vscode/projects/clink/src/deployment"
+                "/home/tian/software/vscode/projects/clink/src/deployment",
+                "/home/tian/software/vscode/projects/clink/deps/spdlog/include"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",

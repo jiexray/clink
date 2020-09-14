@@ -1,4 +1,7 @@
 #include "ResultPartitionManager.hpp"
+std::shared_ptr<spdlog::logger> ResultPartitionManager::m_logger = spdlog::get("ResultPartitionManager") == nullptr ?
+                                                                    spdlog::basic_logger_mt("ResultPartitionManager", Constant::get_log_file_name()):
+                                                                    spdlog::get("ResultPartitionManager");
 
 /**
  * Register a partition to the map m_registered_partitions. The registration may come from multiple threads,
@@ -19,7 +22,7 @@ void ResultPartitionManager::register_result_partition(std::shared_ptr<ResultPar
  */ 
 std::shared_ptr<ResultSubpartitionView> ResultPartitionManager::create_subpartition_view(std::string partition_id, int subpartition_idx, 
                                                         std::shared_ptr<SubpartitionAvailableListener> available_listener) {
-    std::cout << "[DEBUG] create subpartition view partition_id " << partition_id << " subpartition_idx " << subpartition_idx << std::endl;
+    SPDLOG_LOGGER_INFO(m_logger, "create subpartition view partition_id {} subpartition_id {}", partition_id, subpartition_idx);
     std::shared_ptr<ResultPartition> partition = get_result_partition(partition_id);
     if (partition == nullptr) {
         throw std::invalid_argument("Result partition [" + partition_id + "] does not exist.");

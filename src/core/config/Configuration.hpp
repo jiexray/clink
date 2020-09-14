@@ -3,6 +3,7 @@
  * This class can have two implementations, for task configuration and job configuration.
  */
 #pragma once
+
 #include <map>
 #include <string>
 #include <memory>
@@ -16,6 +17,7 @@
 #include "../../streaming/operators/StreamSink.hpp"
 #include <cstring>
 
+
 template <class T> class StreamEdge;
 template <class IN, class OUT> class OneInputStreamOperator;
 template <class OUT> class StreamOperatorFactory;
@@ -26,6 +28,8 @@ private:
     std::map<std::string, char*>                m_conf_data;
 
 public:
+    
+
     template <class T>
     void                                        set_value(std::string key, std::shared_ptr<T> value);
     template <class T>

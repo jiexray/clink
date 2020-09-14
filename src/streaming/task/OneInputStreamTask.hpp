@@ -30,7 +30,8 @@ void OneInputStreamTask<IN, OUT>::init() {
 
     int number_of_inputs = this->m_configuration->get_number_of_inputs();
 
-    std::cout << "[DEBUG] OneInputStreamTask<IN, OUT>::init() after get number_of_inputs: " << number_of_inputs << std::endl;
+    // std::cout << "[DEBUG] OneInputStreamTask<IN, OUT>::init() after get number_of_inputs: " << number_of_inputs << std::endl;
+    SPDLOG_LOGGER_DEBUG(this->m_logger, "OneInputStreamTask<IN, OUT>::init() after get number_of_inputs: {}", number_of_inputs);
 
     if (number_of_inputs > 0) {
         // currently, we only support one InputGate per StreamTask

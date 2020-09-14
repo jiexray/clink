@@ -1,4 +1,7 @@
 #include "TypeDeserializer.hpp"
+std::shared_ptr<spdlog::logger> TypeDeserializer::m_logger = spdlog::get("TypeDeserializer") == nullptr ?
+                                                                spdlog::basic_logger_mt("TypeDeserializer", Constant::get_log_file_name()):
+                                                                spdlog::get("TypeDeserializer");
 
 
 void TypeDeserializer::set_next_buffer(BufferBase* buffer) {
@@ -124,7 +127,7 @@ double TypeDeserializer::read_double() {
 void TypeDeserializer::evict_used_buffer(bool is_finish_read) {
     if (m_last_buffers.empty()) {
         // TODO: add logging 
-        std::cout << "[INFO] TypeDeserializer::evict_used_buffer(): useless buffer evict" << std::endl;
+        SPDLOG_LOGGER_DEBUG(m_logger, "evict_used_buffer(): useless buffer evict");
         return;
     }
     BufferBase* first_buf = m_last_buffers.front();
@@ -149,8 +152,7 @@ void TypeDeserializer::evict_used_buffer(bool is_finish_read) {
 
 void TypeDeserializer::check_end_with_one_byte() {
     if ((int)m_last_buffers.size() == 0) {
-        // TODO: add logging
-        std::cout << "[INFO] TypeDeserializer::check_end_with_one_byte(): useless buffer evict" << std::endl;
+        SPDLOG_LOGGER_DEBUG(m_logger, "check_end_with_one_byte(): useless buffer evict");
         return;
     }
     BufferBase* first_buf = m_last_buffers.front();

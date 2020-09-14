@@ -7,9 +7,12 @@
 #include "../types/IOReadableWritable.hpp"
 #include "../StreamRecord.hpp"
 #include "SerializeUtils.hpp"
+#include "Constant.hpp"
 #include <iostream>
 #include <memory>
 #include <deque>
+#include <spdlog/spdlog.h>
+#include <spdlog/sinks/basic_file_sink.h>
 
 class IOReadableWritable;
 
@@ -22,12 +25,15 @@ private:
 
     int                                         m_position;
     int                                         m_remaining;
+    static std::shared_ptr<spdlog::logger>      m_logger;
              
 public:
     TypeDeserializer() {
         m_record_size = -1; // no record at the creation of deserializer.
         m_position = -1;
         m_remaining = 0;
+        spdlog::set_pattern(Constant::SPDLOG_PATTERN);
+        spdlog::set_level(Constant::SPDLOG_LEVEL);
     }
     void                                        set_next_buffer(BufferBase* buffer);
     DeserializationResult                       get_next_record(std::shared_ptr<IOReadableWritable> target);

@@ -1,5 +1,9 @@
 #include "MailboxProcessor.hpp"
 
+std::shared_ptr<spdlog::logger>  MailboxProcessor::m_logger = spdlog::get("MailboxProcessor") == nullptr ?
+                                                                spdlog::basic_logger_mt("MailboxProcessor", Constant::get_log_file_name()):
+                                                                spdlog::get("MailboxProcessor");
+
 void MailboxProcessor::run_mailbox_loop() {
     while(run_mailbox_step()){}
 }
@@ -17,7 +21,7 @@ bool MailboxProcessor::process_mail() {
     std::shared_ptr<Mail> maybe_mail = m_mailbox->try_take();
 
     if (maybe_mail != nullptr) {
-        std::cout << "[DEBUG] get a mail " << maybe_mail->to_string() << std::endl;
+        SPDLOG_LOGGER_DEBUG(m_logger, "get a mail {}", maybe_mail->to_string());
         maybe_mail->run();
     }
 

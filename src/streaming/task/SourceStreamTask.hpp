@@ -39,7 +39,7 @@ void SourceStreamTask<OUT>::init() {
 
 template <class OUT>
 void SourceStreamTask<OUT>::process_input() {
-    std::cout  << "SourceStreamTask<OUT>::process_input()" << std::endl;
+    SPDLOG_LOGGER_DEBUG(this->m_logger, "Task {} start to process streaming input", this->get_name());
     source_thread = std::make_shared<std::thread>(&SourceStreamTask::source_thread_run, this);
 
     source_thread->join();

@@ -17,11 +17,17 @@
 #include "StreamEdge.hpp"
 #include "StreamConfig.hpp"
 #include "MailboxProcessor.hpp"
+#include "Constant.hpp"
 #include <memory>
+#include <unistd.h>
+
+#include <spdlog/spdlog.h>
+#include <spdlog/sinks/basic_file_sink.h>
 
 template <class OUT> class OperatorChain;
 template <class OUT> class StreamEdge;
 class StreamConfig;
+
 
 template <class OUT>
 class StreamTask : public AbstractInvokable, public std::enable_shared_from_this<StreamTask<OUT>>
@@ -35,6 +41,7 @@ protected:
     std::shared_ptr<OperatorChain<OUT>>         m_operator_chain;
     std::shared_ptr<StreamConfig>               m_configuration;
     std::shared_ptr<MailboxProcessor>           m_mailbox_processor;
+    static std::shared_ptr<spdlog::logger>      m_logger;
 public:
     // for test
     StreamTask() {};

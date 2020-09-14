@@ -1,8 +1,13 @@
 #include "ResultSubpartition.hpp"
+std::shared_ptr<spdlog::logger> ResultSubpartition::m_logger = spdlog::get("ResultSubpartition") == nullptr ?
+                                                            spdlog::basic_logger_mt("ResultSubpartition", Constant::get_log_file_name()):
+                                                            spdlog::get("ResultSubpartition");
 
 ResultSubpartition::ResultSubpartition(int index, std::shared_ptr<ResultPartition> parent):
 m_parent(parent){
     m_subpartition_info = std::make_shared<ResultSubpartitionInfo>(parent->get_partition_idx(), index);
+    spdlog::set_pattern(Constant::SPDLOG_PATTERN);
+    spdlog::set_level(Constant::SPDLOG_LEVEL);
 }
 
 /**
@@ -104,7 +109,7 @@ std::shared_ptr<ResultSubpartitionView> ResultSubpartition::create_read_view(std
     // When creating the read view, we check the buffer queue. If there is something in the buffer queue, we 
     // proacive flush. For it may wait for flushing.
     if (is_notify) {
-        std::cout << "[DEBUG] notify_data_available when creating read view of result paritition in Task " << m_parent->get_owning_task_name() << std::endl;
+        SPDLOG_LOGGER_DEBUG(m_logger, "notify_data_available when creating read view of result paritition in Task {}", m_parent->get_owning_task_name());
         notify_data_available();
     }
 

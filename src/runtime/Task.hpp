@@ -12,14 +12,19 @@
 #include "InputGateDeploymentDescriptor.hpp"
 #include "shuffle/ShuffleEnvironment.hpp"
 #include "RuntimeEnvironment.hpp"
+#include "Constant.hpp"
 
 #include "OneInputStreamTask.hpp"
 #include "SourceStreamTask.hpp"
+
+#include <spdlog/spdlog.h>
+#include <spdlog/sinks/basic_file_sink.h>
 
 #include <memory>
 #include <string>
 #include <thread>
 #include <vector>
+#include <unistd.h>
 
 class Task
 {
@@ -47,6 +52,10 @@ private:
 
     typedef std::vector<std::shared_ptr<ResultPartitionDeploymentDescriptor>> ResultPartitionDeploymentDescriptorList;
     typedef std::vector<std::shared_ptr<InputGateDeploymentDescriptor>> InputGateDeploymentDescriptorList;
+
+    // logger for local thread
+    static std::shared_ptr<spdlog::logger>     m_logger;
+
 public:
     Task(std::shared_ptr<JobInformation> job_information, std::shared_ptr<TaskInformation> task_information,
             int execution_id, int allocation_id, int subtask_idx, 
@@ -68,6 +77,7 @@ public:
     int                                         get_execution_id() {return m_execution_id;}
     int                                         get_allocation_id() {return m_allocation_id;}
     std::shared_ptr<TaskInfo>                   get_task_info() {return m_task_info;}
+    void                                        set_logger(std::shared_ptr<spdlog::logger> logger) {m_logger = logger;}
 };
 
 

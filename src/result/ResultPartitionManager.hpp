@@ -9,6 +9,8 @@
 #include <algorithm>
 #include <iterator>
 #include <string>
+#include <spdlog/spdlog.h>
+#include <spdlog/sinks/basic_file_sink.h>
 #include "ResultPartition.hpp"
 #include "ResultSubpartition.hpp"
 #include "SubpartitionAvailableListener.hpp"
@@ -20,8 +22,12 @@ class ResultPartitionManager
 {
 private:
     std::map<std::string, std::shared_ptr<ResultPartition>> m_registered_partitions; // TODO: need synchronize!
+    static std::shared_ptr<spdlog::logger>                  m_logger;
 public:
-    ResultPartitionManager(/* args */) {};
+    ResultPartitionManager(/* args */) {
+        spdlog::set_pattern(Constant::SPDLOG_PATTERN);
+        spdlog::set_level(Constant::SPDLOG_LEVEL);
+    };
     ~ResultPartitionManager() {};
 
     // NOTE: (9.9) register result partition with result_partition_id, not partition_idx

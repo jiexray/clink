@@ -8,8 +8,11 @@
 #pragma once
 #include "TaskMailbox.hpp"
 #include "MailboxExecutor.hpp"
+#include "Constant.hpp"
 #include <iostream>
 #include <memory>
+#include <spdlog/spdlog.h>
+#include <spdlog/sinks/basic_file_sink.h>
 
 class MailboxDefaultAction {
 public:
@@ -30,12 +33,16 @@ private:
     std::shared_ptr<MailboxExecutor>        m_mailbox_executor;
     
     bool                                    m_mailbox_loop_running;
+
+    static std::shared_ptr<spdlog::logger>  m_logger;
 public:
     MailboxProcessor(std::shared_ptr<MailboxDefaultAction> mailbox_default_action, std::shared_ptr<TaskMailbox> mailbox):
     m_mailbox(mailbox),
     m_mailbox_default_action(mailbox_default_action),
     m_mailbox_loop_running(true) {
         m_mailbox_executor = std::make_shared<MailboxExecutor>(mailbox);
+        spdlog::set_pattern(Constant::SPDLOG_PATTERN);
+        spdlog::set_level(Constant::SPDLOG_LEVEL);
     }
 
     /* Runs the mailbox processing loop. This is where the main work is done. */

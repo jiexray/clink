@@ -12,11 +12,14 @@
 #include "../buffer/BufferConsumer.hpp"
 #include "../buffer/BufferBase.hpp"
 #include "SubpartitionAvailableListener.hpp"
+#include "Constant.hpp"
 #include <memory>
 #include <vector>
 #include <deque>
 #include <mutex>
 #include <algorithm>
+#include <spdlog/spdlog.h>
+#include <spdlog/sinks/basic_file_sink.h>
 
 class ResultPartition;
 class ResultSubpartitionView;
@@ -51,6 +54,8 @@ private:
 
     bool                                                    m_flush_requested; // Mark the start of a notification, can only be trigger to true
                                                                                // by calling flush()
+
+    static std::shared_ptr<spdlog::logger>                  m_logger;
 
     void                                                    notify_data_available();
 public:

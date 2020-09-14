@@ -1,5 +1,9 @@
 #include "TaskExecutor.hpp"
 
+std::shared_ptr<spdlog::logger> TaskExecutor::m_logger = spdlog::get("TaskExecutor") == nullptr ? 
+                                                        spdlog::basic_logger_mt("TaskExecutor", Constant::get_log_file_name()):
+                                                        spdlog::get("TaskExecutor");
+
 void TaskExecutor::submit_task(std::shared_ptr<TaskDeploymentDescriptor> tdd) {
     // active task slot
     int job_id = tdd->get_job_id();
@@ -41,11 +45,13 @@ void TaskExecutor::submit_task(std::shared_ptr<TaskDeploymentDescriptor> tdd) {
                                                         input_gates,
                                                         m_shuffle_environment,
                                                         buffer_pool);
-    std::cout << "[INFO] receive task " << task->get_task_info()->get_task_name_with_sub_tasks() << std::endl;
+    // m_logger->info("Receive Task {}", task->get_task_info()->get_task_name_with_sub_tasks());
+    SPDLOG_LOGGER_INFO(m_logger, "Receive Task {}", task->get_task_info()->get_task_name_with_sub_tasks());
 
     // add task to TaskSlotTable
     bool task_added = m_task_slot_table->add_task(task);
-    std::cout << "[INFO] task " << task->get_task_info()->get_task_name_with_sub_tasks() << " is already submit successfully" << std::endl;
+    // m_logger->info("Task {} is already submit successfully", task->get_task_info()->get_task_name_with_sub_tasks());
+    SPDLOG_LOGGER_INFO(m_logger, "Task {} is already submit successfully", task->get_task_info()->get_task_name_with_sub_tasks());
 
     // if (task_added) {
     //     task->start_task_thread();
@@ -62,10 +68,10 @@ void TaskExecutor::submit_task(std::shared_ptr<TaskDeploymentDescriptor> tdd) {
 void TaskExecutor::start_task(int execution_id) {
     std::shared_ptr<Task> task = m_task_slot_table->get_task(execution_id);
     if(task == nullptr) {
-        std::cout << "Cannot find task with execution_id " << execution_id << std::endl;
+        SPDLOG_LOGGER_ERROR(m_logger, "Cannot find task with execution_id {}", execution_id);
         throw std::invalid_argument("Cannot find task with execution_id " + std::to_string(execution_id));
     }
-    std::cout << "[INFO] start task " << task->get_task_info()->get_task_name_with_sub_tasks() << std::endl; 
+    SPDLOG_LOGGER_INFO(m_logger, "Start Task {}", task->get_task_info()->get_task_name_with_sub_tasks());
     task->start_task_thread();
 }
 
@@ -73,10 +79,10 @@ void TaskExecutor::start_task(int execution_id) {
 void TaskExecutor::cancel_task(int execution_id) {
     std::shared_ptr<Task> task = m_task_slot_table->get_task(execution_id);
     if(task == nullptr) {
-        std::cout << "Cannot find task with execution_id " << execution_id << std::endl;
+        SPDLOG_LOGGER_ERROR(m_logger, "Cannot find task with execution_id {}", execution_id);
         throw std::invalid_argument("Cannot find task with execution_id " + std::to_string(execution_id));
     }
-    std::cout << "[INFO] stop task " << task->get_task_info()->get_task_name_with_sub_tasks() << std::endl; 
+    SPDLOG_LOGGER_INFO(m_logger, "Stop Task {}", task->get_task_info()->get_task_name_with_sub_tasks());
     task->cancel_task();
 }
 
@@ -84,14 +90,14 @@ void TaskExecutor::cancel_task(int execution_id) {
 void TaskExecutor::allocate_slot(int slot_id, int job_id, int allocation_id) {
     if (m_task_slot_table->is_slot_free(slot_id)) {
         if (m_task_slot_table->allocate_slot(slot_id, job_id, allocation_id)) {
-            std::cout << "[INFO] allocate slot for " << allocation_id << std::endl;
+            SPDLOG_LOGGER_INFO(m_logger, "Allocate slot for allocation_id {}", allocation_id);
         } else {
-            std::cout << "[INFO] Could not allocate slot for " << allocation_id << std::endl;
+            SPDLOG_LOGGER_ERROR(m_logger, "Could not allocate slot for allcation_id {}", allocation_id);
             throw std::runtime_error("Could not allocate slot");
         }
     } else {
         std::string message = "The slot " + std::to_string(slot_id) + " has already been allocated or a different job";
-        std::cout << "[INFO]" << message << std::endl;
+        SPDLOG_LOGGER_ERROR(m_logger, message);
         throw std::runtime_error(message);
     }
 }

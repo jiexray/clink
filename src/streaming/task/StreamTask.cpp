@@ -1,10 +1,18 @@
 #include "StreamTask.hpp"
 
+template <class OUT>
+std::shared_ptr<spdlog::logger> StreamTask<OUT>::m_logger = spdlog::get("StreamTask") == nullptr ?
+                                                        spdlog::basic_logger_mt("StreamTask", Constant::get_log_file_name()):
+                                                        spdlog::get("StreamTask");
+
 /**
  * Constructor of StreamTask, initialize result writer.
  */
 template <class OUT>
 StreamTask<OUT>::StreamTask(std::shared_ptr<Environment> env): AbstractInvokable(env) {
+    spdlog::set_pattern(Constant::SPDLOG_PATTERN);
+    spdlog::set_level(Constant::SPDLOG_LEVEL);
+
     m_is_running = true;
     m_configuration = std::make_shared<StreamConfig>(env->get_task_configuration());
     std::shared_ptr<StreamEdge<OUT>> edge = m_configuration->get_out_edge<OUT>();
@@ -12,7 +20,7 @@ StreamTask<OUT>::StreamTask(std::shared_ptr<Environment> env): AbstractInvokable
     if (edge != nullptr) {
         this->m_result_writer = create_result_writer(edge, 0, env->get_task_info()->get_task_name());
     } else {
-        std::cout << "[INFO] Task " << env->get_task_info()->get_task_name() << " do not have out edges" << std::endl;
+        SPDLOG_LOGGER_INFO(m_logger, "Task {} do not have out edges", env->get_task_info()->get_task_name());
     }
 }
 
@@ -30,7 +38,7 @@ std::shared_ptr<ResultWriter<OUT>> StreamTask<OUT>::create_result_writer(std::sh
     std::shared_ptr<StreamPartitioner<OUT>> output_partitioner = edge->get_output_partitioner();
 
     // TODO: add logging module
-    std::cout << "Using partitioner " << output_partitioner->to_string() << " for output " << output_idx << " of task " << task_name << std::endl;
+    SPDLOG_LOGGER_INFO(m_logger, "Using partitioner {} for output {} of StreamTask {}", output_partitioner->to_string(), output_idx, task_name);
 
     std::shared_ptr<ResultPartition> buffer_writter = this->get_environment()->get_writer(output_idx);
     return std::make_shared<ChannelSelectorResultWriter<OUT>>(buffer_writter, task_name, output_partitioner);
@@ -65,18 +73,17 @@ template<class OUT>
 void StreamTask<OUT>::invoke() {
     before_invoke();
 
-    std::cout << "[INFO] StreamTask " << get_name() << " start to process record" << std::endl;
+    SPDLOG_LOGGER_INFO(m_logger, "StreamTask {} start to process records", get_name());
     m_mailbox_processor->run_mailbox_loop();
 }
 
 template <class OUT>
 void StreamTask<OUT>::cancel() {
-    std::cout << "StreamTask<OUT>::cancel()" << std::endl; 
     m_is_running = false;
+    SPDLOG_LOGGER_DEBUG(m_logger, "Stop StreamTask {}", get_name());
     if (m_mailbox_processor == nullptr) {
         throw std::runtime_error("mailbox processor is null");
     }
-    std::cout << "stop mailbox processor" << std::endl; 
     m_mailbox_processor->all_actions_completed();
 }
 

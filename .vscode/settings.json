@@ -53,6 +53,12 @@
         "set": "cpp",
         "iterator": "cpp",
         "ios": "cpp",
-        "queue": "cpp"
+        "queue": "cpp",
+        "atomic": "cpp",
+        "cstddef": "cpp",
+        "optional": "cpp",
+        "string_view": "cpp",
+        "iomanip": "cpp",
+        "regex": "cpp"
     }
 }
