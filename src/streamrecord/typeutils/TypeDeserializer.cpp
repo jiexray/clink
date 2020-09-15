@@ -4,7 +4,7 @@ std::shared_ptr<spdlog::logger> TypeDeserializer::m_logger = spdlog::get("TypeDe
                                                                 spdlog::get("TypeDeserializer");
 
 
-void TypeDeserializer::set_next_buffer(BufferBase* buffer) {
+void TypeDeserializer::set_next_buffer(std::shared_ptr<BufferBase> buffer) {
     if ((int)m_last_buffers.size() == 0) {
         // empty buffer, initialize the offset
         m_position = 0;
@@ -126,11 +126,10 @@ double TypeDeserializer::read_double() {
  */
 void TypeDeserializer::evict_used_buffer(bool is_finish_read) {
     if (m_last_buffers.empty()) {
-        // TODO: add logging 
         SPDLOG_LOGGER_DEBUG(m_logger, "evict_used_buffer(): useless buffer evict");
         return;
     }
-    BufferBase* first_buf = m_last_buffers.front();
+    std::shared_ptr<BufferBase> first_buf = m_last_buffers.front();
     int buf_size = first_buf->get_max_capacity();
     // only one byte left is also a completed buf, nothing to read
 
@@ -155,7 +154,7 @@ void TypeDeserializer::check_end_with_one_byte() {
         SPDLOG_LOGGER_DEBUG(m_logger, "check_end_with_one_byte(): useless buffer evict");
         return;
     }
-    BufferBase* first_buf = m_last_buffers.front();
+    std::shared_ptr<BufferBase> first_buf = m_last_buffers.front();
     int buf_size = first_buf->get_max_capacity();
     if (m_position == buf_size - 1) {
         m_remaining--;

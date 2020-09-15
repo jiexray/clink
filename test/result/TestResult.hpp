@@ -16,7 +16,7 @@
 #include <memory>
 #include <string>
 
-void isBufferEqualToString(BufferBase* buf, std::string str) {
+void isBufferEqualToString(std::shared_ptr<BufferBase> buf, std::string str) {
     char c;
     int ret;
     for (int i = 0; i < str.length(); i++) {
@@ -104,7 +104,7 @@ public:
         result_writer->copy_to_buffer_builder(0, record_1);
         std::shared_ptr<BufferBuilder> buffer_builder = result_writer->get_buffer_builder(0);
         std::shared_ptr<BufferConsumer> buffer_consumer = buffer_builder->create_buffer_consumer();
-        BufferBase* buf = buffer_consumer->build();
+        std::shared_ptr<BufferBase> buf = buffer_consumer->build();
 
         for(int i = 0; i < 4; i++) {
             char c;
@@ -220,7 +220,7 @@ public:
         TS_ASSERT_EQUALS(subpartition_0->get_buffers_in_backlog(), 1);
         TS_ASSERT_EQUALS(subpartition_0->get_number_of_finished_buffers(), 1);
         TS_ASSERT_EQUALS(buffer_and_backlog == nullptr, false);
-        BufferBase* buf = buffer_and_backlog->get_buffer();
+        std::shared_ptr<BufferBase> buf = buffer_and_backlog->get_buffer();
         isBufferEqualToString(buf, "\0x0\0x41234\0x0");
         TS_ASSERT_EQUALS(buffer_and_backlog->get_data_available(), true);
         TS_ASSERT_EQUALS(buffer_and_backlog->get_buffers_in_backlog(), 1);
@@ -427,7 +427,7 @@ public:
         // poll buffer from subpartition view
         std::shared_ptr<BufferAndBacklog> buffer_and_backlog = view_0->get_next_buffer();
         TS_ASSERT_EQUALS(buffer_and_backlog == nullptr, false);
-        BufferBase* buf = buffer_and_backlog->get_buffer();
+        std::shared_ptr<BufferBase> buf = buffer_and_backlog->get_buffer();
         isBufferEqualToString(buf, "1234");
         TS_ASSERT_EQUALS(buffer_and_backlog->get_data_available(), false);
         TS_ASSERT_EQUALS(buffer_and_backlog->get_buffers_in_backlog(), 0);

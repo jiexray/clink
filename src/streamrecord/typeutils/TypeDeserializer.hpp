@@ -19,7 +19,7 @@ class IOReadableWritable;
 class TypeDeserializer
 {
 private:
-    std::deque<BufferBase*>                     m_last_buffers; // m_last_buffers caches all incomplete buffer, 
+    std::deque<std::shared_ptr<BufferBase>>     m_last_buffers; // m_last_buffers caches all incomplete buffer, 
                                                                 // waiting for the last buffer to revive the whole object
     int                                         m_record_size;
 
@@ -35,7 +35,7 @@ public:
         spdlog::set_pattern(Constant::SPDLOG_PATTERN);
         spdlog::set_level(Constant::SPDLOG_LEVEL);
     }
-    void                                        set_next_buffer(BufferBase* buffer);
+    void                                        set_next_buffer(std::shared_ptr<BufferBase> buffer);
     DeserializationResult                       get_next_record(std::shared_ptr<IOReadableWritable> target);
 
     int                                         read_short();

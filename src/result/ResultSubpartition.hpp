@@ -27,18 +27,18 @@ class ResultSubpartitionView;
 class BufferAndBacklog
 {
 private:
-    BufferBase*         m_buffer;
-    bool                m_is_data_available;
-    int                 m_buffers_in_backlog;
+    std::shared_ptr<BufferBase>     m_buffer;
+    bool                            m_is_data_available;
+    int                             m_buffers_in_backlog;
 
 public:
-    BufferAndBacklog(BufferBase* buffer, bool is_data_available, int buffer_in_backlog):
+    BufferAndBacklog(std::shared_ptr<BufferBase> buffer, bool is_data_available, int buffer_in_backlog):
     m_buffer(buffer), m_is_data_available(is_data_available), m_buffers_in_backlog(buffer_in_backlog){}
 
     /* Properties */
-    BufferBase*         get_buffer() {return m_buffer;}
-    bool                get_data_available() {return m_is_data_available;}
-    int                 get_buffers_in_backlog() {return m_buffers_in_backlog;}
+    std::shared_ptr<BufferBase>     get_buffer() {return m_buffer;}
+    bool                            get_data_available() {return m_is_data_available;}
+    int                             get_buffers_in_backlog() {return m_buffers_in_backlog;}
 };
 
 

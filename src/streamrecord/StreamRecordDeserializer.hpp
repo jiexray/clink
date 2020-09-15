@@ -16,5 +16,5 @@ public:
     StreamRecordDeserializer() {m_deserializer = std::make_shared<TypeDeserializer>();}
 
     DeserializationResult               get_next_record(std::shared_ptr<IOReadableWritable> target) {return m_deserializer->get_next_record(target);}
-    void                                set_next_buffer(BufferBase* buffer) {m_deserializer->set_next_buffer(buffer);}
+    void                                set_next_buffer(std::shared_ptr<BufferBase> buffer) {m_deserializer->set_next_buffer(buffer);}
 };

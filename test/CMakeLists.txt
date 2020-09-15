@@ -37,7 +37,11 @@ if(CXXTEST_FOUND)
 
   # buffer test
   CXXTEST_ADD_TEST(unitest_buffer buffer_test.cpp ${CMAKE_CURRENT_SOURCE_DIR}/buffer/TestBuffer.hpp)
-  target_link_libraries(unitest_buffer pthread)
+  target_link_libraries(unitest_buffer pthread buffer)
+
+  # buffer pool mananger test
+  CXXTEST_ADD_TEST(unitest_buffer_pool_mananger buffer_pool_mananger_test.cpp ${CMAKE_CURRENT_SOURCE_DIR}/buffer/TestBufferPoolManager.hpp)
+  target_link_libraries(unitest_buffer_pool_mananger pthread buffer)
 
   # result test
   CXXTEST_ADD_TEST(unitest_result result_test.cpp ${CMAKE_CURRENT_SOURCE_DIR}/result/TestResult.hpp)

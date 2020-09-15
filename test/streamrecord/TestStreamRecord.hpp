@@ -13,7 +13,7 @@
 
 #include <memory>
 
-void isBufferEqualToString(BufferBase* buf, std::string str) {
+void isBufferEqualToString(std::shared_ptr<BufferBase> buf, std::string str) {
     char char_in_buffer;
     int ret;
     for (int i = 0; i < str.length(); i++) {
@@ -68,7 +68,7 @@ public:
         TS_ASSERT_EQUALS(serialize_result_3, PARTITAL_RECORD_BUFFER_FULL);
 
         
-        BufferBase* buf = buffer_builder_1->create_buffer_consumer()->build();
+        std::shared_ptr<BufferBase> buf = buffer_builder_1->create_buffer_consumer()->build();
 
         char* int_buf = new char[2];
         SerializeUtils::serialize_short(int_buf, 7);
@@ -93,7 +93,7 @@ public:
         StreamRecordAppendResult serialize_result_1 = stream_record_serializer.serialize(double_record_1, buffer_builder_1, true);
         TS_ASSERT_EQUALS(serialize_result_1, FULL_RECORD_BUFFER_FULL);
 
-        BufferBase* buf = buffer_builder_1->create_buffer_consumer()->build();
+        std::shared_ptr<BufferBase> buf = buffer_builder_1->create_buffer_consumer()->build();
         char* int_buf = new char[2];
         SerializeUtils::serialize_short(int_buf, 8);   
         double val = 12.34;
@@ -120,7 +120,7 @@ public:
         TS_ASSERT_EQUALS(serialize_result_1, FULL_RECORD);
 
         
-        BufferBase* buf = buffer_builder_1->create_buffer_consumer()->build();
+        std::shared_ptr<BufferBase> buf = buffer_builder_1->create_buffer_consumer()->build();
 
         char* int_buf = new char[2];
         SerializeUtils::serialize_short(int_buf, 7);
@@ -148,7 +148,7 @@ public:
         TS_ASSERT_EQUALS(serialize_result_1, FULL_RECORD);
 
         
-        BufferBase* buf = buffer_builder_1->create_buffer_consumer()->build();
+        std::shared_ptr<BufferBase> buf = buffer_builder_1->create_buffer_consumer()->build();
 
         char* int_buf = new char[2];
         SerializeUtils::serialize_short(int_buf, 7);

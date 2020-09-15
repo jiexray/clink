@@ -2,7 +2,8 @@
 cmake_minimum_required (VERSION 3.13)
 
 # all include files
-set(ALL_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/src/buffer
+set(ALL_INCLUDE_DIRS 
+  ${CMAKE_SOURCE_DIR}/src/buffer
   ${CMAKE_SOURCE_DIR}/src/result 
   ${CMAKE_SOURCE_DIR}/src/result/consumer
   ${CMAKE_SOURCE_DIR}/src/deployment
@@ -21,33 +22,44 @@ set(ALL_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/src/buffer
   ${CMAKE_SOURCE_DIR}/src/runtime
   ${CMAKE_SOURCE_DIR}/src/core/config
   ${CMAKE_SOURCE_DIR}/src/core/common
+  ${CMAKE_SOURCE_DIR}/src/core/util
   ${CMAKE_SOURCE_DIR}/src/runtime/executiongraph
   ${CMAKE_SOURCE_DIR}/src/runtime/shuffle
   ${CMAKE_SOURCE_DIR}/src/runtime/taskexecutor
   )
 
+# ------------------------
+#   build buffer module
+# ------------------------
+target_sources(buffer
+  PRIVATE
+    buffer/BufferPool.cpp
+    buffer/BufferBuilder.cpp
+    buffer/BufferConsumer.cpp
+    buffer/ReadOnlySlidedBuffer.cpp
+    buffer/Buffer.cpp
+    buffer/BufferPoolManager.cpp
+)
+target_include_directories(buffer PUBLIC
+  ${ALL_INCLUDE_DIRS}
+)
+target_link_libraries(buffer core)
+
+# ------------------------
+#   build core module
+# ------------------------
 target_sources(core
   PRIVATE
     core/config/Configuration.cpp
     core/config/Constant.cpp
 )
 target_include_directories(core PUBLIC
-  ${CMAKE_CURRENT_SOURCE_DIR}/streaming/task
-  ${CMAKE_CURRENT_SOURCE_DIR}/streaming/task/config
-  ${CMAKE_CURRENT_SOURCE_DIR}/streaming/operators
-  ${CMAKE_CURRENT_SOURCE_DIR}/streaming/io
-  ${CMAKE_CURRENT_SOURCE_DIR}/streaming/functions
-  ${CMAKE_CURRENT_SOURCE_DIR}/streaming/partitioner
-  ${CMAKE_CURRENT_SOURCE_DIR}/streaming/graph
-  ${CMAKE_CURRENT_SOURCE_DIR}/streaming/task/mailbox
-  ${CMAKE_CURRENT_SOURCE_DIR}/core/config
-  ${CMAKE_CURRENT_SOURCE_DIR}/core/common
-  ${CMAKE_CURRENT_SOURCE_DIR}/result
-  ${CMAKE_CURRENT_SOURCE_DIR}/result/consumer
-  ${CMAKE_CURRENT_SOURCE_DIR}/core/util
-  ${CMAKE_CURRENT_SOURCE_DIR}/runtime
+  ${ALL_INCLUDE_DIRS}
 )
 
+# ------------------------
+#   build result module
+# ------------------------
 target_sources(result
   PRIVATE
     result/ResultPartition.cpp
@@ -59,8 +71,11 @@ target_sources(result
     result/consumer/InputGate.cpp
     result/consumer/InputGateFactory.cpp
 )
-target_link_libraries(result streamrecord)
+target_link_libraries(result streamrecord buffer)
 
+# ------------------------
+#   build streamrecord module
+# ------------------------
 target_sources(streamrecord
   PRIVATE
     streamrecord/types/DeserializationDelegate.cpp
@@ -73,7 +88,7 @@ target_sources(streamrecord
 target_include_directories(streamrecord PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}/core/config
 )
-target_link_libraries(streamrecord core)
+target_link_libraries(streamrecord core buffer)
 
 # ------------------------
 #   build streaming module
@@ -106,7 +121,7 @@ target_include_directories(streaming PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}/runtime
 )
 
-target_link_libraries(streaming streamrecord result pthread core)
+target_link_libraries(streaming streamrecord result pthread core buffer)
 
 # ------------------------
 #   build runtime module
@@ -132,7 +147,7 @@ target_include_directories(runtime PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}/deployment
 )
 
-target_link_libraries(runtime streaming pthread result streamrecord spdlog::spdlog)
+target_link_libraries(runtime streaming pthread result streamrecord spdlog::spdlog buffer)
 
 
 

@@ -6,65 +6,48 @@
 #include <string>
 #include <iostream>
 #include "ReadOnlySlidedBuffer.hpp"
+#include "BufferPoolManager.hpp"
 #include "BufferBase.hpp"
 #include <stdexcept>
+#include <memory>
+
+class BufferPoolManager;
 
 class Buffer : public BufferBase
 {
 private:
-    char*       m_data;
-    int         m_size;
+    char*                                   m_data;
+    int                                     m_size;
+    int                                     m_buffer_id;
+    std::shared_ptr<BufferPoolManager>      m_buffer_pool_manager;
+
+    static int                              m_id_counter;
+    static std::shared_ptr<spdlog::logger>  m_logger;
+
 
 public:
     Buffer();
     Buffer(int capacity);
-    ~Buffer() {};
+    Buffer(int capacity, std::shared_ptr<BufferPoolManager> buffer_pool_mananger);
+    ~Buffer() {}
 
-    void    free();
+    void                                    free();
 
     /* Properties */
-    int     get_max_capacity() override {return m_size;}
+    int                                     get_max_capacity() override {return m_size;}
+    int                                     get_buffer_id() {return m_buffer_id;}
+    std::shared_ptr<BufferPoolManager>      get_buffer_pool_manager() {return m_buffer_pool_manager;}
 
     /* Random Access get() and put() methods */
-    int      get(char* buf, int index) override;
-    void     put(int index, char value);
+    int                                     get(char* buf, int index) override;
+    void                                    put(int index, char value);
 
     /* Slice the buffer, override from BufferBase */
-    int get_buffer_offset() override {return 0;}
-    BufferBase* read_only_slice(int offset, int length) override;
+    int                                     get_buffer_offset() override {return 0;}
+    // BufferBase*                             read_only_slice(int offset, int length) override;
+    std::shared_ptr<BufferBase>             read_only_slice(int offset, int length) override;
+
+    void                                    release() {throw std::runtime_error("Buffer do not support release()");}
+
+    static int                              get_next_id() {return m_id_counter++;}
 };
-
-/**
- * Create a new buffer, allocate new memory.
- */
-inline Buffer::Buffer(int capacity) {
-    //TODO: OOM problem check
-    m_data      = new char[capacity];
-    m_size      = capacity;
-}
-
-inline int Buffer::get(char* buf, int index) {
-    if (index >= m_size) {
-        // std::cerr << "index [" << index << "] is out of the range [" << m_size << "]" << std::endl;
-        return -1;
-    }
-    (*buf) = m_data[index];
-    return 1;
-}
-
-inline void Buffer::put(int index, char value) {
-    if (index >= m_size) {
-        std::string error_info = "index [" + std::to_string(index) + "] is out of the range [" + std::to_string(m_size) + "]";
-        throw std::invalid_argument(error_info);
-    }
-    m_data[index] = value;
-}
-
-inline BufferBase* Buffer::read_only_slice(int offset, int length) {
-    if (offset >= m_size || offset + length > m_size) {
-        std::string error_info = "Slice is illegal offset [" + std::to_string(offset) + "], length [" + std::to_string(length) +
-         "], capacity [" + std::to_string(m_size) + "]";
-        throw std::invalid_argument(error_info);
-    }
-    return new ReadOnlySlidedBuffer(this, offset, length);
-}

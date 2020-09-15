@@ -9,6 +9,7 @@ add_compile_definitions(SPDLOG_ACTIVE_LEVEL=0)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
+add_library(buffer "")
 add_library(result "")
 add_library(streamrecord "")
 add_library(streaming "")

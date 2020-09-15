@@ -9,10 +9,16 @@
 
 #include "Buffer.hpp"
 #include "BufferConsumer.hpp"
+#include "Constant.hpp"
 #include <memory>
 #include <stdexcept>
 #include <algorithm>
 #include <atomic>
+#include <spdlog/spdlog.h>
+#include <spdlog/sinks/basic_file_sink.h>
+
+class BufferConsumer;
+class Buffer;
 
 class BufferBuilder
 {
@@ -20,13 +26,15 @@ private:
     Buffer*                         m_buffer;
     std::atomic_int*                m_write_position_marker_ptr;
 
+    static std::shared_ptr<spdlog::logger>  m_logger;
+
 public:
     BufferBuilder(Buffer* buffer);
-    ~BufferBuilder() {}
+    ~BufferBuilder();
 
     /* Properties */
     Buffer*                         get_buffer() {return m_buffer;}
-    bool                            is_full() {return m_buffer->get_max_capacity() == *m_write_position_marker_ptr;}
+    bool                            is_full();
 
     /* Write data to buffer */
     int                             append(const char* const source, int offset, int length);
@@ -42,44 +50,3 @@ public:
 };
 
 
-inline BufferBuilder::BufferBuilder(Buffer* buffer):
-m_buffer(buffer) {m_write_position_marker_ptr = new std::atomic_int{0};}
-
-inline int BufferBuilder::append(const char* const source, int offset, int length) {
-    int buffer_capacity = m_buffer->get_max_capacity();
-    // NOTE: this get and set of writer_marker is ok, for the writer marker is only modified in this file.
-    int available = buffer_capacity - *m_write_position_marker_ptr;
-    int to_copy = std::min(available, length);
-
-    for (int i = 0; i < to_copy; i++) {
-        m_buffer->put((*m_write_position_marker_ptr)++, source[offset + i]);
-    }
-    return to_copy;
-}
-
-inline int BufferBuilder::append(const char* const source, int offset, int length, bool must_complete){
-    if (!must_complete) {
-        return append(source, offset, length);
-    } else {
-        int buffer_capacity = m_buffer->get_max_capacity();
-        int available = buffer_capacity - *m_write_position_marker_ptr;
-        if (available < length) {
-            // force to fill the unfinished buffer with fake chars
-            for (int i = 0; i < available; i++) {
-                m_buffer->put((*m_write_position_marker_ptr)++, (char)0);
-            }
-            return 0;
-        } else {
-            return append(source, offset, length);
-        }
-    }
-}
-
-inline std::shared_ptr<BufferConsumer> BufferBuilder::create_buffer_consumer() {
-    return std::make_shared<BufferConsumer>(m_buffer, m_write_position_marker_ptr, 0);
-}
-
-
-inline void BufferBuilder::recycle_buffer_consumer() {
-    // TODO: recycle buffer consumer before free buffer builder
-}

@@ -51,7 +51,7 @@ bool ResultSubpartition::add(std::shared_ptr<BufferConsumer> buffer_consumer) {
 std::shared_ptr<BufferAndBacklog> ResultSubpartition::poll_buffer() {
     std::unique_lock<std::mutex> buffers_lock(m_buffers_mtx);
 
-    BufferBase* buffer = nullptr;
+    std::shared_ptr<BufferBase> buffer = nullptr;
 
     if (m_buffers.empty()) {
         m_flush_requested = false;
@@ -75,6 +75,10 @@ std::shared_ptr<BufferAndBacklog> ResultSubpartition::poll_buffer() {
 
         if (buffer_consumer->is_finished()) {
             m_buffers.pop_front();
+            // the buffer_consumer will be destroyed very soon, check its ref count
+            if (buffer_consumer.use_count() != 1) {
+                throw std::runtime_error("buffer_consumer's use count is not 1, may be used somewhere else");
+            }
         }
 
         if (buffer != nullptr) {
