@@ -6,6 +6,7 @@
 #include "Buffer.hpp"
 #include "BufferBase.hpp"
 #include "Constant.hpp"
+#include "LoggerFactory.hpp"
 #include <iostream>
 #include <atomic>
 #include <memory>

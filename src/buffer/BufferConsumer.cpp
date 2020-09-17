@@ -1,8 +1,6 @@
 #include "BufferConsumer.hpp"
 
-std::shared_ptr<spdlog::logger> BufferConsumer::m_logger = spdlog::get("BufferConsumer") == nullptr?
-                                                            spdlog::basic_logger_mt("BufferConsumer", Constant::get_log_file_name()):
-                                                            spdlog::get("BufferConsumer");
+std::shared_ptr<spdlog::logger> BufferConsumer::m_logger = LoggerFactory::get_logger("BufferConsumer");
 
 bool BufferConsumer::is_data_available() {
     if (m_write_position_marker_ptr == nullptr) {
@@ -47,14 +45,11 @@ m_read_position_marker(0){
     spdlog::set_level(Constant::SPDLOG_LEVEL);
 
     // register BufferConsumer to BufferPoolManager
-    SPDLOG_LOGGER_DEBUG(m_logger, "BufferConsumer register on buffer_id {}", m_buffer->get_buffer_id());
-
     if (m_buffer->get_buffer_pool_manager() != nullptr)
         m_buffer->get_buffer_pool_manager()->register_buffer_consumer(m_buffer->get_buffer_id());
 }
 
 BufferConsumer::~BufferConsumer(){
-    SPDLOG_LOGGER_DEBUG(m_logger, "BufferConsumer is destroying, unregister from buffer_id {}", m_buffer->get_buffer_id());
     if (m_buffer->get_buffer_pool_manager() != nullptr)
         m_buffer->get_buffer_pool_manager()->unregister_buffer_consumer(m_buffer->get_buffer_id());
 }

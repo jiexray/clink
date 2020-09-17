@@ -1,7 +1,6 @@
 #include "ResultSubpartition.hpp"
-std::shared_ptr<spdlog::logger> ResultSubpartition::m_logger = spdlog::get("ResultSubpartition") == nullptr ?
-                                                            spdlog::basic_logger_mt("ResultSubpartition", Constant::get_log_file_name()):
-                                                            spdlog::get("ResultSubpartition");
+
+std::shared_ptr<spdlog::logger> ResultSubpartition::m_logger = LoggerFactory::get_logger("ResultSubpartition");
 
 ResultSubpartition::ResultSubpartition(int index, std::shared_ptr<ResultPartition> parent):
 m_parent(parent){

@@ -6,10 +6,9 @@
 #include <chrono>
 #include "Task.hpp"
 #include "TaskExecutor.hpp"
+#include "LoggerFactory.hpp"
 
-#include <spdlog/spdlog.h>
-
-
+std::shared_ptr<spdlog::logger> logger = LoggerFactory::get_logger("TestTaskChain");
 
 
 template class MapFunction<std::string, std::string>;
@@ -26,8 +25,13 @@ class StringMapFunction: public MapFunction<std::string, std::string>{
 
 class MySourceFunction: public SourceFunction<std::string> {
     void run(std::shared_ptr<SourceContext<std::string>> ctx) {
-        for(int i = 0; i < 10; i++) {
-            ctx->collect(std::make_shared<std::string>("1" + std::to_string(i) + "-test-data"));
+        for(int i = 0; i < 50; i++) {
+            SPDLOG_LOGGER_DEBUG(logger, "Emit record {}", i);
+            if (i < 10) {
+                ctx->collect(std::make_shared<std::string>("0" + std::to_string(i) + "-test-data"));
+            } else {
+                ctx->collect(std::make_shared<std::string>(std::to_string(i) + "-test-data"));
+            }
         }
     }
 
@@ -208,7 +212,7 @@ public:
         // std::this_thread::sleep_for(std::chrono::seconds(1));
         task_exeuctor->start_task(104);
 
-        std::this_thread::sleep_for(std::chrono::seconds(5));
+        std::this_thread::sleep_for(std::chrono::seconds(3));
 
         task_exeuctor->cancel_task(102);
         task_exeuctor->cancel_task(103);

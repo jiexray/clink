@@ -1,9 +1,7 @@
 #include "ShuffleEnvironment.hpp"
 
 
-std::shared_ptr<spdlog::logger> LocalShuffleEnvironment::m_logger = spdlog::get("LocalShuffleEnvironment") == nullptr?
-                                                                            spdlog::basic_logger_mt("LocalShuffleEnvironment", Constant::get_log_file_name()):
-                                                                            spdlog::get("LocalShuffleEnvironment");
+std::shared_ptr<spdlog::logger> LocalShuffleEnvironment::m_logger = LoggerFactory::get_logger("LocalShuffleEnvironment");
 
 std::shared_ptr<InputGate>* LocalShuffleEnvironment::create_input_gates(std::string owner_name, InputGateDeploymentDescriptorList & input_gate_descriptors) {
     int number_of_input_gates = (int)input_gate_descriptors.size();

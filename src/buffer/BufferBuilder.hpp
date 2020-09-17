@@ -10,12 +10,11 @@
 #include "Buffer.hpp"
 #include "BufferConsumer.hpp"
 #include "Constant.hpp"
+#include "LoggerFactory.hpp"
 #include <memory>
 #include <stdexcept>
 #include <algorithm>
 #include <atomic>
-#include <spdlog/spdlog.h>
-#include <spdlog/sinks/basic_file_sink.h>
 
 class BufferConsumer;
 class Buffer;
@@ -24,7 +23,8 @@ class BufferBuilder
 {
 private:
     Buffer*                         m_buffer;
-    std::atomic_int*                m_write_position_marker_ptr;
+    std::atomic_int*                m_write_position_marker_ptr; // this pointer is very dangerous, it may be set null by BufferConsumer
+    int                             m_cached_write_postition; // first update cached_write_position, and then update m_write_position_marker_ptr
 
     static std::shared_ptr<spdlog::logger>  m_logger;
 
@@ -45,8 +45,7 @@ public:
     void                            recycle_buffer_consumer();
 
     /* manipulate write_position_marker */
-    int                             get_write_position() {return *m_write_position_marker_ptr;}
-    void                            move_write_position(int offset) {(*m_write_position_marker_ptr) += offset;}
+    int                             get_write_position() {return m_cached_write_postition;}
 };
 
 

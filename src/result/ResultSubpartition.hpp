@@ -13,13 +13,12 @@
 #include "../buffer/BufferBase.hpp"
 #include "SubpartitionAvailableListener.hpp"
 #include "Constant.hpp"
+#include "LoggerFactory.hpp"
 #include <memory>
 #include <vector>
 #include <deque>
 #include <mutex>
 #include <algorithm>
-#include <spdlog/spdlog.h>
-#include <spdlog/sinks/basic_file_sink.h>
 
 class ResultPartition;
 class ResultSubpartitionView;

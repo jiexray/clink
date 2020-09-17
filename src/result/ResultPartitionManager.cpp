@@ -1,7 +1,5 @@
 #include "ResultPartitionManager.hpp"
-std::shared_ptr<spdlog::logger> ResultPartitionManager::m_logger = spdlog::get("ResultPartitionManager") == nullptr ?
-                                                                    spdlog::basic_logger_mt("ResultPartitionManager", Constant::get_log_file_name()):
-                                                                    spdlog::get("ResultPartitionManager");
+std::shared_ptr<spdlog::logger> ResultPartitionManager::m_logger = LoggerFactory::get_logger("ResultPartitionManager");
 
 /**
  * Register a partition to the map m_registered_partitions. The registration may come from multiple threads,

@@ -1,14 +1,20 @@
 #include "MailboxProcessor.hpp"
 
-std::shared_ptr<spdlog::logger>  MailboxProcessor::m_logger = spdlog::get("MailboxProcessor") == nullptr ?
-                                                                spdlog::basic_logger_mt("MailboxProcessor", Constant::get_log_file_name()):
-                                                                spdlog::get("MailboxProcessor");
+std::shared_ptr<spdlog::logger>  MailboxProcessor::m_logger = LoggerFactory::get_logger("MailboxProcessor");
 
 void MailboxProcessor::run_mailbox_loop() {
     while(run_mailbox_step()){}
 }
 
 bool MailboxProcessor::run_mailbox_step() {
+    m_round++;
+    // if (m_round < 10) {
+    //     SPDLOG_LOGGER_DEBUG(m_logger, "Mailbox run round {}", m_round);
+    // }
+    // if (m_round >=10 && m_round % 10 == 0) {
+    //     SPDLOG_LOGGER_DEBUG(m_logger, "Mailbox run round {}", m_round);
+    // }
+
     if (process_mail()) {
         m_mailbox_default_action->run_default_action();
         return true;

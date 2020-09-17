@@ -9,10 +9,9 @@
 #include "TaskMailbox.hpp"
 #include "MailboxExecutor.hpp"
 #include "Constant.hpp"
+#include "LoggerFactory.hpp"
 #include <iostream>
 #include <memory>
-#include <spdlog/spdlog.h>
-#include <spdlog/sinks/basic_file_sink.h>
 
 class MailboxDefaultAction {
 public:
@@ -35,14 +34,15 @@ private:
     bool                                    m_mailbox_loop_running;
 
     static std::shared_ptr<spdlog::logger>  m_logger;
+
+    int                                     m_round;
 public:
     MailboxProcessor(std::shared_ptr<MailboxDefaultAction> mailbox_default_action, std::shared_ptr<TaskMailbox> mailbox):
     m_mailbox(mailbox),
     m_mailbox_default_action(mailbox_default_action),
     m_mailbox_loop_running(true) {
         m_mailbox_executor = std::make_shared<MailboxExecutor>(mailbox);
-        spdlog::set_pattern(Constant::SPDLOG_PATTERN);
-        spdlog::set_level(Constant::SPDLOG_LEVEL);
+        m_round = 0;
     }
 
     /* Runs the mailbox processing loop. This is where the main work is done. */

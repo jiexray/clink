@@ -11,11 +11,10 @@
 #include "ResultPartitionFactory.hpp"
 #include "InputGateFactory.hpp"
 #include "Configuration.hpp"
+#include "LoggerFactory.hpp"
 #include <memory>
 #include <unistd.h>
 
-#include "spdlog/spdlog.h"
-#include "spdlog/sinks/basic_file_sink.h"
 
 class ShuffleEnvironment
 {

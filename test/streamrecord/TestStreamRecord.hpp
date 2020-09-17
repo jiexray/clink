@@ -28,7 +28,6 @@ class TestStreamRecord : public CxxTest::TestSuite
 {
 public:
     void testStreamRecordCreate() {
-        TS_SKIP("skip testStreamRecordCreate");
         StreamRecord<std::string> string_record(std::make_shared<std::string>("12345"), 10);
         std::shared_ptr<StreamRecord<int>> int_record = string_record.replace(std::make_shared<int>(13));
 

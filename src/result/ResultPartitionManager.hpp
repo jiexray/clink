@@ -9,11 +9,10 @@
 #include <algorithm>
 #include <iterator>
 #include <string>
-#include <spdlog/spdlog.h>
-#include <spdlog/sinks/basic_file_sink.h>
 #include "ResultPartition.hpp"
 #include "ResultSubpartition.hpp"
 #include "SubpartitionAvailableListener.hpp"
+#include "LoggerFactory.hpp"
 
 class ResultPartition;
 class SubpartitionAvailableListener;

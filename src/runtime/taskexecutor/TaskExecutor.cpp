@@ -1,8 +1,6 @@
 #include "TaskExecutor.hpp"
 
-std::shared_ptr<spdlog::logger> TaskExecutor::m_logger = spdlog::get("TaskExecutor") == nullptr ? 
-                                                        spdlog::basic_logger_mt("TaskExecutor", Constant::get_log_file_name()):
-                                                        spdlog::get("TaskExecutor");
+std::shared_ptr<spdlog::logger> TaskExecutor::m_logger = LoggerFactory::get_logger("TaskExecutor");
 
 void TaskExecutor::submit_task(std::shared_ptr<TaskDeploymentDescriptor> tdd) {
     // active task slot
@@ -32,7 +30,7 @@ void TaskExecutor::submit_task(std::shared_ptr<TaskDeploymentDescriptor> tdd) {
     for (int i = 0; i < tdd->get_number_of_result_partitions(); i++) {
         total_number_of_subpartitions += tdd->get_result_partitions()[i]->get_number_of_subpartitions();
     }
-    std::shared_ptr<BufferPool> buffer_pool = std::make_shared<BufferPool>(total_number_of_subpartitions * 2, 256);
+    std::shared_ptr<BufferPool> buffer_pool = std::make_shared<BufferPool>(total_number_of_subpartitions * 2, Constant::BUFFER_SIZE);
 
     // create task
     std::shared_ptr<Task> task = std::make_shared<Task>(

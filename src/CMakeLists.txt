@@ -26,7 +26,7 @@ set(ALL_INCLUDE_DIRS
   ${CMAKE_SOURCE_DIR}/src/runtime/executiongraph
   ${CMAKE_SOURCE_DIR}/src/runtime/shuffle
   ${CMAKE_SOURCE_DIR}/src/runtime/taskexecutor
-  )
+)
 
 # ------------------------
 #   build buffer module
@@ -105,20 +105,7 @@ target_sources(streaming
     streaming/task/mailbox/MailboxProcessor.cpp
 )
 target_include_directories(streaming PUBLIC
-  ${CMAKE_CURRENT_SOURCE_DIR}/streaming/task
-  ${CMAKE_CURRENT_SOURCE_DIR}/streaming/task/config
-  ${CMAKE_CURRENT_SOURCE_DIR}/streaming/operators
-  ${CMAKE_CURRENT_SOURCE_DIR}/streaming/io
-  ${CMAKE_CURRENT_SOURCE_DIR}/streaming/functions
-  ${CMAKE_CURRENT_SOURCE_DIR}/streaming/partitioner
-  ${CMAKE_CURRENT_SOURCE_DIR}/streaming/graph
-  ${CMAKE_CURRENT_SOURCE_DIR}/streaming/task/mailbox
-  ${CMAKE_CURRENT_SOURCE_DIR}/core/config
-  ${CMAKE_CURRENT_SOURCE_DIR}/core/common
-  ${CMAKE_CURRENT_SOURCE_DIR}/core/util
-  ${CMAKE_CURRENT_SOURCE_DIR}/result
-  ${CMAKE_CURRENT_SOURCE_DIR}/result/consumer
-  ${CMAKE_CURRENT_SOURCE_DIR}/runtime
+  ${ALL_INCLUDE_DIRS}
 )
 
 target_link_libraries(streaming streamrecord result pthread core buffer)
@@ -138,13 +125,7 @@ target_sources(runtime
     runtime/shuffle/ShuffleEnvironment.cpp
 )
 target_include_directories(runtime PUBLIC
-  ${CMAKE_CURRENT_SOURCE_DIR}/core/common
-  ${CMAKE_CURRENT_SOURCE_DIR}/core/config
-  ${CMAKE_CURRENT_SOURCE_DIR}/result
-  ${CMAKE_CURRENT_SOURCE_DIR}/result/consumer
-  ${CMAKE_CURRENT_SOURCE_DIR}/runtime/executiongraph
-  ${CMAKE_CURRENT_SOURCE_DIR}/runtime/shuffle
-  ${CMAKE_CURRENT_SOURCE_DIR}/deployment
+  ${ALL_INCLUDE_DIRS}
 )
 
 target_link_libraries(runtime streaming pthread result streamrecord spdlog::spdlog buffer)

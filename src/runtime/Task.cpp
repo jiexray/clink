@@ -1,8 +1,6 @@
 #include "Task.hpp"
 
-std::shared_ptr<spdlog::logger>  Task::m_logger = spdlog::get("Task") == nullptr ? 
-                                                        spdlog::basic_logger_mt("Task", Constant::get_log_file_name()) :
-                                                        spdlog::get("Task");
+std::shared_ptr<spdlog::logger>  Task::m_logger = LoggerFactory::get_logger("Task");
 
 Task::Task(std::shared_ptr<JobInformation> job_information, std::shared_ptr<TaskInformation> task_information,
         int execution_id, int allocation_id, int subtask_idx, 

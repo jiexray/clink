@@ -24,6 +24,8 @@ class BufferPool: public std::enable_shared_from_this<BufferPool>
 private:
     int                                     m_number_of_buffers;
     int                                     m_current_pool_size; // no use, in future, may be used for dynamical pool size
+    int                                     m_buffer_pool_id;
+    static int                              m_buffer_pool_id_counter;
 
     std::vector<Buffer*>                    available_buffers;
     std::mutex                              mtx_available_buffer;
@@ -43,6 +45,8 @@ public:
     int                                     get_number_of_available_buffers() {return available_buffers.size();}
     int                                     get_max_number_of_buffers() {return m_number_of_buffers;}
     std::shared_ptr<BufferPoolManager>      get_buffer_pool_mananger() {return m_buffer_pool_manager;}
+    int                                     get_next_id() {return m_buffer_pool_id_counter++;}
+    int                                     get_buffer_pool_id() {return m_buffer_pool_id;}
 
     /* request / recycle BufferBuilder */
     std::shared_ptr<BufferBuilder>          request_buffer_builder();

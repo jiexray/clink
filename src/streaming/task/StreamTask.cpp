@@ -1,9 +1,7 @@
 #include "StreamTask.hpp"
 
 template <class OUT>
-std::shared_ptr<spdlog::logger> StreamTask<OUT>::m_logger = spdlog::get("StreamTask") == nullptr ?
-                                                        spdlog::basic_logger_mt("StreamTask", Constant::get_log_file_name()):
-                                                        spdlog::get("StreamTask");
+std::shared_ptr<spdlog::logger> StreamTask<OUT>::m_logger = LoggerFactory::get_logger("StreamTask");
 
 /**
  * Constructor of StreamTask, initialize result writer.

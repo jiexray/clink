@@ -8,11 +8,10 @@
 #include "../StreamRecord.hpp"
 #include "SerializeUtils.hpp"
 #include "Constant.hpp"
+#include "LoggerFactory.hpp"
 #include <iostream>
 #include <memory>
 #include <deque>
-#include <spdlog/spdlog.h>
-#include <spdlog/sinks/basic_file_sink.h>
 
 class IOReadableWritable;
 

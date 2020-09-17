@@ -1,8 +1,6 @@
 #include "Buffer.hpp"
 int Buffer::m_id_counter = 0;
-std::shared_ptr<spdlog::logger>  Buffer::m_logger = spdlog::get("Buffer") == nullptr?
-                                                    spdlog::basic_logger_mt("Buffer", Constant::get_log_file_name()):
-                                                    spdlog::get("Buffer");
+std::shared_ptr<spdlog::logger>  Buffer::m_logger = LoggerFactory::get_logger("Buffer");
 
 /**
  * Create a new buffer, allocate new memory.

@@ -10,9 +10,8 @@
 #include "TaskSlotTable.hpp"
 #include "TaskDeploymentDescriptor.hpp"
 #include "Constant.hpp"
+#include "LoggerFactory.hpp"
 
-#include <spdlog/sinks/basic_file_sink.h>
-#include <spdlog/spdlog.h>
 
 #include <unistd.h>
 

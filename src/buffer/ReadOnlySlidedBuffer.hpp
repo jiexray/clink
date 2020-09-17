@@ -6,8 +6,7 @@
 #include "Buffer.hpp"
 #include "BufferBase.hpp"
 #include "Constant.hpp"
-#include <spdlog/spdlog.h>
-#include <spdlog/sinks/basic_file_sink.h>
+#include "LoggerFactory.hpp"
 #include <memory>
 
 class Buffer;
@@ -27,14 +26,15 @@ public:
     ~ReadOnlySlidedBuffer();
 
     /* Slice the buffer, override from BufferBase */
-    int                             get_buffer_offset()                     override;
+    int                             get_buffer_offset() override;
     // BufferBase* read_only_slice(int offset, int length) override;
     std::shared_ptr<BufferBase>     read_only_slice(int offset, int length);
 
     /* Properties */
-    int                             get_max_capacity()                      override {return m_size;}
+    int                             get_max_capacity() override {return m_size;}
+    int                             get_buffer_id() override;
 
     /* Random access to data */
-    int                             get(char* buf, int index)               override;
+    int                             get(char* buf, int index) override;
     void                            release();
 };

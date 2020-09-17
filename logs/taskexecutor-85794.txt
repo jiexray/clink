@@ -1,0 +1,28 @@
+[12:25:34.857] [BufferPool.cpp:49] [debug] [thread: 85794] BufferPool::request_buffer(), request Buffer 6 available buffers in BufferPool 0: 1
+[12:25:34.857] [BufferPoolManager.cpp:15] [debug] [thread: 85794] Register buffer consumer to Buffer 6
+[12:25:34.857] [BufferPoolManager.cpp:48] [debug] [thread: 85794] Register buffer slice to Buffer 6
+[12:25:34.857] [BufferPoolManager.cpp:63] [debug] [thread: 85794] Unregister buffer slice from Buffer 6
+[12:25:34.857] [BufferPoolManager.cpp:30] [debug] [thread: 85794] Unregister buffer consumer from Buffer 6
+[12:25:34.857] [BufferPoolManager.cpp:98] [debug] [thread: 85794] Recycle Buffer 6 back to buffer pool
+[12:25:34.857] [BufferPool.cpp:108] [debug] [thread: 85794] BufferPool::recycle_buffer(), recycle Buffer 6 available buffer in BufferPool 0: 2
+[12:25:34.857] [BufferPool.cpp:49] [debug] [thread: 85794] BufferPool::request_buffer(), request Buffer 8 available buffers in BufferPool 1: 1
+[12:25:34.857] [BufferPoolManager.cpp:15] [debug] [thread: 85794] Register buffer consumer to Buffer 8
+[12:25:34.857] [BufferPool.cpp:49] [debug] [thread: 85794] BufferPool::request_buffer(), request Buffer 7 available buffers in BufferPool 1: 0
+[12:25:34.858] [BufferPoolManager.cpp:15] [debug] [thread: 85794] Register buffer consumer to Buffer 7
+[12:25:34.858] [BufferPoolManager.cpp:30] [debug] [thread: 85794] Unregister buffer consumer from Buffer 7
+[12:25:34.858] [BufferPoolManager.cpp:98] [debug] [thread: 85794] Recycle Buffer 7 back to buffer pool
+[12:25:34.858] [BufferPool.cpp:108] [debug] [thread: 85794] BufferPool::recycle_buffer(), recycle Buffer 7 available buffer in BufferPool 1: 1
+[12:25:34.858] [BufferPoolManager.cpp:30] [debug] [thread: 85794] Unregister buffer consumer from Buffer 8
+[12:25:34.858] [BufferPoolManager.cpp:98] [debug] [thread: 85794] Recycle Buffer 8 back to buffer pool
+[12:25:34.858] [BufferPool.cpp:108] [debug] [thread: 85794] BufferPool::recycle_buffer(), recycle Buffer 8 available buffer in BufferPool 1: 2
+[12:25:34.858] [BufferPool.cpp:49] [debug] [thread: 85794] BufferPool::request_buffer(), request Buffer 9 available buffers in BufferPool 2: 0
+[12:25:34.858] [BufferPoolManager.cpp:15] [debug] [thread: 85794] Register buffer consumer to Buffer 9
+[12:25:34.858] [BufferPoolManager.cpp:30] [debug] [thread: 85794] Unregister buffer consumer from Buffer 9
+[12:25:34.858] [BufferPoolManager.cpp:98] [debug] [thread: 85794] Recycle Buffer 9 back to buffer pool
+[12:25:34.858] [BufferPool.cpp:108] [debug] [thread: 85794] BufferPool::recycle_buffer(), recycle Buffer 9 available buffer in BufferPool 2: 1
+[12:25:34.858] [BufferPool.cpp:49] [debug] [thread: 85794] BufferPool::request_buffer(), request Buffer 10 available buffers in BufferPool 3: 0
+[12:25:34.858] [BufferPoolManager.cpp:15] [debug] [thread: 85794] Register buffer consumer to Buffer 10
+[12:25:34.858] [BufferPool.cpp:97] [debug] [thread: 85794] BufferPool::recycle() available buffer: 1
+[12:25:34.858] [BufferPoolManager.cpp:30] [debug] [thread: 85794] Unregister buffer consumer from Buffer 10
+[12:25:34.858] [BufferPoolManager.cpp:98] [debug] [thread: 85794] Recycle Buffer 10 back to buffer pool
+[12:25:34.858] [BufferPool.cpp:108] [debug] [thread: 85794] BufferPool::recycle_buffer(), recycle Buffer 10 available buffer in BufferPool 3: 2

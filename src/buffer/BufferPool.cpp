@@ -1,9 +1,7 @@
 #include "BufferPool.hpp"
+int BufferPool::m_buffer_pool_id_counter = 0;
 
-std::shared_ptr<spdlog::logger> BufferPool::m_logger = spdlog::get("BufferPool") == nullptr?
-                                                        spdlog::basic_logger_mt("BufferPool", Constant::get_log_file_name()):
-                                                        spdlog::get("BufferPool");
-
+std::shared_ptr<spdlog::logger> BufferPool::m_logger = LoggerFactory::get_logger("BufferPool");
 
 /**
  * Initialize BufferPool with number_of_buffers_to_allocate Buffers,
@@ -12,6 +10,7 @@ std::shared_ptr<spdlog::logger> BufferPool::m_logger = spdlog::get("BufferPool")
 BufferPool::BufferPool(int number_of_buffers_to_allocate, int buffer_size):
 m_number_of_buffers(number_of_buffers_to_allocate),
 m_current_pool_size(number_of_buffers_to_allocate) {
+    m_buffer_pool_id = get_next_id();
     m_buffer_pool_manager = std::make_shared<BufferPoolManager>(this);
 
     available_buffers.resize(number_of_buffers_to_allocate);
@@ -42,12 +41,17 @@ Buffer* BufferPool::request_buffer() {
     // poll one buffer from available_buffers
     buffer = available_buffers.back();
     available_buffers.pop_back();
+
+    // NOTE: Must free lock before register_buffer, will have a dead-lock.
+    //       For register_buffer need lock
+    mtx_available_buffer.unlock();
+
     // register the requested buffer to BufferPoolManager
     if (m_buffer_pool_manager != nullptr){
         m_buffer_pool_manager->register_buffer(buffer);
     }
-    SPDLOG_LOGGER_DEBUG(m_logger, "BufferPool::request_buffer() available buffers: {}", available_buffers.size());
-    mtx_available_buffer.unlock();
+    SPDLOG_LOGGER_DEBUG(m_logger, "BufferPool::request_buffer(), request Buffer {} available buffers in BufferPool {}: {}",
+                                 buffer->get_buffer_id(), m_buffer_pool_id, available_buffers.size());
 
     return buffer;
 }
@@ -91,6 +95,9 @@ std::shared_ptr<BufferBuilder> BufferPool::request_buffer_builder_blocking() {
     return std::make_shared<BufferBuilder>(buffer);
 }
 
+/**
+ * Deprecated
+ */
 void BufferPool::recycle(std::shared_ptr<BufferBuilder> buffer_builder) {
     mtx_available_buffer.lock();
     available_buffers.push_back(buffer_builder->get_buffer());
@@ -104,7 +111,8 @@ void BufferPool::recycle(std::shared_ptr<BufferBuilder> buffer_builder) {
 void BufferPool::recycle_buffer(Buffer* buffer) {
     mtx_available_buffer.lock();
     available_buffers.push_back(buffer);
-    SPDLOG_LOGGER_DEBUG(m_logger, "BufferPool::recycle_buffer() available buffer: {}", available_buffers.size());
+    SPDLOG_LOGGER_DEBUG(m_logger, "BufferPool::recycle_buffer(), recycle Buffer {} available buffer in BufferPool {}: {}", 
+                            buffer->get_buffer_id(), m_buffer_pool_id, available_buffers.size());
     mtx_available_buffer.unlock();
 
     available_condition_variable.notify_all();

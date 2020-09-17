@@ -18,11 +18,10 @@
 #include "StreamConfig.hpp"
 #include "MailboxProcessor.hpp"
 #include "Constant.hpp"
+#include "LoggerFactory.hpp"
 #include <memory>
 #include <unistd.h>
 
-#include <spdlog/spdlog.h>
-#include <spdlog/sinks/basic_file_sink.h>
 
 template <class OUT> class OperatorChain;
 template <class OUT> class StreamEdge;
@@ -76,6 +75,6 @@ public:
 
     void run_default_action() {
         // std::cout << "StreamTask process_input()" << std::endl;
-        m_stream_task-> process_input();
+        m_stream_task->process_input();
     }
 };

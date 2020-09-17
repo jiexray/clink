@@ -7,6 +7,7 @@
 #include "../streamrecord/StreamRecord.hpp"
 #include "../streamrecord/StreamRecordSerializer.hpp"
 #include "ChannelSelector.hpp"
+#include "LoggerFactory.hpp"
 #include <memory>
 #include <string>
 
@@ -18,7 +19,9 @@ private:
     int                                         m_number_of_channels;
     std::string                                 m_task_name;
     std::vector<std::shared_ptr<BufferBuilder>> m_buffer_builders;
-    std::shared_ptr<StreamRecordSerializer<T>>  m_record_serializer;    
+    std::shared_ptr<StreamRecordSerializer<T>>  m_record_serializer; 
+
+    static std::shared_ptr<spdlog::logger>      m_logger;   
 
 public:
     ResultWriter(std::shared_ptr<ResultPartition> result_partition, std::string task_name);

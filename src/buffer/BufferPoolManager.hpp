@@ -9,12 +9,17 @@
 #include "BufferBuilder.hpp"
 #include "BufferConsumer.hpp"
 #include "Constant.hpp"
+#include "LoggerFactory.hpp"
 #include <map>
-#include <spdlog/spdlog.h>
-#include <spdlog/sinks/basic_file_sink.h>
+#include <mutex>
 
 class Buffer;
 class BufferPool;
+
+/**
+ * Note: Register/Unregister of BufferConsumer, BufferBase (Buffer slices) and Buffer can be accessed from
+ *       upstream StreamTask and downstream StreamTask. All three parts need locks.
+ */
 
 class BufferPoolManager
 {
@@ -27,6 +32,8 @@ private:
     std::map<int, Buffer*>          m_buffer_id_to_buffer;
     /* The BufferPool which is managed by this BufferPoolManager */
     BufferPool*                     m_buffer_pool;
+
+    std::mutex                      m_buffer_manager_mtx; // a global mutex
 
     static std::shared_ptr<spdlog::logger> m_logger;
 
@@ -46,7 +53,6 @@ public:
     void                    unregister_buffer_slice(int buffer_id);
 
     void                    register_buffer(Buffer* buffer);
-    void                    unregister_buffer(Buffer* buffer);
 
     /* Put Buffer back to BufferPool */
     void                    release_buffer(int buffer_id);

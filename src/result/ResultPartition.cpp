@@ -1,4 +1,5 @@
 #include "ResultPartition.hpp"
+std::shared_ptr<spdlog::logger> ResultPartition::m_logger = LoggerFactory::get_logger("Result_Partition");
 
 ResultPartition::ResultPartition(std::string owning_task_name, 
                                  int partition_idx,
@@ -19,6 +20,7 @@ void ResultPartition::setup() {
  * Get a BufferBuilder from buffer pool using blocking mode.
  */
 std::shared_ptr<BufferBuilder> ResultPartition::get_buffer_builder() {
+    SPDLOG_LOGGER_DEBUG(m_logger, "Requesting BufferBuilder in blocking way from BufferPool {}", m_buffer_pool->get_buffer_pool_id());
     return m_buffer_pool->request_buffer_builder_blocking();
 }
 

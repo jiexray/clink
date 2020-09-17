@@ -1,14 +1,14 @@
 #include "BufferBuilder.hpp"
-std::shared_ptr<spdlog::logger> BufferBuilder:: m_logger = spdlog::get("BufferBuilder") == nullptr?
-                                                            spdlog::basic_logger_mt("BufferBuilder", Constant::get_log_file_name()):
-                                                            spdlog::get("BufferBuilder");
+std::shared_ptr<spdlog::logger> BufferBuilder:: m_logger = LoggerFactory::get_logger("BufferBuilder");
 
 bool BufferBuilder::is_full() {
-    return m_buffer->get_max_capacity() == *m_write_position_marker_ptr;
+    // sychronize function in write part
+    return m_buffer->get_max_capacity() == m_cached_write_postition;
 }
 
 BufferBuilder::BufferBuilder(Buffer* buffer):
 m_buffer(buffer) {
+    m_cached_write_postition = 0;
     m_write_position_marker_ptr = new std::atomic_int{0};
 
     // setup logger
@@ -19,27 +19,37 @@ m_buffer(buffer) {
 BufferBuilder::~BufferBuilder() {}
 
 int BufferBuilder::append(const char* const source, int offset, int length) {
+    // sychronize function in write part
     int buffer_capacity = m_buffer->get_max_capacity();
     // NOTE: this get and set of writer_marker is ok, for the writer marker is only modified in this file.
-    int available = buffer_capacity - *m_write_position_marker_ptr;
+    int available = buffer_capacity - m_cached_write_postition;
     int to_copy = std::min(available, length);
 
     for (int i = 0; i < to_copy; i++) {
-        m_buffer->put((*m_write_position_marker_ptr)++, source[offset + i]);
+        m_buffer->put(m_cached_write_postition++, source[offset + i]);
+        // all things are approprite done, builder can die
+
+        // update m_write_position_marker_ptr, a notify to BufferConsumer
+        // here m_write_position_marker_ptr can never be null, there are thing left for BufferConsumer to read
+        (*m_write_position_marker_ptr)++;
     }
     return to_copy;
 }
 
 int BufferBuilder::append(const char* const source, int offset, int length, bool must_complete){
+    // sychronize function in write part
     if (!must_complete) {
         return append(source, offset, length);
     } else {
         int buffer_capacity = m_buffer->get_max_capacity();
-        int available = buffer_capacity - *m_write_position_marker_ptr;
+        int available = buffer_capacity - m_cached_write_postition;
         if (available < length) {
             // force to fill the unfinished buffer with fake chars
             for (int i = 0; i < available; i++) {
-                m_buffer->put((*m_write_position_marker_ptr)++, (char)0);
+                // same to append(const char* const, int, int)
+                m_buffer->put(m_cached_write_postition++, (char)0);
+
+                (*m_write_position_marker_ptr)++;
             }
             return 0;
         } else {

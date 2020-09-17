@@ -66,4 +66,8 @@ if(CXXTEST_FOUND)
   # runtime task-chain test
   CXXTEST_ADD_TEST(unitest_runtime_task_chain runtime_task_chain_test.cpp ${CMAKE_CURRENT_SOURCE_DIR}/runtime/TestTaskChain.hpp)
   target_link_libraries(unitest_runtime_task_chain runtime streaming result streamrecord)
+
+  # streaming streaming-with-buffer-release test
+  CXXTEST_ADD_TEST(unitest_streaming_with_buffer_release streaming_with_buffer_release.cpp ${CMAKE_CURRENT_SOURCE_DIR}/streaming/TestStreamingWithBufferRelease.hpp)
+  target_link_libraries(unitest_streaming_with_buffer_release streaming streamrecord result)
 endif()

@@ -13,12 +13,11 @@
 #include "shuffle/ShuffleEnvironment.hpp"
 #include "RuntimeEnvironment.hpp"
 #include "Constant.hpp"
+#include "LoggerFactory.hpp"
 
 #include "OneInputStreamTask.hpp"
 #include "SourceStreamTask.hpp"
 
-#include <spdlog/spdlog.h>
-#include <spdlog/sinks/basic_file_sink.h>
 
 #include <memory>
 #include <string>

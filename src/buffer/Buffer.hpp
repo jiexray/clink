@@ -35,7 +35,7 @@ public:
 
     /* Properties */
     int                                     get_max_capacity() override {return m_size;}
-    int                                     get_buffer_id() {return m_buffer_id;}
+    int                                     get_buffer_id() override {return m_buffer_id;}
     std::shared_ptr<BufferPoolManager>      get_buffer_pool_manager() {return m_buffer_pool_manager;}
 
     /* Random Access get() and put() methods */

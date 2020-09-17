@@ -1,7 +1,5 @@
 #include "TypeDeserializer.hpp"
-std::shared_ptr<spdlog::logger> TypeDeserializer::m_logger = spdlog::get("TypeDeserializer") == nullptr ?
-                                                                spdlog::basic_logger_mt("TypeDeserializer", Constant::get_log_file_name()):
-                                                                spdlog::get("TypeDeserializer");
+std::shared_ptr<spdlog::logger> TypeDeserializer::m_logger = LoggerFactory::get_logger("TypeDeserializer");
 
 
 void TypeDeserializer::set_next_buffer(std::shared_ptr<BufferBase> buffer) {
@@ -60,6 +58,10 @@ int TypeDeserializer::read_int() {
     }
     int v = SerializeUtils::deserialize_int(buf);
 
+    // free buf
+    delete buf;
+    buf = nullptr;
+
     return v;
 }
 
@@ -77,9 +79,11 @@ int TypeDeserializer::read_short() {
         m_remaining--;
         evict_used_buffer(false);
     }
-    
-
     int v = SerializeUtils::deserialize_short(buf);
+
+    // free buf
+    delete buf;
+    buf = nullptr;
 
     return v;
 }
@@ -92,8 +96,13 @@ int TypeDeserializer::read_byte() {
     }
     m_remaining--;
     evict_used_buffer(false);
+    int v = (int)buf[0];
 
-    return buf[0];
+    // free buf
+    delete buf;
+    buf = nullptr;
+
+    return v;
 }
 
 int TypeDeserializer::read_unsigned_byte() {
@@ -111,8 +120,12 @@ double TypeDeserializer::read_double() {
         m_remaining--;
         evict_used_buffer(false);
     }
-
     double v = SerializeUtils::deserialize_double(buf);
+
+    // free buf
+    delete buf;
+    buf = nullptr;
+    
     return v;
 }
 
@@ -142,6 +155,13 @@ void TypeDeserializer::evict_used_buffer(bool is_finish_read) {
             m_position = 0;
         }
 
+        // assert the use_count of the first buffer, it will be destroy sooner
+        if (first_buf.use_count() != 1) {
+            SPDLOG_LOGGER_ERROR(m_logger, "Ref count of a buffer slice in Buffer {} is not zero, when finish reading", 
+                                    first_buf->get_buffer_id());
+            std::cout << "Ref count of a buffer slice in Buffer " << first_buf->get_buffer_id() <<" is not zero, when finish reading" << std::endl;
+        }
+
         
     } else if (is_finish_read && m_position == buf_size - 1) {
         check_end_with_one_byte();
@@ -159,6 +179,13 @@ void TypeDeserializer::check_end_with_one_byte() {
     if (m_position == buf_size - 1) {
         m_remaining--;
         m_last_buffers.pop_front();
+
+        if (first_buf.use_count() != 1) {
+            SPDLOG_LOGGER_ERROR(m_logger, "Ref count of a buffer slice in Buffer {} is not zero, when finish reading", 
+                                    first_buf->get_buffer_id());
+            std::cout << "Ref count of a buffer slice in Buffer " << first_buf->get_buffer_id() <<" is not zero, when finish reading" << std::endl;
+        }
+
         if ((int) m_last_buffers.size() == 0) {
             // nothing left in deserializer
             m_position = -1;

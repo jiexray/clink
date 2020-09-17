@@ -1,8 +1,5 @@
 #include "ReadOnlySlidedBuffer.hpp"
-std::shared_ptr<spdlog::logger> ReadOnlySlidedBuffer::m_logger = spdlog::get("ReadOnlySlidedBuffer") == nullptr?
-                                                                    spdlog::basic_logger_mt("ReadOnlySlidedBuffer", Constant::get_log_file_name()):
-                                                                    spdlog::get("ReadOnlySlidedBuffer");
-
+std::shared_ptr<spdlog::logger> ReadOnlySlidedBuffer::m_logger = LoggerFactory::get_logger("ReadOnlySlidedBuffer");
 
 ReadOnlySlidedBuffer::ReadOnlySlidedBuffer(BufferBase* buffer, int offset, int length):
 parent_buffer((Buffer*)buffer),
@@ -11,7 +8,6 @@ m_size(length){
     // setup logger
     spdlog::set_level(Constant::SPDLOG_LEVEL);
     spdlog::set_pattern(Constant::SPDLOG_PATTERN);
-    SPDLOG_LOGGER_DEBUG(m_logger, "Create buffer slice of Buffer {} and register to BufferPoolManager", parent_buffer->get_buffer_id());
     if (parent_buffer->get_buffer_pool_manager() != nullptr){
         parent_buffer->get_buffer_pool_manager()->register_buffer_slice(parent_buffer->get_buffer_id());
     }
@@ -23,6 +19,10 @@ ReadOnlySlidedBuffer::~ReadOnlySlidedBuffer() {
 
 int ReadOnlySlidedBuffer::get_buffer_offset() {
     return m_buffer_offset;
+}
+
+int ReadOnlySlidedBuffer::get_buffer_id() {
+    return parent_buffer->get_buffer_id();
 }
 
 // BufferBase* ReadOnlySlidedBuffer::read_only_slice(int offset, int length) {
@@ -52,7 +52,6 @@ int ReadOnlySlidedBuffer::get(char* buf, int index) {
 }
 
 void ReadOnlySlidedBuffer::release(){
-    SPDLOG_LOGGER_DEBUG(m_logger, "ReadOnlySlidedBuffer released");
     if (parent_buffer->get_buffer_pool_manager() != nullptr){
         parent_buffer->get_buffer_pool_manager()->unregister_buffer_slice(parent_buffer->get_buffer_id());
     }

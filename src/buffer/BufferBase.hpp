@@ -12,6 +12,7 @@ public:
 
     /* Properties */
     virtual int                             get_max_capacity() = 0;
+    virtual int                             get_buffer_id() = 0;
 
     /* Random access to buffer */
     virtual int                             get(char*, int) = 0;

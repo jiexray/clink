@@ -11,6 +11,7 @@
 #include "ResultSubpartitionView.hpp"
 #include "../buffer/BufferPool.hpp"
 #include "../buffer/BufferBuilder.hpp"
+#include "LoggerFactory.hpp"
 
 class ResultSubpartition;
 class ResultSubpartitionView;
@@ -26,6 +27,8 @@ private:
 
     std::shared_ptr<BufferPool>                         m_buffer_pool;
 
+    static std::shared_ptr<spdlog::logger>              m_logger;
+
 public:
     ResultPartition(std::string, int, int, std::shared_ptr<BufferPool>);
     void                                                setup(); // setup subpartitions array
@@ -35,6 +38,7 @@ public:
     std::shared_ptr<ResultSubpartition>                 get_subpartition(int subpartition_idx);
     int                                                 get_number_of_subpartitions() {return (int) m_subpartitions.size();}
     std::string                                         get_owning_task_name() {return m_owning_task_name;}
+    int                                                 get_buffer_pool_capacity() {return m_buffer_pool->get_max_number_of_buffers();}
 
     // partition_id is the unique identification of the ResultPartition, use this to register / request ResultPartition
     std::string                                         get_partition_id() {return m_owning_task_name + "-" + std::to_string(m_partition_idx);}
