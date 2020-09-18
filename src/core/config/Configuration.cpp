@@ -205,8 +205,14 @@ void Configuration::set_stream_operator(std::string key, std::shared_ptr<StreamO
         std::shared_ptr<SinkFunction<IN>> sink_function = sink_operator->get_user_function();
         char* sink_function_in_char = sink_function->serialize();
         this->m_conf_data.insert(std::make_pair(key + "_user-function", sink_function_in_char));
+    } else if (std::dynamic_pointer_cast<StreamFlatMap<IN, OUT>>(stream_operator) != nullptr) {
+        std::shared_ptr<StreamFlatMap<IN, OUT>> flat_map_operator = std::dynamic_pointer_cast<StreamFlatMap<IN, OUT>>(stream_operator);
+
+        std::shared_ptr<FlatMapFunction<IN, OUT>> flat_map_function = flat_map_operator->get_user_function();
+        char* flat_map_function_in_char = flat_map_function->serialize();
+        this->m_conf_data.insert(std::make_pair(key + "_user-function", flat_map_function_in_char));
     } else {
-        throw std::runtime_error("Not support other stream operator except for StreamMap, StreamSource, StreamSink");
+        throw std::runtime_error("Not support other stream operator except for StreamMap, StreamSource, StreamSink, StreamFlatMap");
     }
 }
 
@@ -225,8 +231,11 @@ std::shared_ptr<StreamOperator<OUT>>  Configuration::get_stream_operator(std::st
         } else if(dynamic_cast<SinkFunction<IN>*>(func_ptr) != nullptr) {
             std::shared_ptr<SinkFunction<IN>> gen_func = (dynamic_cast<SinkFunction<IN>*>(func_ptr))->deserialize();
             return std::make_shared<StreamSink<IN>>(gen_func);            
+        } else if(dynamic_cast<FlatMapFunction<IN, OUT>*>(func_ptr) != nullptr) {
+            std::shared_ptr<FlatMapFunction<IN, OUT>> gen_func = (dynamic_cast<FlatMapFunction<IN, OUT>*>(func_ptr))->deserialize();
+            return std::make_shared<StreamFlatMap<IN, OUT>>(gen_func);
         } else {
-            throw std::runtime_error("Stream operator deserialization only support StreamMap, StreamSource, StreamSink");
+            throw std::runtime_error("Stream operator deserialization only support StreamMap, StreamSource, StreamSink, StreamFlatMap");
         }
     } else {
         return nullptr;

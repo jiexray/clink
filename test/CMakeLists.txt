@@ -70,4 +70,12 @@ if(CXXTEST_FOUND)
   # streaming streaming-with-buffer-release test
   CXXTEST_ADD_TEST(unitest_streaming_with_buffer_release streaming_with_buffer_release.cpp ${CMAKE_CURRENT_SOURCE_DIR}/streaming/TestStreamingWithBufferRelease.hpp)
   target_link_libraries(unitest_streaming_with_buffer_release streaming streamrecord result)
+
+  # streaming flat-map test
+  CXXTEST_ADD_TEST(unitest_streaming_flat_map_test streaming_flat_map_test.cpp ${CMAKE_CURRENT_SOURCE_DIR}/streaming/TestFlatMap.hpp)
+  target_link_libraries(unitest_streaming_flat_map_test streaming streamrecord result)
+
+  # streaming file-read test
+  CXXTEST_ADD_TEST(unitest_streaming_file_read_test streaming_file_read_test.cpp ${CMAKE_CURRENT_SOURCE_DIR}/streaming/TestFileRead.hpp)
+  target_link_libraries(unitest_streaming_file_read_test streaming)
 endif()

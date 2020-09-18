@@ -15,6 +15,7 @@
 #include "../../streaming/operators/StreamMap.hpp"
 #include "../../streaming/operators/StreamSource.hpp"
 #include "../../streaming/operators/StreamSink.hpp"
+#include "StreamFlatMap.hpp"
 #include <cstring>
 
 
