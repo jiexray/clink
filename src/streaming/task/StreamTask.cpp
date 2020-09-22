@@ -35,7 +35,6 @@ template <class OUT>
 std::shared_ptr<ResultWriter<OUT>> StreamTask<OUT>::create_result_writer(std::shared_ptr<StreamEdge<OUT>> edge, int output_idx, std::string task_name) {
     std::shared_ptr<StreamPartitioner<OUT>> output_partitioner = edge->get_output_partitioner();
 
-    // TODO: add logging module
     SPDLOG_LOGGER_INFO(m_logger, "Using partitioner {} for output {} of StreamTask {}", output_partitioner->to_string(), output_idx, task_name);
 
     std::shared_ptr<ResultPartition> buffer_writter = this->get_environment()->get_writer(output_idx);

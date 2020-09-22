@@ -16,7 +16,6 @@ StreamTaskNetworkInput<T>::StreamTaskNetworkInput(std::shared_ptr<InputGate> inp
     }
 }
 
-// TODO: test
 template <class T>
 InputStatus StreamTaskNetworkInput<T>::emit_next(std::shared_ptr<DataOutput<T>> output) {
     while (true)
@@ -31,7 +30,6 @@ InputStatus StreamTaskNetworkInput<T>::emit_next(std::shared_ptr<DataOutput<T>> 
             }
 
             if (result == DeserializationResult::INTERMEDIATE_RECORD_FROM_BUFFER || result == DeserializationResult::LAST_RECORD_FROM_BUFFER) {
-                // TODO: process the element!
                 // create a StreamRecord based on the deserialization delegate.
                 std::shared_ptr<StreamRecord<T>> new_record = std::make_shared<StreamRecord<T>>(this->m_deserialization_delegate->get_instance());
                 output->emit_record(new_record);

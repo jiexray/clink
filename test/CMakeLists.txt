@@ -78,4 +78,8 @@ if(CXXTEST_FOUND)
   # streaming file-read test
   CXXTEST_ADD_TEST(unitest_streaming_file_read_test streaming_file_read_test.cpp ${CMAKE_CURRENT_SOURCE_DIR}/streaming/TestFileRead.hpp)
   target_link_libraries(unitest_streaming_file_read_test streaming)
+
+  # streamrecord tuple test
+  CXXTEST_ADD_TEST(unitest_streamrecord_tuple streamrecord_tuple_test.cpp ${CMAKE_CURRENT_SOURCE_DIR}/streamrecord/TestTuple.hpp)
+  target_link_libraries(unitest_streamrecord_tuple streamrecord)
 endif()

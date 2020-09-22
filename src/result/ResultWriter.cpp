@@ -34,7 +34,6 @@ void ResultWriter<T>::copy_to_buffer_builder(int target_channel, std::shared_ptr
             // Free the currrent buffer builder, and the buffer consumer in the result subpartition (target_channel) 
             // will take care of the buffer in the release buffer builder.
 
-            // TODO: recycle the buffer builder
             // m_buffer_builders[target_channel].reset();
             if (result == FULL_RECORD_BUFFER_FULL)
                 break;

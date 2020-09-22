@@ -1,8 +1,8 @@
-#include "TypeDeserializer.hpp"
-std::shared_ptr<spdlog::logger> TypeDeserializer::m_logger = LoggerFactory::get_logger("TypeDeserializer");
+#include "TypeDeserializerImpl.hpp"
+std::shared_ptr<spdlog::logger> TypeDeserializerImpl::m_logger = LoggerFactory::get_logger("TypeDeserializerImpl");
 
 
-void TypeDeserializer::set_next_buffer(std::shared_ptr<BufferBase> buffer) {
+void TypeDeserializerImpl::set_next_buffer(std::shared_ptr<BufferBase> buffer) {
     if ((int)m_last_buffers.size() == 0) {
         // empty buffer, initialize the offset
         m_position = 0;
@@ -11,7 +11,7 @@ void TypeDeserializer::set_next_buffer(std::shared_ptr<BufferBase> buffer) {
     m_remaining += buffer->get_max_capacity();
 }
 
-DeserializationResult TypeDeserializer::get_next_record(std::shared_ptr<IOReadableWritable> target) {
+DeserializationResult TypeDeserializerImpl::get_next_record(std::shared_ptr<IOReadableWritable> target) {
     if (m_record_size == -1) {
         if (m_position == -1) {
             throw new std::runtime_error("cannot deserialize record, when buffers in empty.");
@@ -32,7 +32,7 @@ DeserializationResult TypeDeserializer::get_next_record(std::shared_ptr<IOReadab
     return DeserializationResult::PARTIAL_RECORD;
 }
 
-DeserializationResult TypeDeserializer::read_into(std::shared_ptr<IOReadableWritable> target) {
+DeserializationResult TypeDeserializerImpl::read_into(std::shared_ptr<IOReadableWritable> target) {
     target->read(this);
 
     // finish reading, re-initialize m_record_size
@@ -45,7 +45,7 @@ DeserializationResult TypeDeserializer::read_into(std::shared_ptr<IOReadableWrit
 }
 
 
-int TypeDeserializer::read_int() {
+int TypeDeserializerImpl::read_int() {
     char* buf = new char[4];
     // TODO: use more efficient buffer copy
     for (int i = 0; i < 4; i++) {
@@ -65,7 +65,7 @@ int TypeDeserializer::read_int() {
     return v;
 }
 
-int TypeDeserializer::read_short() {
+int TypeDeserializerImpl::read_short() {
     if (m_last_buffers.empty()) {
         throw std::runtime_error("read error, empty buffer lists");
     }
@@ -88,7 +88,7 @@ int TypeDeserializer::read_short() {
     return v;
 }
 
-int TypeDeserializer::read_byte() {
+int TypeDeserializerImpl::read_byte() {
     char* buf = new char[1];
     int ret = m_last_buffers.front()->get(buf, m_position++);
     if (ret == -1) {
@@ -105,11 +105,11 @@ int TypeDeserializer::read_byte() {
     return v;
 }
 
-int TypeDeserializer::read_unsigned_byte() {
+int TypeDeserializerImpl::read_unsigned_byte() {
     return read_byte() & 0xff;
 }
 
-double TypeDeserializer::read_double() {
+double TypeDeserializerImpl::read_double() {
     char* buf = new char[8];
 
     for (int i = 0; i < 8; i++) {
@@ -137,7 +137,7 @@ double TypeDeserializer::read_double() {
  * 
  * TODO: Recycle the buffer if needed.
  */
-void TypeDeserializer::evict_used_buffer(bool is_finish_read) {
+void TypeDeserializerImpl::evict_used_buffer(bool is_finish_read) {
     if (m_last_buffers.empty()) {
         SPDLOG_LOGGER_DEBUG(m_logger, "evict_used_buffer(): useless buffer evict");
         return;
@@ -169,7 +169,7 @@ void TypeDeserializer::evict_used_buffer(bool is_finish_read) {
     // TODO: recycle first buf
 }
 
-void TypeDeserializer::check_end_with_one_byte() {
+void TypeDeserializerImpl::check_end_with_one_byte() {
     if ((int)m_last_buffers.size() == 0) {
         SPDLOG_LOGGER_DEBUG(m_logger, "check_end_with_one_byte(): useless buffer evict");
         return;

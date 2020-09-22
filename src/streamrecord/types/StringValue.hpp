@@ -10,16 +10,17 @@
 class StringValue : public IOReadableWritable
 {
 private:
-    char*               m_value; // character value of the string value
-    int                 m_len;
+    char*                   m_value; // character value of the string value
+    int                     m_len;
 
 public:
     StringValue();
     StringValue(std::string s);
 
-    void                read(TypeDeserializer* deserializer) override;
+    void                    read(TypeDeserializer* deserializer) override;
+    std::shared_ptr<void>   get_instance_void() override;
 
     /* Properties */
-    std::string         to_string();
-    std::string         get_value();
+    std::string             to_string();
+    std::string             get_value();
 };

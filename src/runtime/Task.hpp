@@ -46,7 +46,6 @@ private:
     std::shared_ptr<AbstractInvokable>  m_invokable;
     std::string                         m_name_of_invokable_class;
 
-    // TODO: add memory manager, Now only a BufferPool
     std::shared_ptr<BufferPool>         m_buffer_pool;
 
     typedef std::vector<std::shared_ptr<ResultPartitionDeploymentDescriptor>> ResultPartitionDeploymentDescriptorList;

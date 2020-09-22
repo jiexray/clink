@@ -14,7 +14,7 @@ StringValue::StringValue(std::string s){
 void StringValue::read(TypeDeserializer* deserializer) {
     m_len = deserializer->get_record_size();
     if (m_value != nullptr) {
-        free(m_value);
+        delete m_value;
         m_value = nullptr;
     }
     m_value = new char[m_len + 1];
@@ -37,4 +37,8 @@ std::string StringValue::get_value() {
         throw new std::runtime_error("Cannot read an empty StringValue");
     }
     return std::string(m_value, m_len);
+}
+
+std::shared_ptr<void> StringValue::get_instance_void() {
+    return std::make_shared<std::string>(get_value());
 }

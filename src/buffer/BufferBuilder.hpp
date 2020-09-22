@@ -42,7 +42,6 @@ public:
 
     /* create / delelte buffer consumer */
     std::shared_ptr<BufferConsumer> create_buffer_consumer();
-    void                            recycle_buffer_consumer();
 
     /* manipulate write_position_marker */
     int                             get_write_position() {return m_cached_write_postition;}

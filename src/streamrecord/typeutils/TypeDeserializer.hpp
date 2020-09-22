@@ -16,41 +16,20 @@
 class IOReadableWritable;
 
 class TypeDeserializer
-{
-private:
-    std::deque<std::shared_ptr<BufferBase>>     m_last_buffers; // m_last_buffers caches all incomplete buffer, 
-                                                                // waiting for the last buffer to revive the whole object
-    int                                         m_record_size;
-
-    int                                         m_position;
-    int                                         m_remaining;
-    static std::shared_ptr<spdlog::logger>      m_logger;
-             
+{             
 public:
-    TypeDeserializer() {
-        m_record_size = -1; // no record at the creation of deserializer.
-        m_position = -1;
-        m_remaining = 0;
-        spdlog::set_pattern(Constant::SPDLOG_PATTERN);
-        spdlog::set_level(Constant::SPDLOG_LEVEL);
-    }
-    void                                        set_next_buffer(std::shared_ptr<BufferBase> buffer);
-    DeserializationResult                       get_next_record(std::shared_ptr<IOReadableWritable> target);
+    virtual void                                set_next_buffer(std::shared_ptr<BufferBase> buffer) = 0;
+    virtual DeserializationResult               get_next_record(std::shared_ptr<IOReadableWritable> target) = 0;
 
-    int                                         read_short();
-    int                                         read_int();
-    double                                      read_double();
-    int                                         read_byte();
-    int                                         read_unsigned_byte();
-    DeserializationResult                       read_into(std::shared_ptr<IOReadableWritable> target);
-
-    void                                        evict_used_buffer(bool is_finish_read);
-    void                                        check_end_with_one_byte();
+    virtual int                                 read_short() = 0;
+    virtual int                                 read_int() = 0;
+    virtual double                              read_double() = 0;
+    virtual int                                 read_byte() = 0;
+    virtual int                                 read_unsigned_byte() = 0;
 
     /* Properties */
-    int                                         get_record_size() {return m_record_size;}
-    std::string                                 dump_state() {return "number of buffers: " + std::to_string(m_last_buffers.size()) + 
-                                                                    ", read position: " + std::to_string(m_position) + 
-                                                                    ", remaining buffers: " + std::to_string(m_remaining);}
+    virtual int                                 get_record_size() = 0;
+    virtual void                                set_record_size(int) = 0;
+    virtual std::string                         dump_state() = 0;
 };
 

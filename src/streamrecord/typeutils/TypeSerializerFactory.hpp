@@ -2,6 +2,8 @@
 #include "TypeSerializer.hpp"
 #include "StringSerializer.hpp"
 #include "DoubleSerializer.hpp"
+#include "TupleSerializer.hpp"
+#include "IntSerializer.hpp"
 
 
 template <class T>

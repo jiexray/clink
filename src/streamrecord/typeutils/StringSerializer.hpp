@@ -24,6 +24,7 @@ inline StreamRecordAppendResult StringSerializer::serialize(std::shared_ptr<std:
         char* length_buf = new char[2];
         SerializeUtils::serialize_short(length_buf, m_data_remaining);
         int data_length_write = buffer_builder->append(length_buf, 0, 2, true);
+        delete length_buf;
         // the length of record is not totally written, skip the buffer
         if (data_length_write == 0) {
             return NONE_RECORD;

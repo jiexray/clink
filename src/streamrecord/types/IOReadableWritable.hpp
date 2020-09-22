@@ -12,8 +12,11 @@ class TypeDeserializer;
 class IOReadableWritable
 {
 private:
-    
 public:
-    virtual void        read(TypeDeserializer* deserializer) = 0;
+    virtual ~IOReadableWritable() {}
+
+    virtual void                                    read(TypeDeserializer* deserializer) = 0;
+    virtual std::shared_ptr<IOReadableWritable>     get_field(int pos) {return nullptr;}
+    virtual std::shared_ptr<void>                   get_instance_void() {return nullptr;}
 };
 

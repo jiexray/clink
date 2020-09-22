@@ -10,6 +10,7 @@
 #include "../streamrecord/typeutils/TypeDeserializer.hpp"
 #include "StringValue.hpp"
 #include "DeserializationDelegate.hpp"
+#include "TypeDeserializerImpl.hpp"
 
 #include <memory>
 
@@ -126,7 +127,7 @@ public:
         std::string buf_1 = std::string(int_buf, 2) + "1234567";
         isBufferEqualToString(buf, buf_1);
 
-        TypeDeserializer deserializer;
+        TypeDeserializerImpl deserializer;
 
         deserializer.set_next_buffer(buf);
         std::shared_ptr<StringValue> string_value = std::make_shared<StringValue>();
@@ -154,7 +155,7 @@ public:
         std::string buf_1 = std::string(int_buf, 2) + "1234567";
         isBufferEqualToString(buf, buf_1);
 
-        TypeDeserializer deserializer;
+        TypeDeserializerImpl deserializer;
 
         deserializer.set_next_buffer(buf);
 

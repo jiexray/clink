@@ -13,7 +13,7 @@ DoubleValue::DoubleValue(double v) {
 
 void DoubleValue::read(TypeDeserializer* deserializer) {
     if (m_value != nullptr) {
-        free(m_value);
+        delete m_value;
         m_value = nullptr;
     }
     m_value = new double[1];
@@ -32,4 +32,8 @@ double DoubleValue::get_value() {
         throw new std::runtime_error("Cannot read an empty DoubleValue");
     }
     return *m_value;
+}
+
+std::shared_ptr<void> DoubleValue::get_instance_void(){
+    return std::make_shared<double>(get_value());
 }

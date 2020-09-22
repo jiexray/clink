@@ -61,8 +61,3 @@ int BufferBuilder::append(const char* const source, int offset, int length, bool
 std::shared_ptr<BufferConsumer> BufferBuilder::create_buffer_consumer() {
     return std::make_shared<BufferConsumer>(m_buffer, m_write_position_marker_ptr, 0);
 }
-
-void BufferBuilder::recycle_buffer_consumer() {
-    // TODO: recycle buffer consumer before free buffer builder
-
-}

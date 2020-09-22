@@ -23,6 +23,7 @@ set(ALL_INCLUDE_DIRS
   ${CMAKE_SOURCE_DIR}/src/core/config
   ${CMAKE_SOURCE_DIR}/src/core/common
   ${CMAKE_SOURCE_DIR}/src/core/util
+  ${CMAKE_SOURCE_DIR}/src/core/tuple
   ${CMAKE_SOURCE_DIR}/src/runtime/executiongraph
   ${CMAKE_SOURCE_DIR}/src/runtime/shuffle
   ${CMAKE_SOURCE_DIR}/src/runtime/taskexecutor
@@ -79,14 +80,18 @@ target_link_libraries(result streamrecord buffer)
 target_sources(streamrecord
   PRIVATE
     streamrecord/types/DeserializationDelegate.cpp
+    streamrecord/types/TupleDeserializationDelegate.cpp
     streamrecord/types/IntValue.cpp
     streamrecord/types/DoubleValue.cpp
     streamrecord/types/StringValue.cpp
-    streamrecord/typeutils/TypeDeserializer.cpp
+    streamrecord/typeutils/TypeDeserializerImpl.cpp
     streamrecord/typeutils/TypeSerializerFactory.cpp
+    streamrecord/typeutils/TypeSerializerDelegate.cpp
+    streamrecord/typeutils/TupleSerializer.cpp
+    streamrecord/typeutils/TupleDeserializer.cpp
 )
 target_include_directories(streamrecord PUBLIC
-  ${CMAKE_CURRENT_SOURCE_DIR}/core/config
+  ${ALL_INCLUDE_DIRS}
 )
 target_link_libraries(streamrecord core buffer)
 
