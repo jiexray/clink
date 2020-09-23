@@ -79,7 +79,6 @@ target_link_libraries(result streamrecord buffer)
 # ------------------------
 target_sources(streamrecord
   PRIVATE
-    streamrecord/types/DeserializationDelegate.cpp
     streamrecord/types/TupleDeserializationDelegate.cpp
     streamrecord/types/IntValue.cpp
     streamrecord/types/DoubleValue.cpp
@@ -104,7 +103,6 @@ target_sources(streaming
     streaming/task/OperatorChain.cpp
     streaming/task/StreamTask.cpp
     streaming/operators/SimpleStreamOperatorFactory.cpp
-    streaming/io/StreamTaskNetworkInput.cpp
     streaming/task/config/StreamConfig.cpp
     streaming/task/mailbox/TaskMailbox.cpp
     streaming/task/mailbox/MailboxProcessor.cpp

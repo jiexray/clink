@@ -40,5 +40,5 @@ std::string StringValue::get_value() {
 }
 
 std::shared_ptr<void> StringValue::get_instance_void() {
-    return std::make_shared<std::string>(get_value());
+    return std::make_shared<std::string>(std::string(m_value, m_len));
 }

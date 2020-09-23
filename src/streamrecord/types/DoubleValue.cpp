@@ -35,5 +35,5 @@ double DoubleValue::get_value() {
 }
 
 std::shared_ptr<void> DoubleValue::get_instance_void(){
-    return std::make_shared<double>(get_value());
+    return std::make_shared<double>(*m_value);
 }

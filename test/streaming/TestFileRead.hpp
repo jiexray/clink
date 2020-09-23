@@ -109,7 +109,7 @@ public:
 
 
         std::shared_ptr<ResultWriter<std::string>> result_writer_0 = std::make_shared<ResultWriter<std::string>>(partition_0, "test");
-        std::shared_ptr<StreamRecord<std::string>> record_1 = std::make_shared<StreamRecord<std::string>>("resource/wordcount.txt");
+        std::shared_ptr<StreamRecord<std::string>> record_1 = std::make_shared<StreamRecord<std::string>>(std::make_shared<std::string>(std::string("resource/wordcount.txt")));
 
 
         result_writer_0->emit(record_1, 0);

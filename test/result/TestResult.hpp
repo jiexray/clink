@@ -95,11 +95,11 @@ public:
 
         std::shared_ptr<ResultWriter<std::string>> result_writer = std::make_shared<ResultWriter<std::string>>(partition, "test-create-result-writer");
 
-        std::shared_ptr<StreamRecord<std::string>> record_1 = std::make_shared<StreamRecord<std::string>>("1234");
-        std::shared_ptr<StreamRecord<std::string>> record_2 = std::make_shared<StreamRecord<std::string>>("12345");
-        std::shared_ptr<StreamRecord<std::string>> record_3 = std::make_shared<StreamRecord<std::string>>("123456");
-        std::shared_ptr<StreamRecord<std::string>> record_4 = std::make_shared<StreamRecord<std::string>>("1234");
-        std::shared_ptr<StreamRecord<std::string>> record_5 = std::make_shared<StreamRecord<std::string>>("12345");
+        std::shared_ptr<StreamRecord<std::string>> record_1 = std::make_shared<StreamRecord<std::string>>(std::make_shared<std::string>("1234", 4));
+        std::shared_ptr<StreamRecord<std::string>> record_2 = std::make_shared<StreamRecord<std::string>>(std::make_shared<std::string>("12345", 5));
+        std::shared_ptr<StreamRecord<std::string>> record_3 = std::make_shared<StreamRecord<std::string>>(std::make_shared<std::string>("123456", 6));
+        std::shared_ptr<StreamRecord<std::string>> record_4 = std::make_shared<StreamRecord<std::string>>(std::make_shared<std::string>("1234", 4));
+        std::shared_ptr<StreamRecord<std::string>> record_5 = std::make_shared<StreamRecord<std::string>>(std::make_shared<std::string>("12345", 5));
 
         result_writer->copy_to_buffer_builder(0, record_1);
         std::shared_ptr<BufferBuilder> buffer_builder = result_writer->get_buffer_builder(0);
@@ -188,11 +188,11 @@ public:
 
         TS_ASSERT_EQUALS(subpartition_0->should_notify_data_available(), false);
 
-        std::shared_ptr<StreamRecord<std::string>> record_1 = std::make_shared<StreamRecord<std::string>>("1234");
-        std::shared_ptr<StreamRecord<std::string>> record_2 = std::make_shared<StreamRecord<std::string>>("12345");
-        std::shared_ptr<StreamRecord<std::string>> record_3 = std::make_shared<StreamRecord<std::string>>("123456");
-        std::shared_ptr<StreamRecord<std::string>> record_4 = std::make_shared<StreamRecord<std::string>>("1234");
-        std::shared_ptr<StreamRecord<std::string>> record_5 = std::make_shared<StreamRecord<std::string>>("12345");
+        std::shared_ptr<StreamRecord<std::string>> record_1 = std::make_shared<StreamRecord<std::string>>(std::make_shared<std::string>("1234", 4));
+        std::shared_ptr<StreamRecord<std::string>> record_2 = std::make_shared<StreamRecord<std::string>>(std::make_shared<std::string>("12345", 5));
+        std::shared_ptr<StreamRecord<std::string>> record_3 = std::make_shared<StreamRecord<std::string>>(std::make_shared<std::string>("123456", 6));
+        std::shared_ptr<StreamRecord<std::string>> record_4 = std::make_shared<StreamRecord<std::string>>(std::make_shared<std::string>("1234", 4));
+        std::shared_ptr<StreamRecord<std::string>> record_5 = std::make_shared<StreamRecord<std::string>>(std::make_shared<std::string>("12345", 5));
 
         result_writer->emit(record_1, 0);
         // subpartition 0 is full and finish
@@ -407,11 +407,11 @@ public:
 
 
         std::shared_ptr<ResultWriter<std::string>> result_writer_0 = std::make_shared<ResultWriter<std::string>>(partition_0, "test-input-gate-and-result-partition-data-transfer");
-        std::shared_ptr<StreamRecord<std::string>> record_1 = std::make_shared<StreamRecord<std::string>>("1234");
-        std::shared_ptr<StreamRecord<std::string>> record_2 = std::make_shared<StreamRecord<std::string>>("12345");
-        std::shared_ptr<StreamRecord<std::string>> record_3 = std::make_shared<StreamRecord<std::string>>("123456");
-        std::shared_ptr<StreamRecord<std::string>> record_4 = std::make_shared<StreamRecord<std::string>>("1234");
-        std::shared_ptr<StreamRecord<std::string>> record_5 = std::make_shared<StreamRecord<std::string>>("12345");
+        std::shared_ptr<StreamRecord<std::string>> record_1 = std::make_shared<StreamRecord<std::string>>(std::make_shared<std::string>("1234", 4));
+        std::shared_ptr<StreamRecord<std::string>> record_2 = std::make_shared<StreamRecord<std::string>>(std::make_shared<std::string>("12345", 5));
+        std::shared_ptr<StreamRecord<std::string>> record_3 = std::make_shared<StreamRecord<std::string>>(std::make_shared<std::string>("123456", 6));
+        std::shared_ptr<StreamRecord<std::string>> record_4 = std::make_shared<StreamRecord<std::string>>(std::make_shared<std::string>("1234", 4));
+        std::shared_ptr<StreamRecord<std::string>> record_5 = std::make_shared<StreamRecord<std::string>>(std::make_shared<std::string>("12345", 5));
 
         result_writer_0->emit(record_1, 0);
         result_writer_0->flush(0);

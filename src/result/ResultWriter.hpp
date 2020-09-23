@@ -10,6 +10,7 @@
 #include "LoggerFactory.hpp"
 #include <memory>
 #include <string>
+#include "Tuple.hpp"
 
 template <class T>
 class ResultWriter

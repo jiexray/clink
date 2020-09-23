@@ -132,7 +132,7 @@ public:
         std::shared_ptr<StreamRecord<std::string>>* records = new std::shared_ptr<StreamRecord<std::string>>[10];
 
         for(int i = 0; i < 10; i++) {
-            records[i] = std::make_shared<StreamRecord<std::string>>("1" + std::to_string(i) + "-test-data");
+            records[i] = std::make_shared<StreamRecord<std::string>>(std::make_shared<std::string>(std::string("1") + std::to_string(i) + std::string("-test-data")));
             result_writer_0->emit(records[i], 0);
         }
         
@@ -180,7 +180,7 @@ public:
 
         std::shared_ptr<ResultWriter<std::string>> result_writer_0 = std::make_shared<ResultWriter<std::string>>(partition_0, "test");
         // the record cannot load in an entire buffer
-        std::shared_ptr<StreamRecord<std::string>> record_1 = std::make_shared<StreamRecord<std::string>>("12345");
+        std::shared_ptr<StreamRecord<std::string>> record_1 = std::make_shared<StreamRecord<std::string>>(std::make_shared<std::string>("12345", 5));
 
         result_writer_0->emit(record_1, 0);
         result_writer_0->flush(0);

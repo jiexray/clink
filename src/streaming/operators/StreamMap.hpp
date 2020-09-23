@@ -23,7 +23,7 @@ public:
         std::shared_ptr<MapFunction<IN, OUT>> map_func = std::dynamic_pointer_cast<MapFunction<IN, OUT>>(this->m_user_function);
         std::shared_ptr<StreamRecord<OUT>> out_stream_record = stream_record->replace(map_func->map(*(record_value.get())));
         // std::shared_ptr<StreamRecord<OUT>> out_stream_record = stream_record->replace(this->m_user_function->map(*(record_value.get())));
-        std::cout << *(stream_record->get_value().get()) << " map to: " << *(out_stream_record->get_value().get()) << std::endl;
+        // std::cout << *(stream_record->get_value().get()) << " map to: " << *(out_stream_record->get_value().get()) << std::endl;
         if (this->m_output == nullptr) {
             std::cout << "[ERROR] Output is null in StreamMap" << std::endl;
             return;

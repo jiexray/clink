@@ -36,5 +36,5 @@ int IntValue::get_value() {
 }
 
 std::shared_ptr<void>   IntValue::get_instance_void() {
-    return std::make_shared<int>(get_value());
+    return std::make_shared<int>(*m_value);
 }

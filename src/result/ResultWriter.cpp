@@ -92,3 +92,7 @@ std::shared_ptr<BufferBuilder> ResultWriter<T>::request_new_buffer_builder(int t
 }
 
 template class ResultWriter<std::string>;
+template class ResultWriter<Tuple>;
+template class ResultWriter<int>;
+template class ResultWriter<double>;
+

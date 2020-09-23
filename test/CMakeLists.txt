@@ -82,4 +82,8 @@ if(CXXTEST_FOUND)
   # streamrecord tuple test
   CXXTEST_ADD_TEST(unitest_streamrecord_tuple streamrecord_tuple_test.cpp ${CMAKE_CURRENT_SOURCE_DIR}/streamrecord/TestTuple.hpp)
   target_link_libraries(unitest_streamrecord_tuple streamrecord)
+
+  # streaming stream-task-network-input-factory
+  CXXTEST_ADD_TEST(unitest_streaming_stream_task_network_input_factory streaming_stream_task_network_input_factory.cpp ${CMAKE_CURRENT_SOURCE_DIR}/streaming/TestStreamTaskNetworkInputFactory.hpp)
+  target_link_libraries(unitest_streaming_stream_task_network_input_factory streaming)
 endif()

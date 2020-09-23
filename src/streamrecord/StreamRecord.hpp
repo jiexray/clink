@@ -4,6 +4,8 @@
 
 #pragma once
 #include <memory>
+#include <typeinfo>
+#include "Tuple.hpp"
 
 enum StreamRecordAppendResult {
     FULL_RECORD,
@@ -25,14 +27,23 @@ class StreamRecord
 private:
     long                                    m_timestamp;
 protected:
-    std::shared_ptr<T>                      m_value;
+    std::shared_ptr<void>                      m_value;
 public:
     StreamRecord(long timestamp):m_timestamp(timestamp){}
-    StreamRecord(std::shared_ptr<T> value, long timestamp): m_value(value), m_timestamp(timestamp) {}
-    StreamRecord(std::shared_ptr<T> value): m_value(value), m_timestamp(0) {}
-    StreamRecord(T value): m_timestamp(0) {this->m_value = std::make_shared<T>(value);}
+    // StreamRecord(std::shared_ptr<T> value, long timestamp): m_value(value), m_timestamp(timestamp) {}
+    // StreamRecord(std::shared_ptr<T> value): m_value(value), m_timestamp(0) {}
 
-    std::shared_ptr<T>                      get_value() {return m_value;}
+    StreamRecord(std::shared_ptr<void> value): StreamRecord(value, 0) {}
+    StreamRecord(std::shared_ptr<void> value, long timestamp): m_value(value), m_timestamp(timestamp) {
+        // do type check
+        if (std::static_pointer_cast<T>(value) == nullptr) {
+            throw std::invalid_argument("Can not create a StreamRecord for type " + std::string(__PRETTY_FUNCTION__));
+        }
+    }
+
+    std::shared_ptr<T>                      get_value() {
+        return std::static_pointer_cast<T>(m_value);
+    }
     // virtual int                             get_value_size() = 0;
     
     /* TODO: may there is a better solution, I do not need to new a StreamRecord instance, just reuse the old instance. */

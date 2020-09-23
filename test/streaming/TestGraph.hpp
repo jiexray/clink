@@ -114,7 +114,7 @@ public:
     }
 
     void testConfigurationAddStreamMap( void ) {
-        std::shared_ptr<StreamRecord<std::string>> record_1 = std::make_shared<StreamRecord<std::string>>("12345");
+        std::shared_ptr<StreamRecord<std::string>> record_1 = std::make_shared<StreamRecord<std::string>>(std::make_shared<std::string>("12345", 5));
         std::shared_ptr<OneInputStreamOperator<std::string, std::string>> stream_map_1 = 
                         std::make_shared<StreamMap<std::string, std::string>>(std::make_shared<StringMapFunction>());
         std::shared_ptr<Configuration> test_conf = std::make_shared<Configuration>();
@@ -144,7 +144,7 @@ public:
     }
 
     void testConfigurationAddOperatorFactory( void ) {
-        std::shared_ptr<StreamRecord<std::string>> record_1 = std::make_shared<StreamRecord<std::string>>("12345");
+        std::shared_ptr<StreamRecord<std::string>> record_1 = std::make_shared<StreamRecord<std::string>>(std::make_shared<std::string>("12345", 5));
         std::shared_ptr<AbstractUdfStreamOperator<Function, std::string>> stream_map_1 = std::make_shared<StreamMap<std::string, std::string>>(std::make_shared<StringMapFunction>());
         std::shared_ptr<StreamOperatorFactory<std::string>> operator_factory_1 = SimpleStreamOperatorFactory<std::string>::of(stream_map_1);
 
@@ -202,7 +202,6 @@ public:
         std::shared_ptr<BufferPool> buffer_pool = std::make_shared<BufferPool>(100, 5);
         std::shared_ptr<ResultPartitionManager> result_partition_manager = std::make_shared<ResultPartitionManager>();
 
-        int* partition_idxs = new int[5] {1};
         
         InputGateFactory input_gate_factory(result_partition_manager);
 
@@ -244,8 +243,8 @@ public:
         stream_task->before_invoke();
 
         std::shared_ptr<ResultWriter<std::string>> result_writer_0 = std::make_shared<ResultWriter<std::string>>(partition_0, "test");
-        std::shared_ptr<StreamRecord<std::string>> record_1 = std::make_shared<StreamRecord<std::string>>("1234");
-        std::shared_ptr<StreamRecord<std::string>> record_2 = std::make_shared<StreamRecord<std::string>>("13456");
+        std::shared_ptr<StreamRecord<std::string>> record_1 = std::make_shared<StreamRecord<std::string>>(std::make_shared<std::string>("1234", 4));
+        std::shared_ptr<StreamRecord<std::string>> record_2 = std::make_shared<StreamRecord<std::string>>(std::make_shared<std::string>("13456", 5));
 
 
         result_writer_0->emit(record_1, 0);
@@ -366,8 +365,8 @@ public:
         stream_task->before_invoke();
 
         std::shared_ptr<ResultWriter<std::string>> result_writer_0 = std::make_shared<ResultWriter<std::string>>(partition_0, "test");
-        std::shared_ptr<StreamRecord<std::string>> record_1 = std::make_shared<StreamRecord<std::string>>("1234");
-        std::shared_ptr<StreamRecord<std::string>> record_2 = std::make_shared<StreamRecord<std::string>>("13456");
+        std::shared_ptr<StreamRecord<std::string>> record_1 = std::make_shared<StreamRecord<std::string>>(std::make_shared<std::string>("1234", 4));
+        std::shared_ptr<StreamRecord<std::string>> record_2 = std::make_shared<StreamRecord<std::string>>(std::make_shared<std::string>("13456", 5));
 
 
         result_writer_0->emit(record_1, 0);
