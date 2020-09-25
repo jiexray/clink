@@ -24,7 +24,6 @@
 
 
 
-
 template <class OUT>
 class StreamTask : public AbstractInvokable, public std::enable_shared_from_this<StreamTask<OUT>>
 {
@@ -67,8 +66,9 @@ public:
 template <class OUT>
 class StreamTaskDefaultMailboxAction: public MailboxDefaultAction {
 private:
-    std::sh// class StreamConfig;
-askDefaultMailboxAction(std::shared_ptr<StreamTask<OUT>> stream_task): m_stream_task(stream_task){}
+    std::shared_ptr<StreamTask<OUT>> m_stream_task;
+public:
+    StreamTaskDefaultMailboxAction(std::shared_ptr<StreamTask<OUT>> stream_task): m_stream_task(stream_task){}
 
     void run_default_action() {
         // std::cout << "StreamTask process_input()" << std::endl;

@@ -88,7 +88,6 @@ target_sources(streamrecord
     streamrecord/typeutils/serialize/IntSerializer.cpp
     streamrecord/typeutils/serialize/StringSerializer.cpp
     streamrecord/typeutils/serialize/DoubleSerializer.cpp
-    streamrecord/typeutils/serialize/TupleSerializer.cpp
     streamrecord/typeutils/deserialize/TupleDeserializer.cpp
 )
 target_include_directories(streamrecord PUBLIC
