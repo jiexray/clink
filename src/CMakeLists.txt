@@ -31,6 +31,8 @@ set(ALL_INCLUDE_DIRS
   ${CMAKE_SOURCE_DIR}/src/runtime/taskexecutor
 )
 
+find_package(spdlog REQUIRED)
+
 # ------------------------
 #   build buffer module
 # ------------------------
@@ -58,6 +60,7 @@ target_sources(core
 target_include_directories(core PUBLIC
   ${ALL_INCLUDE_DIRS}
 )
+target_link_libraries(core spdlog::spdlog)
 
 # ------------------------
 #   build result module
@@ -72,7 +75,7 @@ target_sources(result
     result/consumer/InputGate.cpp
     result/consumer/InputGateFactory.cpp
 )
-target_link_libraries(result streamrecord buffer)
+target_link_libraries(result streamrecord buffer spdlog::spdlog)
 
 # ------------------------
 #   build streamrecord module
@@ -93,7 +96,7 @@ target_sources(streamrecord
 target_include_directories(streamrecord PUBLIC
   ${ALL_INCLUDE_DIRS}
 )
-target_link_libraries(streamrecord core buffer)
+target_link_libraries(streamrecord core buffer spdlog::spdlog)
 
 # ------------------------
 #   build streaming module
@@ -109,14 +112,11 @@ target_include_directories(streaming PUBLIC
   ${ALL_INCLUDE_DIRS}
 )
 
-target_link_libraries(streaming streamrecord result pthread core buffer)
+target_link_libraries(streaming streamrecord result pthread core buffer spdlog::spdlog)
 
 # ------------------------
 #   build runtime module
 # ------------------------
-# set(SPDLOG_DIR /home/tian/software/vscode/projects/clink/deps/spdlog/build)
-
-find_package(spdlog REQUIRED)
 
 target_sources(runtime 
   PRIVATE
