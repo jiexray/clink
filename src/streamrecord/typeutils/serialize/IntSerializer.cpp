@@ -1,20 +1,6 @@
-/**
- * A serializer for int type.
- */
-#pragma once
-#include "TypeSerializer.hpp"
-#include <iostream>
+#include "IntSerializer.hpp"
 
-class IntSerializer : public TypeSerializer<int>
-{
-private:
-    int         m_data_remaining;
-    char*       m_data_in_char;
-public:
-    StreamRecordAppendResult        serialize(std::shared_ptr<int> record, std::shared_ptr<BufferBuilder> buffer_builder, bool is_new_record);
-};
-
-inline StreamRecordAppendResult IntSerializer::serialize(std::shared_ptr<int> record, std::shared_ptr<BufferBuilder> buffer_builder, bool is_new_record){
+StreamRecordAppendResult IntSerializer::serialize(std::shared_ptr<int> record, std::shared_ptr<BufferBuilder> buffer_builder, bool is_new_record){
     // std::cout << "double record value: " << *record.get() << ", double size: " << sizeof(double) << std::endl;
     if (is_new_record) {
         m_data_remaining = sizeof(int);
@@ -40,4 +26,3 @@ inline StreamRecordAppendResult IntSerializer::serialize(std::shared_ptr<int> re
         return PARTITAL_RECORD_BUFFER_FULL;
     }
 }
-

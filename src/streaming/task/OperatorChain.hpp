@@ -3,13 +3,9 @@
  */
 #pragma once 
 #include <memory>
-// #include "../../result/ResultWriter.hpp"
-#include "../io/ResultWriterOutput.hpp"
-#include "../operators/StreamOperatorFactory.hpp"
-#include "StreamTask.hpp"
-
-template <class OUT> class StreamTask;
-template <class OUT> class StreamOperatorFactory;
+#include "ResultWriterOutput.hpp"
+#include "StreamOperatorFactory.hpp"
+// template <class OUT> class StreamOperatorFactory;
 
 template <class OUT>
 class OperatorChain
@@ -26,8 +22,7 @@ private:
     std::shared_ptr<ResultWriterOutput<OUT>>    m_stream_output;
 
 public:
-    OperatorChain(std::shared_ptr<StreamTask<OUT>> containing_task, 
-            std::shared_ptr<ResultWriter<OUT>> result_writer, 
+    OperatorChain(std::shared_ptr<ResultWriter<OUT>> result_writer, 
             std::shared_ptr<StreamOperatorFactory<OUT>> operator_factory);
 
     std::shared_ptr<ResultWriterOutput<OUT>>    create_result_stream_output();
@@ -39,3 +34,16 @@ public:
     std::shared_ptr<StreamOperator<OUT>>        get_head_operator() {return m_core_operator;}
 };
 
+
+template <class OUT>
+inline OperatorChain<OUT>::OperatorChain(std::shared_ptr<ResultWriter<OUT>> result_writer, std::shared_ptr<StreamOperatorFactory<OUT>> operator_factory):
+m_result_writer(result_writer) {
+    this->m_stream_output = create_result_stream_output();
+    // this->m_core_operator = operator_factory->create_stream_operator(std::make_shared<StreamOperatorParameters<OUT>>(containing_task, this->m_stream_output));
+    this->m_core_operator = operator_factory->create_stream_operator(std::make_shared<StreamOperatorParameters<OUT>>(this->m_stream_output));
+}
+
+template <class OUT>
+inline std::shared_ptr<ResultWriterOutput<OUT>> OperatorChain<OUT>::create_result_stream_output() {
+    return std::make_shared<ResultWriterOutput<OUT>>(this->m_result_writer);
+}

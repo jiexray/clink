@@ -14,6 +14,8 @@ set(TEST_HEADER_DIRS ${CMAKE_SOURCE_DIR}/src/buffer
   ${CMAKE_SOURCE_DIR}/src/streamrecord
   ${CMAKE_SOURCE_DIR}/src/streamrecord/types
   ${CMAKE_SOURCE_DIR}/src/streamrecord/typeutils
+  ${CMAKE_SOURCE_DIR}/src/streamrecord/typeutils/serialize
+  ${CMAKE_SOURCE_DIR}/src/streamrecord/typeutils/deserialize
   ${CMAKE_SOURCE_DIR}/src/streaming/functions
   ${CMAKE_SOURCE_DIR}/src/streaming/io
   ${CMAKE_SOURCE_DIR}/src/streaming/operators
@@ -86,4 +88,8 @@ if(CXXTEST_FOUND)
   # streaming stream-task-network-input-factory
   CXXTEST_ADD_TEST(unitest_streaming_stream_task_network_input_factory streaming_stream_task_network_input_factory.cpp ${CMAKE_CURRENT_SOURCE_DIR}/streaming/TestStreamTaskNetworkInputFactory.hpp)
   target_link_libraries(unitest_streaming_stream_task_network_input_factory streaming)
+
+  # runtime task-chain-with-tuple test
+  CXXTEST_ADD_TEST(unitest_runtime_task_chain_with_tuple runtime_task_chain_with_tuple.cpp ${CMAKE_CURRENT_SOURCE_DIR}/runtime/TestTaskChainWithTuple.hpp)
+  target_link_libraries(unitest_runtime_task_chain_with_tuple runtime streaming result streamrecord)
 endif()

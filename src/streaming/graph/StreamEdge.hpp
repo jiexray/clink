@@ -19,7 +19,7 @@ private:
     std::string                                 m_source_operator_name;
     std::string                                 m_target_operator_name;    
 public:
-    StreamEdge(std::shared_ptr<StreamNode<T>> source_vertex, std::shared_ptr<StreamNode<T>> target_vertex, 
+    StreamEdge(std::shared_ptr<StreamNode> source_vertex, std::shared_ptr<StreamNode> target_vertex, 
                 std::shared_ptr<StreamPartitioner<T>> output_partitioner) {
         m_source_id                     = source_vertex->get_id();
         m_target_id                     = target_vertex->get_id();

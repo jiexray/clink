@@ -19,6 +19,7 @@ private:
 
     int                                         m_record_fields;
     int                                         m_record_size;
+    int                                         m_remaining;  // tuple buffer left to read
 
 public:
     TupleDeserializer() {

@@ -1,24 +1,10 @@
-/**
- * A serializer for string type.
- */
-#pragma once
-#include <string>
-#include "TypeSerializer.hpp"
-
-class StringSerializer : public TypeSerializer<std::string>
-{
-private:
-        int                             m_data_remaining;
-public:
-        StreamRecordAppendResult        serialize(std::shared_ptr<std::string> record, std::shared_ptr<BufferBuilder> buffer_builder, bool is_new_record);
-};
-
+#include "StringSerializer.hpp"
 /**
  * Note: the user should maintaince the write state! through m_data_remaining. 
  * This class is not thread-safe, and thus each ResultPartition needs to create a self-use instance for copy StreamRecord
  * to BufferBuilder (provided by outside).
  */
-inline StreamRecordAppendResult StringSerializer::serialize(std::shared_ptr<std::string> record, std::shared_ptr<BufferBuilder> buffer_builder, bool is_new_record){
+StreamRecordAppendResult StringSerializer::serialize(std::shared_ptr<std::string> record, std::shared_ptr<BufferBuilder> buffer_builder, bool is_new_record){
     if (is_new_record) {
         m_data_remaining = record->size();
         char* length_buf = new char[2];
@@ -42,4 +28,3 @@ inline StreamRecordAppendResult StringSerializer::serialize(std::shared_ptr<std:
         return PARTITAL_RECORD_BUFFER_FULL;
     }
 }
-

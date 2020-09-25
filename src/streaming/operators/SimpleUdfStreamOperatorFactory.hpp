@@ -21,7 +21,7 @@ public:
     std::shared_ptr<StreamOperator<OUT>> create_stream_operator(std::shared_ptr<StreamOperatorParameters<OUT>> parameters) {
         if (std::dynamic_pointer_cast<AbstractUdfStreamOperator<Function, OUT>>(this->m_operator).get() != nullptr) {
             // The operator is a sub-class of AbstractUdfStreamOperator
-            this->m_operator->setup(parameters->get_containing_task(), parameters->get_output());
+            this->m_operator->setup(parameters->get_output());
         }
         // std::cout << "[debug] before setup()" << std::endl;
         // this->m_operator->setup(parameters->get_containing_task(), parameters->get_output());

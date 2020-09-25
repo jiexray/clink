@@ -39,16 +39,16 @@ public:
         input_gate->request_partitions();
 
 
-        std::shared_ptr<ResultWriter<Tuple>> result_writer_0 = std::make_shared<ResultWriter<Tuple>>(partition_0, "test");
+        std::shared_ptr<ResultWriter<Tuple2<std::string, int>>> result_writer_0 = std::make_shared<ResultWriter<Tuple2<std::string, int>>>(partition_0, "test");
         // the record cannot load in an entire buffer
-        std::shared_ptr<StreamRecord<Tuple>> record_1 = std::make_shared<StreamRecord<Tuple>>(std::make_shared<Tuple2<std::string, int>>(
+        std::shared_ptr<StreamRecord<Tuple2<std::string, int>>> record_1 = std::make_shared<StreamRecord<Tuple2<std::string, int>>>(std::make_shared<Tuple2<std::string, int>>(
                                                                                                 std::make_shared<std::string>(std::string("hello world")),
                                                                                                 std::make_shared<int>(101)));
 
         result_writer_0->emit(record_1, 0);
         result_writer_0->flush(0);
 
-        std::shared_ptr<StreamTaskNetworkInput<Tuple2<std::string, int>>> input = StreamTaskNetworkInputFactory::create_stream_task_network_input<std::string, int>(input_gate, 0);
+        std::shared_ptr<StreamTaskNetworkInput<Tuple2<std::string, int>>> input = StreamTaskNetworkInputFactory<Tuple2<std::string, int>>::create_stream_task_network_input(input_gate, 0);
 
         std::shared_ptr<StreamMap<Tuple2<std::string, int>, std::string>> stream_map = std::make_shared<StreamMap<Tuple2<std::string, int>, std::string>>(std::make_shared<StringMapFunction>());
 

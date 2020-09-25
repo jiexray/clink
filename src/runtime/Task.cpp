@@ -86,6 +86,10 @@ std::shared_ptr<AbstractInvokable> Task::load_and_instantiate_invokable(std::str
         return std::make_shared<OneInputStreamTask<std::string, std::string>>(env);
     } else if (class_name == "SourceStreamTask<std::string>") {
         return std::make_shared<SourceStreamTask<std::string>>(env);
+    } else if (class_name == "SourceStreamTask<Tuple2<std::string, int>>") {
+        return std::make_shared<SourceStreamTask<Tuple2<std::string, int>>>(env);
+    } else if (class_name == "OneInputStreamTask<Tuple2<std::string, int>, std::string>") {
+        return std::make_shared<OneInputStreamTask<Tuple2<std::string, int>, std::string>>(env);
     } else {
         throw std::runtime_error("unknown type of invokable task: " + class_name);
     }

@@ -2,8 +2,8 @@
  * ChannelSelector for use in streaming programs.
  */
 #pragma once
-#include "../../result/ChannelSelector.hpp"
-#include "../../streamrecord/StreamRecord.hpp"
+#include "ChannelSelector.hpp"
+#include "StreamRecord.hpp"
 #include <string>
 
 template <class T>

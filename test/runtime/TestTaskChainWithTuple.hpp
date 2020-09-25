@@ -7,38 +7,39 @@
 #include "Task.hpp"
 #include "TaskExecutor.hpp"
 #include "LoggerFactory.hpp"
+#include "Tuple2.hpp"
 
-std::shared_ptr<spdlog::logger> logger = LoggerFactory::get_logger("TestTaskChain");
-
-
-template class MapFunction<std::string, std::string>;
 // concat the first char and the last char
-class StringMapFunction: public MapFunction<std::string, std::string>{
-    std::shared_ptr<std::string> map(std::string& value){
-        std::cout << "map " << value << " to " << std::string(value.begin(), value.begin() + 2) << std::endl;
-        return std::make_shared<std::string>(value.begin(), value.begin() + 2);
+class TupleMapFunction: public MapFunction<Tuple2<std::string, int>, std::string>{
+    std::shared_ptr<std::string> map(Tuple2<std::string, int>& value){
+        std::cout << "TupleMapFunction::map() " << std::string("f0: " + (*value.f0) + ", f1: " + std::to_string(*value.f1)) << std::endl;
+        return std::make_shared<std::string>("f0: " + (*value.f0) + ", f1: " + std::to_string(*value.f1));
     }
 
     char* serialize() override {return (char*)this;}
 
-    std::shared_ptr<MapFunction<std::string, std::string>> deserialize() override { return std::make_shared<StringMapFunction>();}
+    std::shared_ptr<MapFunction<Tuple2<std::string, int>, std::string>> deserialize() override { return std::make_shared<TupleMapFunction>();}
 };
 
-class MySourceFunction: public SourceFunction<std::string> {
-    void run(std::shared_ptr<SourceContext<std::string>> ctx) {
+class MySourceFunction: public SourceFunction<Tuple2<std::string, int>> {
+    void run(std::shared_ptr<SourceContext<Tuple2<std::string, int>>> ctx) {
         for(int i = 0; i < 50; i++) {
-            std::cout << "emit record " << i << std::endl;
+            std::cout << "Emit record " << i << std::endl;
             if (i < 10) {
-                ctx->collect(std::make_shared<std::string>("0" + std::to_string(i) + "-test-data"));
+                ctx->collect(std::make_shared<Tuple2<std::string, int>>(
+                                            std::make_shared<std::string>(std::string("0" + std::to_string(i) + "-test-data")), 
+                                            std::make_shared<int>(i)));
             } else {
-                ctx->collect(std::make_shared<std::string>(std::to_string(i) + "-test-data"));
+                ctx->collect(std::make_shared<Tuple2<std::string, int>>(
+                                            std::make_shared<std::string>(std::string(std::to_string(i) + "-test-data")), 
+                                            std::make_shared<int>(i)));
             }
         }
     }
 
     char* serialize() override {return (char*)this;}
 
-    std::shared_ptr<SourceFunction<std::string>> deserialize() override { return std::make_shared<MySourceFunction>();}
+    std::shared_ptr<SourceFunction<Tuple2<std::string, int>>> deserialize() override { return std::make_shared<MySourceFunction>();}
 };
 
 class MySinkFunction: public SinkFunction<std::string> {
@@ -53,12 +54,12 @@ class MySinkFunction: public SinkFunction<std::string> {
 
 
 
-class TestTask: public CxxTest::TestSuite{
+class TestTaskChainWithTuple: public CxxTest::TestSuite{
 public:
-    void testTaskChain( void ) {
+    void testTaskChainWithTuple( void ) {
         spdlog::set_level(Constant::SPDLOG_LEVEL);
         spdlog::set_pattern(Constant::SPDLOG_PATTERN);
-        std::cout << "test testTaskChain()" << std::endl;
+        std::cout << "test testTaskChainWithTuple()" << std::endl;
         // create ResultParititionManager, ResultPartitionFactory, InputGateFactory
         std::shared_ptr<ResultPartitionManager> result_partition_manager = std::make_shared<ResultPartitionManager>();
         std::shared_ptr<InputGateFactory> input_gate_factory = std::make_shared<InputGateFactory>(result_partition_manager);
@@ -90,22 +91,22 @@ public:
         std::shared_ptr<Configuration> task_configuration_3 = std::make_shared<Configuration>();
 
         /* init operator factory */
-        std::shared_ptr<StreamSource<std::string>> stream_source = std::make_shared<StreamSource<std::string>>(std::make_shared<MySourceFunction>());
-        std::shared_ptr<StreamOperatorFactory<std::string>> operator_factory_1 = SimpleStreamOperatorFactory<std::string>::of(stream_source);
-        std::shared_ptr<AbstractUdfStreamOperator<Function, std::string>> stream_map_2 = std::make_shared<StreamMap<std::string, std::string>>(std::make_shared<StringMapFunction>());
+        std::shared_ptr<StreamSource<Tuple2<std::string, int>>> stream_source = std::make_shared<StreamSource<Tuple2<std::string, int>>>(std::make_shared<MySourceFunction>());
+        std::shared_ptr<StreamOperatorFactory<Tuple2<std::string, int>>> operator_factory_1 = SimpleStreamOperatorFactory<Tuple2<std::string, int>>::of(stream_source);
+        std::shared_ptr<StreamOperator<std::string>> stream_map_2 = std::make_shared<StreamMap<Tuple2<std::string, int>, std::string>>(std::make_shared<TupleMapFunction>());
         std::shared_ptr<StreamOperatorFactory<std::string>> operator_factory_2 = SimpleStreamOperatorFactory<std::string>::of(stream_map_2);
         std::shared_ptr<AbstractUdfStreamOperator<Function, std::string>> stream_sink_3 = std::make_shared<StreamSink<std::string, std::string>>(std::make_shared<MySinkFunction>());
         std::shared_ptr<StreamOperatorFactory<std::string>> operator_factory_3 = SimpleStreamOperatorFactory<std::string>::of(stream_sink_3);
 
-        task_configuration_1->set_operator_factory<std::string, std::string>(StreamConfig::OPERATOR_FACTORY, operator_factory_1);
-        task_configuration_2->set_operator_factory<std::string, std::string>(StreamConfig::OPERATOR_FACTORY, operator_factory_2);
+        task_configuration_1->set_operator_factory<std::string, Tuple2<std::string, int>>(StreamConfig::OPERATOR_FACTORY, operator_factory_1);
+        task_configuration_2->set_operator_factory<Tuple2<std::string, int>, std::string>(StreamConfig::OPERATOR_FACTORY, operator_factory_2);
         task_configuration_3->set_operator_factory<std::string, std::string>(StreamConfig::OPERATOR_FACTORY, operator_factory_3);
 
         // init edge
         std::string node_name_1("source");
         std::string node_name_2("map-1");
         std::string node_name_3("sink");
-        // std::shared_ptr<StreamNode<std::string>> node_1 = std::make_shared<StreamNode<std::string>>(0, operator_factory_1, node_name_1);
+        // std::shared_ptr<StreamNode<Tuple2<std::string, int>>> node_1 = std::make_shared<StreamNode<Tuple2<std::string, int>>>(0, operator_factory_1, node_name_1);
         // std::shared_ptr<StreamNode<std::string>> node_2 = std::make_shared<StreamNode<std::string>>(1, operator_factory_2, node_name_2);
         // std::shared_ptr<StreamNode<std::string>> node_3 = std::make_shared<StreamNode<std::string>>(2, operator_factory_3, node_name_3);
 
@@ -115,11 +116,11 @@ public:
 
 
         /* Create edge_1 (source -> map-1) */
-        std::shared_ptr<StreamEdge<std::string>> edge_1 = std::make_shared<StreamEdge<std::string>>(node_1, node_2, std::make_shared<ForwardPartitioner<std::string>>());
+        std::shared_ptr<StreamEdge<Tuple2<std::string, int>>> edge_1 = std::make_shared<StreamEdge<Tuple2<std::string, int>>>(node_1, node_2, std::make_shared<ForwardPartitioner<Tuple2<std::string, int>>>());
         /* Create edge_2 (map-1 -> sink) */
         std::shared_ptr<StreamEdge<std::string>> edge_2 = std::make_shared<StreamEdge<std::string>>(node_2, node_3, std::make_shared<ForwardPartitioner<std::string>>());
 
-        task_configuration_1->set_edge<std::string>(StreamConfig::EDGE_NAME, edge_1);
+        task_configuration_1->set_edge<Tuple2<std::string, int>>(StreamConfig::EDGE_NAME, edge_1);
         task_configuration_2->set_edge<std::string>(StreamConfig::EDGE_NAME, edge_2);
         // sink task no out-edge
 
@@ -131,13 +132,13 @@ public:
                                                                                                 "test-source-task",             // task_name
                                                                                                 1,                              // subtask_number
                                                                                                 task_configuration_1,             
-                                                                                                "SourceStreamTask<std::string>"); // invokable name
+                                                                                                "SourceStreamTask<Tuple2<std::string, int>>"); // invokable name
 
         std::shared_ptr<TaskInformation> task_information_2 = std::make_shared<TaskInformation>(1,                              // job_vertex_id
                                                                                                 "test-map-task",                // task_name
                                                                                                 1,                              // subtask_number
                                                                                                 task_configuration_2,             
-                                                                                                "OneInputStreamTask<std::string, std::string>"); // invokable name
+                                                                                                "OneInputStreamTask<Tuple2<std::string, int>, std::string>"); // invokable name
         
         std::shared_ptr<TaskInformation> task_information_3 = std::make_shared<TaskInformation>(2,                              // job_vertex_id
                                                                                                 "test-sink-task",               // task_name

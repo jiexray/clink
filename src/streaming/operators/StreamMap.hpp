@@ -7,7 +7,6 @@
 #include "OneInputStreamOperator.hpp"
 #include <iostream>
 
-template <class OUT> class StreamTask;
 
 template <class IN, class OUT>
 // class StreamMap : public AbstractUdfStreamOperator<MapFunction<IN, OUT>, OUT>, public OneInputStreamOperator<IN, OUT>

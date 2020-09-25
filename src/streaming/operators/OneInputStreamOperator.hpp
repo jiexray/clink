@@ -5,7 +5,7 @@
 #pragma once
 
 #include "StreamOperator.hpp"
-#include "../../streamrecord/StreamRecord.hpp"
+#include "StreamRecord.hpp"
 #include <memory>
 #include <iostream>
 

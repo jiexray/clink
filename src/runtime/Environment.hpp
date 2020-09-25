@@ -5,10 +5,10 @@
  * memory manager, I/O manager, ...
  */
 #pragma once
-#include "../result/ResultPartition.hpp"
-#include "../result/consumer/InputGate.hpp"
-#include "../core/config/Configuration.hpp"
-#include "../core/common/TaskInfo.hpp"
+#include "ResultPartition.hpp"
+#include "InputGate.hpp"
+#include "Configuration.hpp"
+#include "TaskInfo.hpp"
 
 class Configuration;
 

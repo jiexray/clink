@@ -22,7 +22,7 @@ public:
             (typeid(T) == typeid(int))) {
             return std::static_pointer_cast<T>(m_real_value->get_instance_void());
         } else {
-            throw std::invalid_argument("DeserializationDelegate::get_instance() Cannot recoginize the type");
+            throw std::invalid_argument("DeserializationDelegate::get_instance() Cannot recoginize the type " + std::string(typeid(T).name()));
         }
     }
 
@@ -34,7 +34,7 @@ public:
         } else if (typeid(T) == typeid(int)) {
             this->m_real_value = std::make_shared<IntValue>();
         } else {
-            throw std::invalid_argument("DeserializationDelegate::read() Cannot recoginize the type");
+            throw std::invalid_argument("DeserializationDelegate::read() Cannot recoginize the type " + std::string(typeid(T).name()));
         }
         this->m_real_value->read(deserializer);
     }

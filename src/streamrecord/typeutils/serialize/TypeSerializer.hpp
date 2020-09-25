@@ -4,12 +4,17 @@
 #pragma once
 #include <memory>
 #include <string>
-#include "../../buffer/BufferBuilder.hpp"
-#include "../StreamRecord.hpp"
+#include "BufferBuilder.hpp"
+#include "StreamRecord.hpp"
 #include "SerializeUtils.hpp"
 
+class TypeSerializerBase {
+public:
+    virtual ~TypeSerializerBase() = default;
+};
+
 template <class T>
-class TypeSerializer
+class TypeSerializer : public TypeSerializerBase
 {
 public:
     // copy the record into buffer builder

@@ -24,13 +24,13 @@ public:
 
 
 template <class OUT>
-void SourceStreamTask<OUT>::init() {
+inline void SourceStreamTask<OUT>::init() {
     // The first template parameter is no-use, just a placeholder
     std::shared_ptr<StreamOperatorFactory<OUT>> operator_factory = this->m_configuration->template get_stream_operator_factory<std::string, OUT>();
 
-    this->m_operator_chain = std::make_shared<OperatorChain<OUT>>(this->shared_from_this(), 
-                                                                this->get_result_writer(), 
+    this->m_operator_chain = std::make_shared<OperatorChain<OUT>>(this->get_result_writer(), 
                                                                 operator_factory);
+
     if (this->m_operator_chain == nullptr) {
         throw std::runtime_error("Fail to create OperatorChain when initializing SourceStreamTask");
     }
@@ -38,7 +38,7 @@ void SourceStreamTask<OUT>::init() {
 }
 
 template <class OUT>
-void SourceStreamTask<OUT>::process_input() {
+inline void SourceStreamTask<OUT>::process_input() {
     SPDLOG_LOGGER_DEBUG(this->m_logger, "Task {} start to process streaming input", this->get_name());
     source_thread = std::make_shared<std::thread>(&SourceStreamTask::source_thread_run, this);
 
@@ -48,6 +48,6 @@ void SourceStreamTask<OUT>::process_input() {
 }
 
 template <class OUT>
-void SourceStreamTask<OUT>::source_thread_run() {
+inline void SourceStreamTask<OUT>::source_thread_run() {
     (std::dynamic_pointer_cast<StreamSource<OUT>>(this->m_head_operator))->run();
 }

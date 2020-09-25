@@ -1,20 +1,6 @@
-/**
- * A serializer for double type.
- */
-#pragma once
-#include "TypeSerializer.hpp"
-#include <iostream>
+#include "DoubleSerializer.hpp"
 
-class DoubleSerializer : public TypeSerializer<double>
-{
-private:
-    int         m_data_remaining;
-    char*       m_data_in_char;
-public:
-    StreamRecordAppendResult        serialize(std::shared_ptr<double> record, std::shared_ptr<BufferBuilder> buffer_builder, bool is_new_record);
-};
-
-inline StreamRecordAppendResult DoubleSerializer::serialize(std::shared_ptr<double> record, std::shared_ptr<BufferBuilder> buffer_builder, bool is_new_record){
+StreamRecordAppendResult DoubleSerializer::serialize(std::shared_ptr<double> record, std::shared_ptr<BufferBuilder> buffer_builder, bool is_new_record){
     // std::cout << "double record value: " << *record.get() << ", double size: " << sizeof(double) << std::endl;
     if (is_new_record) {
         m_data_remaining = sizeof(double);
@@ -40,4 +26,3 @@ inline StreamRecordAppendResult DoubleSerializer::serialize(std::shared_ptr<doub
         return PARTITAL_RECORD_BUFFER_FULL;
     }
 }
-

@@ -15,9 +15,9 @@
 
 #include "../../streamrecord/StreamRecord.hpp"
 #include "../../streamrecord/StreamRecordSerializer.hpp"
-#include "../../streamrecord/typeutils/StringSerializer.hpp"
-#include "../../streamrecord/typeutils/TypeDeserializer.hpp"
-#include "../../streamrecord/types/StringValue.hpp"
+#include "StringSerializer.hpp"
+#include "TypeDeserializer.hpp"
+#include "StringValue.hpp"
 
 #include "../../deployment/InputGateDeploymentDescriptor.hpp"
 #include "../../deployment/ResultPartitionDeploymentDescriptor.hpp"
@@ -100,7 +100,8 @@ public:
         // std::shared_ptr<StreamOperator<std::string>> stream_op = std::static_pointer_cast<StreamOperator<std::string>>(stream_map);
         std::shared_ptr<StreamOperatorFactory<std::string>> operator_factory = SimpleStreamOperatorFactory<std::string>::of(stream_map);
 
-        std::shared_ptr<OperatorChain<std::string>> op_chain = std::make_shared<OperatorChain<std::string>>(stream_task, channel_selector_result_writer, operator_factory);
+        // std::shared_ptr<OperatorChain<std::string>> op_chain = std::make_shared<OperatorChain<std::string>>(stream_task, channel_selector_result_writer, operator_factory);
+        std::shared_ptr<OperatorChain<std::string>> op_chain = std::make_shared<OperatorChain<std::string>>(channel_selector_result_writer, operator_factory);
     }
 
     void testStreamTaskInputWithDataTransferNonBufferSplit( void ) {
@@ -228,7 +229,8 @@ public:
         std::shared_ptr<ChannelSelectorResultWriter<std::string>> channel_selector_result_writer = 
                 std::make_shared<ChannelSelectorResultWriter<std::string>>(partition_0, "test", channel_selector);
 
-        std::shared_ptr<OperatorChain<std::string>> op_chain = std::make_shared<OperatorChain<std::string>>(stream_task, channel_selector_result_writer, operator_factory);
+        // std::shared_ptr<OperatorChain<std::string>> op_chain = std::make_shared<OperatorChain<std::string>>(stream_task, channel_selector_result_writer, operator_factory);
+        std::shared_ptr<OperatorChain<std::string>> op_chain = std::make_shared<OperatorChain<std::string>>(channel_selector_result_writer, operator_factory);
 
         std::shared_ptr<StreamOperator<std::string>> stream_op = op_chain->get_head_operator(); 
     }

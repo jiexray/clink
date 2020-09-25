@@ -6,9 +6,10 @@ DeserializationResult TupleDeserializer::get_next_record(std::shared_ptr<IOReada
         m_record_fields = std::dynamic_pointer_cast<TupleDeserializationDelegate>(target)->get_num_of_values();
 
         m_record_size = read_short();
+        m_remaining = m_record_size;
     }
 
-    if (m_record_size > m_type_deserializer->get_remaining()) {
+    if (m_remaining > m_type_deserializer->get_remaining()) {
         // The full tuple is not all received
         return DeserializationResult::PARTIAL_RECORD;
     }
@@ -24,7 +25,18 @@ DeserializationResult TupleDeserializer::get_next_record(std::shared_ptr<IOReada
         // set the record size in inner type deserialzer, the Value will use this value to read buf
         m_type_deserializer->set_record_size(partial_record_size);
 
+        // Note: update remaining buffer to read
+        m_remaining -= 2;
+
         partial_result = m_type_deserializer->read_into(partial_target);
+
+        m_remaining -= partial_record_size;
     }
-    return partial_result;
+
+    // finish one tuple, reset m_record_field to fresh
+    m_record_fields = -1;
+
+    // Note: There may be are some data left to read in TypeDeserialize, check and reread
+    return m_type_deserializer->get_remaining() == 0 ? DeserializationResult::LAST_RECORD_FROM_BUFFER : DeserializationResult::INTERMEDIATE_RECORD_FROM_BUFFER;
+    // return partial_result;
 }

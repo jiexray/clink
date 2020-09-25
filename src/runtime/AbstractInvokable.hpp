@@ -4,6 +4,7 @@
 #pragma once
 
 #include "Environment.hpp"
+#include "Configuration.hpp"
 #include <memory>
 
 class AbstractInvokable

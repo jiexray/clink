@@ -14,8 +14,3 @@ template<>
 std::shared_ptr<TypeSerializer<int>> TypeSerializerFactory<int>::of() {
     return std::make_shared<IntSerializer>();
 }
-
-template<>
-std::shared_ptr<TypeSerializer<Tuple>> TypeSerializerFactory<Tuple>::of() {
-    return std::make_shared<TupleSerializer>();
-}

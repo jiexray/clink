@@ -4,10 +4,10 @@
 #include "../streamrecord/StreamRecord.hpp"
 #include "BufferPool.hpp"
 #include "BufferBuilder.hpp"
-#include "../streamrecord/StreamRecordSerializer.hpp"
-#include "../streamrecord/typeutils/StringSerializer.hpp"
+#include "StreamRecordSerializer.hpp"
+#include "StringSerializer.hpp"
 #include <cstring>
-#include "../streamrecord/typeutils/TypeDeserializer.hpp"
+#include "TypeDeserializer.hpp"
 #include "StringValue.hpp"
 #include "DeserializationDelegate.hpp"
 #include "TypeDeserializerImpl.hpp"

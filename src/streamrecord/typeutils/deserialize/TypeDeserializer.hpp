@@ -3,9 +3,9 @@
  */
 
 #pragma once
-#include "../../buffer/BufferBase.hpp"
-#include "../types/IOReadableWritable.hpp"
-#include "../StreamRecord.hpp"
+#include "BufferBase.hpp"
+#include "IOReadableWritable.hpp"
+#include "StreamRecord.hpp"
 #include "SerializeUtils.hpp"
 #include "Constant.hpp"
 #include "LoggerFactory.hpp"

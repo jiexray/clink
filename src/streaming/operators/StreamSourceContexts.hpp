@@ -46,7 +46,6 @@ public:
     NonTimestampContext(std::shared_ptr<Output<OUT>> output): m_output(output) {}
     void collect(std::shared_ptr<OUT> element) {
         std::shared_ptr<StreamRecord<OUT>> new_record = std::make_shared<StreamRecord<OUT>>(element);
-        std::cout << "new record: " << *(new_record->get_value().get()) << std::endl;
         if (this->m_output == nullptr) {
             std::cout << "[ERROR]Output in SourceContext is null" << std::endl;
             return;

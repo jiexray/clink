@@ -11,6 +11,8 @@ set(ALL_INCLUDE_DIRS
   ${CMAKE_SOURCE_DIR}/src/streamrecord
   ${CMAKE_SOURCE_DIR}/src/streamrecord/types
   ${CMAKE_SOURCE_DIR}/src/streamrecord/typeutils
+  ${CMAKE_SOURCE_DIR}/src/streamrecord/typeutils/serialize
+  ${CMAKE_SOURCE_DIR}/src/streamrecord/typeutils/deserialize
   ${CMAKE_SOURCE_DIR}/src/streaming/functions
   ${CMAKE_SOURCE_DIR}/src/streaming/io
   ${CMAKE_SOURCE_DIR}/src/streaming/operators
@@ -51,7 +53,6 @@ target_link_libraries(buffer core)
 # ------------------------
 target_sources(core
   PRIVATE
-    core/config/Configuration.cpp
     core/config/Constant.cpp
 )
 target_include_directories(core PUBLIC
@@ -67,7 +68,6 @@ target_sources(result
     result/ResultPartitionManager.cpp
     result/ResultSubpartition.cpp
     result/ResultSubpartitionView.cpp
-    result/ResultWriter.cpp
     result/consumer/InputChannel.cpp
     result/consumer/InputGate.cpp
     result/consumer/InputGateFactory.cpp
@@ -83,11 +83,13 @@ target_sources(streamrecord
     streamrecord/types/IntValue.cpp
     streamrecord/types/DoubleValue.cpp
     streamrecord/types/StringValue.cpp
-    streamrecord/typeutils/TypeDeserializerImpl.cpp
-    streamrecord/typeutils/TypeSerializerFactory.cpp
-    streamrecord/typeutils/TypeSerializerDelegate.cpp
-    streamrecord/typeutils/TupleSerializer.cpp
-    streamrecord/typeutils/TupleDeserializer.cpp
+    streamrecord/typeutils/deserialize/TypeDeserializerImpl.cpp
+    streamrecord/typeutils/serialize/TypeSerializerFactory.cpp
+    streamrecord/typeutils/serialize/IntSerializer.cpp
+    streamrecord/typeutils/serialize/StringSerializer.cpp
+    streamrecord/typeutils/serialize/DoubleSerializer.cpp
+    streamrecord/typeutils/serialize/TupleSerializer.cpp
+    streamrecord/typeutils/deserialize/TupleDeserializer.cpp
 )
 target_include_directories(streamrecord PUBLIC
   ${ALL_INCLUDE_DIRS}
@@ -100,9 +102,6 @@ target_link_libraries(streamrecord core buffer)
 
 target_sources(streaming
   PRIVATE
-    streaming/task/OperatorChain.cpp
-    streaming/task/StreamTask.cpp
-    streaming/operators/SimpleStreamOperatorFactory.cpp
     streaming/task/config/StreamConfig.cpp
     streaming/task/mailbox/TaskMailbox.cpp
     streaming/task/mailbox/MailboxProcessor.cpp

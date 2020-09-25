@@ -2,7 +2,7 @@
 
 #include "cxxtest/TestSuite.h"
 #include "Tuple2.hpp"
-#include "TypeSerializerDelegate.hpp"
+// #include "TypeSerializerDelegate.hpp"
 #include "TupleSerializer.hpp"
 #include <memory>
 #include "TupleDeserializer.hpp"
@@ -34,7 +34,7 @@ public:
         TS_ASSERT_EQUALS(tuple2->get_field(0) == typeid(std::string), true);
         TS_ASSERT_EQUALS(tuple2->get_field(1) == typeid(int), true);
 
-        std::shared_ptr<Tuple> tuple = std::make_shared<Tuple2<std::string, int>>(std::make_shared<std::string>("Hello world"), std::make_shared<int>(100));
+        std::shared_ptr<Tuple2<std::string, int>> tuple = std::make_shared<Tuple2<std::string, int>>(std::make_shared<std::string>("Hello world"), std::make_shared<int>(100));
 
         TS_ASSERT_EQUALS(tuple->get_arity(), 2);
         TS_ASSERT_EQUALS(tuple->get_field(0) == typeid(std::string), true);
@@ -42,34 +42,34 @@ public:
         TS_ASSERT_EQUALS(tuple->get_field(1) == typeid(std::string), false);
     }
 
-    void testTypeSerializerDelegate( void ) {
-        std::shared_ptr<TypeSerializerDelegate> serializer_delegate = std::make_shared<TypeSerializerDelegate>(typeid(double));
+    // void testTypeSerializerDelegate( void ) {
+    //     std::shared_ptr<TypeSerializerDelegate> serializer_delegate = std::make_shared<TypeSerializerDelegate>(typeid(double));
 
-        std::shared_ptr<StreamRecord<double>> double_record_1 = std::make_shared<StreamRecord<double>>(std::make_shared<double>(12.34), 10);
-        std::shared_ptr<BufferPool> buffer_pool = std::make_shared<BufferPool>(10, 10);
-        std::shared_ptr<BufferBuilder> buffer_builder_1 = buffer_pool->request_buffer_builder();
+    //     std::shared_ptr<StreamRecord<double>> double_record_1 = std::make_shared<StreamRecord<double>>(std::make_shared<double>(12.34), 10);
+    //     std::shared_ptr<BufferPool> buffer_pool = std::make_shared<BufferPool>(10, 10);
+    //     std::shared_ptr<BufferBuilder> buffer_builder_1 = buffer_pool->request_buffer_builder();
 
-        StreamRecordAppendResult serialize_result_1 = serializer_delegate->serialize(double_record_1->get_value(), buffer_builder_1, true);
-        TS_ASSERT_EQUALS(serialize_result_1, FULL_RECORD_BUFFER_FULL);
+    //     StreamRecordAppendResult serialize_result_1 = serializer_delegate->serialize(double_record_1->get_value(), buffer_builder_1, true);
+    //     TS_ASSERT_EQUALS(serialize_result_1, FULL_RECORD_BUFFER_FULL);
 
-        std::shared_ptr<BufferBase> buf = buffer_builder_1->create_buffer_consumer()->build();
-        char* int_buf = new char[2];
-        SerializeUtils::serialize_short(int_buf, 8);   
-        double val = 12.34;
-        char* double_buf = (char*)(&val);
-        char result_buf[11];
-        memset(result_buf, 0, 11);
-        memcpy(result_buf, int_buf, 2);
-        memcpy(result_buf + 2, double_buf, 8);
-        std::string buf_1 = std::string(result_buf, 10);
+    //     std::shared_ptr<BufferBase> buf = buffer_builder_1->create_buffer_consumer()->build();
+    //     char* int_buf = new char[2];
+    //     SerializeUtils::serialize_short(int_buf, 8);   
+    //     double val = 12.34;
+    //     char* double_buf = (char*)(&val);
+    //     char result_buf[11];
+    //     memset(result_buf, 0, 11);
+    //     memcpy(result_buf, int_buf, 2);
+    //     memcpy(result_buf + 2, double_buf, 8);
+    //     std::string buf_1 = std::string(result_buf, 10);
         
-        isBufferEqualToString(buf, buf_1);
-    }
+    //     isBufferEqualToString(buf, buf_1);
+    // }
 
     void testTupleSerializer( void ) {
         std::cout << "test testTupleSerializer()" << std::endl;
-        std::shared_ptr<TupleSerializer> tuple_serializer = std::make_shared<TupleSerializer>();
-        std::shared_ptr<Tuple> tuple = std::make_shared<Tuple2<std::string, int>>(std::make_shared<std::string>("Hello world"), std::make_shared<int>(100));
+        std::shared_ptr<TupleSerializer<Tuple2<std::string, int>>> tuple_serializer = std::make_shared<TupleSerializer<Tuple2<std::string, int>>>();
+        std::shared_ptr<Tuple2<std::string, int>> tuple = std::make_shared<Tuple2<std::string, int>>(std::make_shared<std::string>("Hello world"), std::make_shared<int>(100));
 
         std::shared_ptr<BufferPool> buffer_pool = std::make_shared<BufferPool>(10, 100);
         std::shared_ptr<BufferBuilder> buffer_builder_1 = buffer_pool->request_buffer_builder();
@@ -110,8 +110,8 @@ public:
 
     void testTupleSerializerWithSplit( void ) {
         std::cout << "test testTupleSerializerWithSplit()" << std::endl;
-        std::shared_ptr<TupleSerializer> tuple_serializer = std::make_shared<TupleSerializer>();
-        std::shared_ptr<Tuple> tuple = std::make_shared<Tuple2<std::string, int>>(std::make_shared<std::string>("Hello world"), std::make_shared<int>(100));
+        std::shared_ptr<TupleSerializer<Tuple2<std::string, int>>> tuple_serializer = std::make_shared<TupleSerializer<Tuple2<std::string, int>>>();
+        std::shared_ptr<Tuple2<std::string, int>> tuple = std::make_shared<Tuple2<std::string, int>>(std::make_shared<std::string>("Hello world"), std::make_shared<int>(100));
 
         std::shared_ptr<BufferPool> buffer_pool = std::make_shared<BufferPool>(10, 15);
         std::shared_ptr<BufferBuilder> buffer_builder_1 = buffer_pool->request_buffer_builder();
@@ -193,8 +193,9 @@ public:
         // -------------------------
         //  Serialization part
         // -------------------------
-        std::shared_ptr<TupleSerializer> tuple_serializer = std::make_shared<TupleSerializer>();
-        std::shared_ptr<Tuple> tuple = std::make_shared<Tuple2<std::string, int>>(std::make_shared<std::string>("Hello world"), std::make_shared<int>(100));
+        std::shared_ptr<TupleSerializer<Tuple2<std::string, int>>> tuple_serializer = std::make_shared<TupleSerializer<Tuple2<std::string, int>>>();
+        // std::shared_ptr<TupleSerializer> tuple_serializer = std::make_shared<TupleSerializer>();
+        std::shared_ptr<Tuple2<std::string, int>> tuple = std::make_shared<Tuple2<std::string, int>>(std::make_shared<std::string>("Hello world"), std::make_shared<int>(100));
 
         std::shared_ptr<BufferPool> buffer_pool = std::make_shared<BufferPool>(10, 100);
         std::shared_ptr<BufferBuilder> buffer_builder_1 = buffer_pool->request_buffer_builder();
@@ -230,8 +231,9 @@ public:
         // -------------------------
         //  Serialization part
         // -------------------------
-        std::shared_ptr<TupleSerializer> tuple_serializer = std::make_shared<TupleSerializer>();
-        std::shared_ptr<Tuple> tuple = std::make_shared<Tuple2<std::string, int>>(std::make_shared<std::string>("Hello world"), std::make_shared<int>(100));
+        // std::shared_ptr<TupleSerializer> tuple_serializer = std::make_shared<TupleSerializer>();
+        std::shared_ptr<TupleSerializer<Tuple2<std::string, int>>> tuple_serializer = std::make_shared<TupleSerializer<Tuple2<std::string, int>>>();
+        std::shared_ptr<Tuple2<std::string, int>> tuple = std::make_shared<Tuple2<std::string, int>>(std::make_shared<std::string>("Hello world"), std::make_shared<int>(100));
 
         std::shared_ptr<BufferPool> buffer_pool = std::make_shared<BufferPool>(10, 100);
         std::shared_ptr<BufferBuilder> buffer_builder_1 = buffer_pool->request_buffer_builder();

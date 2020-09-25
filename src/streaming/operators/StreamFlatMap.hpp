@@ -5,6 +5,7 @@
 #include "AbstractUdfStreamOperator.hpp"
 #include "FlatMapFunction.hpp"
 
+template <class IN, class OUT> class OneInputStreamOperator;
 
 template <class IN, class OUT>
 class StreamFlatMap: public AbstractUdfStreamOperator<Function, OUT>, OneInputStreamOperator<IN, OUT>

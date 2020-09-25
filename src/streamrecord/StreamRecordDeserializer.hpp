@@ -2,8 +2,8 @@
  * Interface for turning sequences of memory segments into record.
  */
 #pragma once
-#include "../../buffer/BufferBase.hpp"
-#include "typeutils/TypeDeserializer.hpp"
+#include "BufferBase.hpp"
+#include "TypeDeserializer.hpp"
 #include "types/IOReadableWritable.hpp"
 #include "StreamRecord.hpp"
 #include "TypeDeserializerImpl.hpp"

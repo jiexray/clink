@@ -59,7 +59,7 @@ public:
         int num_input_channels = input_gate->get_number_of_input_channels();
 
         for (int i = 0; i < num_input_channels; i++) {
-            m_record_deserializers.push_back(std::make_shared<StreamRecordDeserializer>(record_type));
+            m_record_deserializers.push_back(std::make_shared<StreamRecordDeserializer>(RECORD_TYPE::TUPLE));
         }
     }
 

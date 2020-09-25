@@ -41,8 +41,10 @@ public:
 
         std::string node_name_1("flat-map");
         std::string node_name_2("sink");
-        std::shared_ptr<StreamNode<std::string>> node_1 = std::make_shared<StreamNode<std::string>>(0, operator_factory_1, node_name_1);
-        std::shared_ptr<StreamNode<std::string>> node_2 = std::make_shared<StreamNode<std::string>>(1, operator_factory_2, node_name_2);
+        // std::shared_ptr<StreamNode<std::string>> node_1 = std::make_shared<StreamNode<std::string>>(0, operator_factory_1, node_name_1);
+        // std::shared_ptr<StreamNode<std::string>> node_2 = std::make_shared<StreamNode<std::string>>(1, operator_factory_2, node_name_2);
+        std::shared_ptr<StreamNode> node_1 = std::make_shared<StreamNode>(0, node_name_1);
+        std::shared_ptr<StreamNode> node_2 = std::make_shared<StreamNode>(1, node_name_2);
 
         std::shared_ptr<StreamPartitioner<std::string>> stream_partitioner = std::make_shared<ForwardPartitioner<std::string>>();
 

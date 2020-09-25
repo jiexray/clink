@@ -17,18 +17,32 @@
 #include "../../result/consumer/InputGateFactory.hpp"
 #include "../../core/config/Configuration.hpp"
 #include "MailboxProcessor.hpp"
+#include "StreamConfig.cpp"
+
+template std::shared_ptr<StreamOperatorFactory<std::string>> StreamConfig::get_stream_operator_factory<Tuple2<std::string, int>, std::string>();
 
 
 template class MapFunction<std::string, std::string>;
 // concat the first char and the last char
 class StringMapFunction: public MapFunction<std::string, std::string>{
     std::shared_ptr<std::string> map(std::string& value){
+        std::cout << "StringMapFunction::map(): " << value << std::endl;
         return std::make_shared<std::string>(value.begin(), value.begin() + 2);
     }
 
     char* serialize() override {return (char*)this;}
 
     std::shared_ptr<MapFunction<std::string, std::string>> deserialize() override { return std::make_shared<StringMapFunction>();}
+};
+
+class TupleMapFunction: public MapFunction<Tuple2<std::string, int>, std::string>{
+    std::shared_ptr<std::string> map(Tuple2<std::string, int>& value){
+        std::cout << "TupleMapFunction::map() " << std::string("f0: " + (*value.f0) + ", f1: " + std::to_string(*value.f1)) << std::endl;
+        return std::make_shared<std::string>("f0: " + (*value.f0) + ", f1: " + std::to_string(*value.f1));
+    }
+    char* serialize() override {return (char*)this;}
+
+    std::shared_ptr<MapFunction<Tuple2<std::string, int>, std::string>> deserialize() override { return std::make_shared<TupleMapFunction>();}
 };
 
 class MySourceFunction: public SourceFunction<std::string> {
@@ -71,8 +85,11 @@ public:
         std::shared_ptr<StreamOperatorFactory<std::string>> operator_factory_2 = SimpleStreamOperatorFactory<std::string>::of(stream_map_2);
 
         std::string node_name("string-map");
-        std::shared_ptr<StreamNode<std::string>> src_node = std::make_shared<StreamNode<std::string>>(0, operator_factory_1, node_name);
-        std::shared_ptr<StreamNode<std::string>> target_node = std::make_shared<StreamNode<std::string>>(1, operator_factory_2, node_name);
+        // std::shared_ptr<StreamNode<std::string>> src_node = std::make_shared<StreamNode<std::string>>(0, operator_factory_1, node_name);
+        // std::shared_ptr<StreamNode<std::string>> target_node = std::make_shared<StreamNode<std::string>>(1, operator_factory_2, node_name);
+
+        std::shared_ptr<StreamNode> src_node = std::make_shared<StreamNode>(0, node_name);
+        std::shared_ptr<StreamNode> target_node = std::make_shared<StreamNode>(1, node_name);
 
         std::shared_ptr<StreamPartitioner<std::string>> stream_partitioner = std::make_shared<ForwardPartitioner<std::string>>();
 
@@ -86,8 +103,11 @@ public:
         std::shared_ptr<StreamOperatorFactory<std::string>> operator_factory_2 = SimpleStreamOperatorFactory<std::string>::of(stream_map_2);
 
         std::string node_name("string-map");
-        std::shared_ptr<StreamNode<std::string>> src_node = std::make_shared<StreamNode<std::string>>(0, operator_factory_1, node_name);
-        std::shared_ptr<StreamNode<std::string>> target_node = std::make_shared<StreamNode<std::string>>(1, operator_factory_2, node_name);
+        // std::shared_ptr<StreamNode<std::string>> src_node = std::make_shared<StreamNode<std::string>>(0, operator_factory_1, node_name);
+        // std::shared_ptr<StreamNode<std::string>> target_node = std::make_shared<StreamNode<std::string>>(1, operator_factory_2, node_name);
+
+        std::shared_ptr<StreamNode> src_node = std::make_shared<StreamNode>(0, node_name);
+        std::shared_ptr<StreamNode> target_node = std::make_shared<StreamNode>(1, node_name);
 
         std::shared_ptr<StreamPartitioner<std::string>> stream_partitioner = std::make_shared<ForwardPartitioner<std::string>>();
 
@@ -175,7 +195,8 @@ public:
         std::shared_ptr<ChannelSelectorResultWriter<std::string>> channel_selector_result_writer = 
                 std::make_shared<ChannelSelectorResultWriter<std::string>>(partition_0, "test", channel_selector);
 
-        std::shared_ptr<OperatorChain<std::string>> op_chain = std::make_shared<OperatorChain<std::string>>(stream_task, channel_selector_result_writer, gen_operator_factory);
+        // std::shared_ptr<OperatorChain<std::string>> op_chain = std::make_shared<OperatorChain<std::string>>(stream_task, channel_selector_result_writer, gen_operator_factory);
+        std::shared_ptr<OperatorChain<std::string>> op_chain = std::make_shared<OperatorChain<std::string>>(channel_selector_result_writer, gen_operator_factory);
 
         std::shared_ptr<StreamOperator<std::string>> stream_op = op_chain->get_head_operator();
 
@@ -191,8 +212,10 @@ public:
         std::shared_ptr<StreamOperatorFactory<std::string>> operator_factory_2 = SimpleStreamOperatorFactory<std::string>::of(stream_map_2);
 
         std::string node_name("string-map");
-        std::shared_ptr<StreamNode<std::string>> src_node = std::make_shared<StreamNode<std::string>>(0, operator_factory_1, node_name);
-        std::shared_ptr<StreamNode<std::string>> target_node = std::make_shared<StreamNode<std::string>>(1, operator_factory_2, node_name);
+        // std::shared_ptr<StreamNode<std::string>> src_node = std::make_shared<StreamNode<std::string>>(0, operator_factory_1, node_name);
+        // std::shared_ptr<StreamNode<std::string>> target_node = std::make_shared<StreamNode<std::string>>(1, operator_factory_2, node_name);
+        std::shared_ptr<StreamNode> src_node = std::make_shared<StreamNode>(0, node_name);
+        std::shared_ptr<StreamNode> target_node = std::make_shared<StreamNode>(1, node_name);
 
         std::shared_ptr<StreamPartitioner<std::string>> stream_partitioner = std::make_shared<ForwardPartitioner<std::string>>();
 
@@ -265,8 +288,10 @@ public:
 
         std::string node_name_1("source");
         std::string node_name_2("map-1");
-        std::shared_ptr<StreamNode<std::string>> src_node = std::make_shared<StreamNode<std::string>>(0, operator_factory_1, node_name_1);
-        std::shared_ptr<StreamNode<std::string>> target_node = std::make_shared<StreamNode<std::string>>(1, operator_factory_2, node_name_2);
+        std::shared_ptr<StreamNode> src_node = std::make_shared<StreamNode>(0, node_name_1);
+        std::shared_ptr<StreamNode> target_node = std::make_shared<StreamNode>(1, node_name_2);
+        // std::shared_ptr<StreamNode<std::string>> src_node = std::make_shared<StreamNode<std::string>>(0, operator_factory_1, node_name_1);
+        // std::shared_ptr<StreamNode<std::string>> target_node = std::make_shared<StreamNode<std::string>>(1, operator_factory_2, node_name_2);
 
         std::shared_ptr<StreamPartitioner<std::string>> stream_partitioner = std::make_shared<ForwardPartitioner<std::string>>();
 
@@ -390,9 +415,13 @@ public:
         std::string node_name_3("map-1");
 
         
-        std::shared_ptr<StreamNode<std::string>> node_1 = std::make_shared<StreamNode<std::string>>(0, operator_factory_1, node_name_1);
-        std::shared_ptr<StreamNode<std::string>> node_2 = std::make_shared<StreamNode<std::string>>(1, operator_factory_2, node_name_2);
-        std::shared_ptr<StreamNode<std::string>> node_3 = std::make_shared<StreamNode<std::string>>(2, operator_factory_3, node_name_3);
+        // std::shared_ptr<StreamNode<std::string>> node_1 = std::make_shared<StreamNode<std::string>>(0, operator_factory_1, node_name_1);
+        // std::shared_ptr<StreamNode<std::string>> node_2 = std::make_shared<StreamNode<std::string>>(1, operator_factory_2, node_name_2);
+        // std::shared_ptr<StreamNode<std::string>> node_3 = std::make_shared<StreamNode<std::string>>(2, operator_factory_3, node_name_3);
+
+        std::shared_ptr<StreamNode> node_1 = std::make_shared<StreamNode>(0, node_name_1);
+        std::shared_ptr<StreamNode> node_2 = std::make_shared<StreamNode>(1, node_name_2);
+        std::shared_ptr<StreamNode> node_3 = std::make_shared<StreamNode>(2, node_name_3);
 
         /* Create edge_1 (source -> map-1) */
         std::shared_ptr<StreamEdge<std::string>> edge_1 = std::make_shared<StreamEdge<std::string>>(node_1, node_2, std::make_shared<ForwardPartitioner<std::string>>());
@@ -488,6 +517,90 @@ public:
         mailbox_processor->all_actions_completed();
         bool step_result = mailbox_processor->run_mailbox_step();
         TS_ASSERT_EQUALS(step_result, false);
+    }
+
+    // void testTupleOneInputStreamProcessorCreate(void) {
+    //     std::cout << "test testTupleOneInputStreamProcessorCreate()" << std::endl;
+    //     std::shared_ptr<OneInputStreamTask<Tuple2<std::string, int>, std::string>> op = 
+    //                 std::make_shared<OneInputStreamTask<Tuple2<std::string, int>, std::string>>(nullptr);
+    // }
+
+    void testStreamTaskWithTupleData( void ){
+        std::cout << "test testStreamTaskWithTupleData()" << std::endl;
+        std::shared_ptr<StreamOperator<std::string>> stream_map_1 = std::make_shared<StreamMap<Tuple2<std::string, int>, std::string>>(std::make_shared<TupleMapFunction>());
+        std::shared_ptr<StreamOperatorFactory<std::string>> operator_factory_1 = SimpleStreamOperatorFactory<std::string>::of(stream_map_1);
+        std::shared_ptr<StreamOperator<std::string>> stream_map_2 = std::make_shared<StreamMap<std::string, std::string>>(std::make_shared<StringMapFunction>());
+        std::shared_ptr<StreamOperatorFactory<std::string>> operator_factory_2 = SimpleStreamOperatorFactory<std::string>::of(stream_map_2);
+
+        std::string node_name("string-map");
+        std::shared_ptr<StreamNode> src_node = std::make_shared<StreamNode>(0, node_name);
+        std::shared_ptr<StreamNode> target_node = std::make_shared<StreamNode>(1, node_name);
+
+        std::shared_ptr<StreamPartitioner<std::string>> stream_partitioner = std::make_shared<ForwardPartitioner<std::string>>();
+
+        std::shared_ptr<StreamEdge<std::string>> edge = std::make_shared<StreamEdge<std::string>>(src_node, target_node, stream_partitioner);
+
+
+        std::shared_ptr<BufferPool> buffer_pool = std::make_shared<BufferPool>(100, 150);
+        std::shared_ptr<ResultPartitionManager> result_partition_manager = std::make_shared<ResultPartitionManager>();
+
+        
+        InputGateFactory input_gate_factory(result_partition_manager);
+
+        ResultPartitionFactory result_partition_factory(result_partition_manager);
+
+        /* Create RuntimeEnvironment */
+        int job_id = 0;
+        int job_vertex_id = 0;
+        int execution_id = 0;
+        int num_of_result_partitions = 1;
+        int num_of_input_gates = 1;
+        std::shared_ptr<ResultPartition> *result_partitions = new std::shared_ptr<ResultPartition>[num_of_result_partitions];
+        std::shared_ptr<InputGate> *input_gates = new std::shared_ptr<InputGate>[num_of_input_gates];
+        for (int i = 0; i < num_of_result_partitions; i++) {
+            result_partitions[i] =  result_partition_factory.create("test-result-partition", i, std::make_shared<ResultPartitionDeploymentDescriptor>(1), buffer_pool);
+        }
+        for (int i = 0; i < num_of_input_gates; i++) {
+            input_gates[i] = input_gate_factory.create("test-input-gate", i, std::make_shared<InputGateDeploymentDescriptor>(0, new std::string{"fake-test-task-0"}, 1));
+        }
+        /* set configuration */
+        std::shared_ptr<Configuration> test_conf = std::make_shared<Configuration>();
+        test_conf->set_edge<std::string>(StreamConfig::EDGE_NAME, edge);
+        test_conf->set_operator_factory<Tuple2<std::string, int>, std::string>(StreamConfig::OPERATOR_FACTORY, operator_factory_1);
+        test_conf->set_value<int>(StreamConfig::NUMBER_OF_INPUTS, std::make_shared<int>(1));
+
+        std::shared_ptr<TaskInfo> task_info = std::make_shared<TaskInfo>("test-task", "test-task-0", 0, 1);
+
+        std::shared_ptr<Environment> env = std::make_shared<RuntimeEnvironment>(job_id, job_vertex_id, execution_id, result_partitions, num_of_result_partitions,
+                                                                                input_gates, num_of_input_gates, test_conf, task_info);
+
+        /* Create Result Partition */
+        // Result partition should initialize first, and the input gate follows it.
+
+        /* Each ResultPartition has 4 Subpartitions */
+        std::shared_ptr<ResultPartition> partition_0 = result_partition_factory.create("fake-test-task", 0, 
+                                                                                    std::make_shared<ResultPartitionDeploymentDescriptor>(4), buffer_pool);
+        
+        std::shared_ptr<StreamTask<std::string>> stream_task = std::make_shared<OneInputStreamTask<Tuple2<std::string, int>, std::string>>(env);
+        stream_task->before_invoke();
+
+        std::shared_ptr<ResultWriter<Tuple2<std::string, int>>> result_writer_0 = std::make_shared<ResultWriter<Tuple2<std::string, int>>>(partition_0, "test");
+        std::shared_ptr<StreamRecord<Tuple2<std::string, int>>> record_1 = std::make_shared<StreamRecord<Tuple2<std::string, int>>>(std::make_shared<Tuple2<std::string, int>>(
+                                                                                                std::make_shared<std::string>(std::string("hello world")),
+                                                                                                std::make_shared<int>(101)));
+        std::shared_ptr<StreamRecord<Tuple2<std::string, int>>> record_2 = std::make_shared<StreamRecord<Tuple2<std::string, int>>>(std::make_shared<Tuple2<std::string, int>>(
+                                                                                                std::make_shared<std::string>(std::string("nju")),
+                                                                                                std::make_shared<int>(102)));
+
+
+        result_writer_0->emit(record_1, 0);
+    
+        stream_task->process_input();
+
+        result_writer_0->emit(record_2, 0);
+        // result_writer_0->flush(0);
+
+        stream_task->process_input();
     }
 };
 
