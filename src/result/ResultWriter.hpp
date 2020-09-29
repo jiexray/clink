@@ -61,11 +61,10 @@ template <class T>
 inline void ResultWriter<T>::copy_to_buffer_builder(int target_channel, std::shared_ptr<StreamRecord<T>> record) {
     int num_copied_buffers = 0;
     std::shared_ptr<BufferBuilder> buffer_builder = get_buffer_builder(target_channel);
-    SPDLOG_LOGGER_DEBUG(m_logger, "ResultWriter<T>::copy_to_buffer_builder() after get builder with Buffer {}, current write position {}", 
-                                        buffer_builder->get_buffer()->get_buffer_id(), buffer_builder->get_write_position());
+    // SPDLOG_LOGGER_DEBUG(m_logger, "ResultWriter<T>::copy_to_buffer_builder() after get builder with Buffer {}, current write position {}", 
+    //                                     buffer_builder->get_buffer()->get_buffer_id(), buffer_builder->get_write_position());
     // StreamRecordAppendResult result = record->serialize_record_to_buffer_builder(buffer_builder);
     StreamRecordAppendResult result = this->m_record_serializer->serialize(record, buffer_builder, true);
-    SPDLOG_LOGGER_DEBUG(m_logger, "ResultWriter<T>::copy_to_buffer_builder() after serialize() result {}", result);
 
     if (result != NONE_RECORD) {
         num_copied_buffers++;
@@ -112,10 +111,8 @@ inline void ResultWriter<T>::emit(std::shared_ptr<StreamRecord<T>> record, int t
 template <class T>
 inline std::shared_ptr<BufferBuilder> ResultWriter<T>::get_buffer_builder(int target_channel) {
     if (m_buffer_builders[target_channel] != nullptr) {
-        SPDLOG_LOGGER_DEBUG(m_logger, "get reused buffer");
         return m_buffer_builders[target_channel];
     } else {
-        SPDLOG_LOGGER_DEBUG(m_logger, "request new buffer");
         return request_new_buffer_builder(target_channel);
     }
 }
@@ -130,7 +127,6 @@ inline std::shared_ptr<BufferBuilder> ResultWriter<T>::request_new_buffer_builde
     std::shared_ptr<BufferBuilder> builder = m_target_result_partition->try_get_buffer_builder();
     if (builder == nullptr) {
         builder = m_target_result_partition->get_buffer_builder();
-        SPDLOG_LOGGER_DEBUG(m_logger, "Got BufferBuilder in blocking way");
     }
     m_target_result_partition->add_buffer_consumer(builder->create_buffer_consumer(), target_channel);
     m_buffer_builders[target_channel] = builder;
