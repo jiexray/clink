@@ -6,8 +6,6 @@ parent_buffer((Buffer*)buffer),
 m_buffer_offset(offset),
 m_size(length){
     // setup logger
-    spdlog::set_level(Constant::SPDLOG_LEVEL);
-    spdlog::set_pattern(Constant::SPDLOG_PATTERN);
     if (parent_buffer->get_buffer_pool_manager() != nullptr){
         parent_buffer->get_buffer_pool_manager()->register_buffer_slice(parent_buffer->get_buffer_id());
     }

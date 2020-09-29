@@ -5,18 +5,18 @@
 #include <memory>
 #include <string>
 #include "Tuple.hpp"
+#include <sstream>
 
-
-template <class T1, class T2>
+template <class T0, class T1>
 class Tuple2 : public Tuple
 {
 public:
-    std::shared_ptr<T1>         f0;
-    std::shared_ptr<T2>         f1;
+    std::shared_ptr<T0>         f0;
+    std::shared_ptr<T1>         f1;
 
     Tuple2() {}
 
-    Tuple2(std::shared_ptr<T1> value0, std::shared_ptr<T2> value1):
+    Tuple2(std::shared_ptr<T0> value0, std::shared_ptr<T1> value1):
     f0(value0), f1(value1) {}
 
     ~Tuple2(){}
@@ -25,9 +25,9 @@ public:
 
     const std::type_info&       get_field(int pos) {
         if (pos == 0) {
-            return typeid(T1);
+            return typeid(T0);
         } else if (pos == 1) {
-            return typeid(T2);
+            return typeid(T1);
         } else {
             throw std::invalid_argument("the position " + std::to_string(pos) + " is illegal in Tuple2");
         }
@@ -46,6 +46,9 @@ public:
     }
 
     std::string                 to_string() {
-        return "Tuple2";
+        std::ostringstream oss;
+        oss << "{" << *f0 << ": " << *f1 << "}";
+        return oss.str();
+        // return "Tuple2 {f0: " + IOUtils::to_string<T0>(f0) + ", f1: " + IOUtils::to_string<T1>(f1) + "}";
     }
 };

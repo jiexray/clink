@@ -297,7 +297,7 @@ inline std::shared_ptr<StreamOperator<OUT>>  Configuration::get_stream_operator(
             std::shared_ptr<SourceFunction<OUT>> gen_func = (dynamic_cast<SourceFunction<OUT>*>(func_ptr))->deserialize();
             return std::make_shared<StreamSource<OUT>>(gen_func);
         } else if(dynamic_cast<SinkFunction<IN>*>(func_ptr) != nullptr) {
-            std::shared_ptr<SinkFunction<IN>> gen_func = (dynamic_cast<SinkFunction<IN>*>(func_ptr))->deserialize();
+            std::shared_ptr<SinkFunction<IN>> gen_func = (dynamic_cast<SinkFunction<IN>*>(func_ptr))->deserialize(m_conf_data[func_key]);
             return std::make_shared<StreamSink<IN, OUT>>(gen_func);            
         } else if(dynamic_cast<FlatMapFunction<IN, OUT>*>(func_ptr) != nullptr) {
             std::shared_ptr<FlatMapFunction<IN, OUT>> gen_func = (dynamic_cast<FlatMapFunction<IN, OUT>*>(func_ptr))->deserialize();

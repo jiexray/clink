@@ -12,6 +12,7 @@
 #include <memory>
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/basic_file_sink.h>
+#include <sstream>
 
 class Buffer;
 

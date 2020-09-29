@@ -27,6 +27,7 @@
                 "/home/tian/software/vscode/projects/clink/src/runtime",
                 "/home/tian/software/vscode/projects/clink/src/core/config",
                 "/home/tian/software/vscode/projects/clink/src/core/common",
+                "/home/tian/software/vscode/projects/clink/src/core/common/io",
                 "/home/tian/software/vscode/projects/clink/src/core/util",
                 "/home/tian/software/vscode/projects/clink/src/core/tuple",
                 "/home/tian/software/vscode/projects/clink/src/runtime/executiongraph",

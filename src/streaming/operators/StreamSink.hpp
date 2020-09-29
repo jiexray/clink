@@ -21,6 +21,14 @@ public:
 
     /* Properties */
     std::shared_ptr<SinkFunction<IN>>     get_user_function() {return std::dynamic_pointer_cast<SinkFunction<IN>>(this->m_user_function);}
+
+    void close() {
+        std::dynamic_pointer_cast<SinkFunction<IN>>(this->m_user_function)->close();
+    }
+
+    void open() {
+        std::dynamic_pointer_cast<SinkFunction<IN>>(this->m_user_function)->open();
+    }
 };
 
 

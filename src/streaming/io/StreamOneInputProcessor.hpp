@@ -19,4 +19,9 @@ public:
     m_input(input), m_output(output) {}
     
     InputStatus                                 process_input() override { return m_input->emit_next(m_output);}
+
+    void                                        close() override {
+        m_input->close();
+        m_output->close();
+    }
 };

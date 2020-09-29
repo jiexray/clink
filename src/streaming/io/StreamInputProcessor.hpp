@@ -8,5 +8,6 @@ class StreamInputProcessor
 {
 public:
     virtual InputStatus process_input() = 0;
+    virtual void        close() {}
 };
 

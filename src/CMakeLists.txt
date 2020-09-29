@@ -24,6 +24,7 @@ set(ALL_INCLUDE_DIRS
   ${CMAKE_SOURCE_DIR}/src/runtime
   ${CMAKE_SOURCE_DIR}/src/core/config
   ${CMAKE_SOURCE_DIR}/src/core/common
+  ${CMAKE_SOURCE_DIR}/src/core/common/io
   ${CMAKE_SOURCE_DIR}/src/core/util
   ${CMAKE_SOURCE_DIR}/src/core/tuple
   ${CMAKE_SOURCE_DIR}/src/runtime/executiongraph

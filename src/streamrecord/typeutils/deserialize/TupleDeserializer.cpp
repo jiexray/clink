@@ -1,6 +1,14 @@
 #include "TupleDeserializer.hpp"
 
+std::shared_ptr<spdlog::logger> TupleDeserializer::m_logger = LoggerFactory::get_logger("TupleDeserializer");
+
 DeserializationResult TupleDeserializer::get_next_record(std::shared_ptr<IOReadableWritable> target) {
+    // first check if can read length of tuple, if not, return PARTIAL_RECORD, directly
+    if (m_type_deserializer->get_remaining() < 2) {
+        // SPDLOG_LOGGER_ERROR(m_logger, "Insufficient length to read a short! remaining: {}", m_type_deserializer->get_remaining());
+        return DeserializationResult::PARTIAL_RECORD;   
+    }
+
     if (m_record_fields == -1) {
         // a new read
         m_record_fields = std::dynamic_pointer_cast<TupleDeserializationDelegate>(target)->get_num_of_values();
@@ -32,7 +40,7 @@ DeserializationResult TupleDeserializer::get_next_record(std::shared_ptr<IOReada
 
         m_remaining -= partial_record_size;
     }
-
+    
     // finish one tuple, reset m_record_field to fresh
     m_record_fields = -1;
 

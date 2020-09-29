@@ -1,4 +1,5 @@
 #include "InputGate.hpp"
+std::shared_ptr<spdlog::logger> InputGate::m_logger = LoggerFactory::get_logger("InputGate");
 
 void InputGate::notify_channel_non_empty(std::shared_ptr<InputChannel> channel) {
     queue_channel(channel);   

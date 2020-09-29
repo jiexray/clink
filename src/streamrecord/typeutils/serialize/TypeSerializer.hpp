@@ -7,6 +7,7 @@
 #include "BufferBuilder.hpp"
 #include "StreamRecord.hpp"
 #include "SerializeUtils.hpp"
+#include "assert.h"
 
 class TypeSerializerBase {
 public:

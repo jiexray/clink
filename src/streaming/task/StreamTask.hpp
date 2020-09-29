@@ -46,6 +46,9 @@ public:
     /* Life cycle methods */
     virtual void                                init() {};
     virtual void                                process_input();
+    void                                        clearup() {
+        m_input_processor->close();
+    }
 
     /* Core work methods */
     void                                        before_invoke();

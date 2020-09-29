@@ -11,4 +11,5 @@ class DataOutput
 private:
 public:
     virtual void emit_record(std::shared_ptr<StreamRecord<T>> stream_record) = 0;
+    virtual void close() {}
 };

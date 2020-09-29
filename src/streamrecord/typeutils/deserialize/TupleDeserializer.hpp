@@ -9,6 +9,7 @@
 #include "TupleDeserializationDelegate.hpp"
 #include "Tuple.hpp"
 #include "Tuple2.hpp"
+#include "LoggerFactory.hpp"
 #include <typeinfo>
 #include <string.h>
 
@@ -20,6 +21,7 @@ private:
     int                                         m_record_fields;
     int                                         m_record_size;
     int                                         m_remaining;  // tuple buffer left to read
+    static std::shared_ptr<spdlog::logger>      m_logger;
 
 public:
     TupleDeserializer() {

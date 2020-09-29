@@ -23,5 +23,9 @@ public:
         // std::cout << "value: " << *(stream_record->get_value().get()) << std::endl;
         this->m_operator->process_element(stream_record);
     }
+
+    void close() override {
+        m_operator->close();
+    }
 };
 

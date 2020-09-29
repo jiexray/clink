@@ -27,6 +27,7 @@ set(TEST_HEADER_DIRS ${CMAKE_SOURCE_DIR}/src/buffer
   ${CMAKE_SOURCE_DIR}/src/runtime
   ${CMAKE_SOURCE_DIR}/src/core/config
   ${CMAKE_SOURCE_DIR}/src/core/common
+  ${CMAKE_SOURCE_DIR}/src/core/common/io
   ${CMAKE_SOURCE_DIR}/src/runtime/executiongraph
   ${CMAKE_SOURCE_DIR}/src/runtime/shuffle
   ${CMAKE_SOURCE_DIR}/src/runtime/taskexecutor
@@ -92,4 +93,16 @@ if(CXXTEST_FOUND)
   # runtime task-chain-with-tuple test
   CXXTEST_ADD_TEST(unitest_runtime_task_chain_with_tuple runtime_task_chain_with_tuple.cpp ${CMAKE_CURRENT_SOURCE_DIR}/runtime/TestTaskChainWithTuple.hpp)
   target_link_libraries(unitest_runtime_task_chain_with_tuple runtime streaming result streamrecord)
+
+  # runtime wordcount
+  CXXTEST_ADD_TEST(unitest_runtime_wordcount runtime_wordcount.cpp ${CMAKE_CURRENT_SOURCE_DIR}/runtime/TestWordCount.hpp)
+  target_link_libraries(unitest_runtime_wordcount runtime)
+
+  # core file-output-format
+  CXXTEST_ADD_TEST(unitest_core_file_output_format core_file_output_format.cpp ${CMAKE_CURRENT_SOURCE_DIR}/core/TestFileOutputFormat.hpp)
+  target_link_libraries(unitest_core_file_output_format core)
+
+  # runtime wordcount-with-file-sink
+  CXXTEST_ADD_TEST(unitest_runtime_wordcount_with_file_sink runtime_wordcount_with_file_sink.cpp ${CMAKE_CURRENT_SOURCE_DIR}/runtime/TestWordCountWriteFile.hpp)
+  target_link_libraries(unitest_runtime_wordcount_with_file_sink runtime)
 endif()

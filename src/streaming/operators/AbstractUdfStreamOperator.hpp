@@ -23,4 +23,6 @@ public:
     virtual void                                    setup(std::shared_ptr<Output<OUT>> output) {
         this->m_output = output;
     }
+    virtual void                                    close() {}
+    virtual void                                    open() {}
 };

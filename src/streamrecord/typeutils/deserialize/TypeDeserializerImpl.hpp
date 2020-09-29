@@ -13,6 +13,8 @@
 #include <iostream>
 #include <memory>
 #include <deque>
+#include <mutex>
+#include <atomic>
 
 class IOReadableWritable;
 
@@ -32,8 +34,6 @@ public:
         m_record_size = -1; // no record at the creation of deserializer.
         m_position = -1;
         m_remaining = 0;
-        spdlog::set_pattern(Constant::SPDLOG_PATTERN);
-        spdlog::set_level(Constant::SPDLOG_LEVEL);
     }
     void                                        set_next_buffer(std::shared_ptr<BufferBase> buffer);
     virtual DeserializationResult               get_next_record(std::shared_ptr<IOReadableWritable> target);
@@ -46,7 +46,6 @@ public:
     DeserializationResult                       read_into(std::shared_ptr<IOReadableWritable> target);
 
     void                                        evict_used_buffer(bool is_finish_read);
-    void                                        check_end_with_one_byte();
 
     /* Properties */
     int                                         get_record_size() {return m_record_size;}

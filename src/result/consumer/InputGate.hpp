@@ -7,6 +7,7 @@
 #include "InputChannel.hpp"
 #include "../../buffer/BufferPool.hpp"
 #include "BufferOrEvent.hpp"
+#include "LoggerFactory.hpp"
 #include <map>
 #include <string>
 #include <deque>
@@ -41,6 +42,7 @@ private:
 
     // TODO: buffer pool for network data transfer, currently only local, no use
     std::shared_ptr<BufferPool>                         m_buffer_pool;
+    static std::shared_ptr<spdlog::logger>              m_logger;
 
 public:
     InputGate(int gate_idx):m_gate_idx(gate_idx){}

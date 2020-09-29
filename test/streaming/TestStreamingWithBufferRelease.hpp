@@ -27,7 +27,7 @@ class MySinkFunction: public SinkFunction<std::string> {
 
     char* serialize() override {return (char*)this;}
 
-    std::shared_ptr<SinkFunction<std::string>> deserialize() override { return std::make_shared<MySinkFunction>();}
+    std::shared_ptr<SinkFunction<std::string>> deserialize(char* no_use) override { return std::make_shared<MySinkFunction>();}
 };
 
 

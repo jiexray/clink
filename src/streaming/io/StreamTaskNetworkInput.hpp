@@ -63,6 +63,10 @@ public:
         }
     }
 
+    void                                                    close() {
+        // TODO: close the input
+    }
+
     /* Properties */
     int                                                     get_input_index() {return m_input_idx;}
 

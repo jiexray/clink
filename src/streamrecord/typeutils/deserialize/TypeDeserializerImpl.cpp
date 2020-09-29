@@ -17,13 +17,16 @@ DeserializationResult TypeDeserializerImpl::get_next_record(std::shared_ptr<IORe
             throw new std::runtime_error("cannot deserialize record, when buffers in empty.");
         }
 
+        if (m_remaining < 2) {
+            // SPDLOG_LOGGER_ERROR(m_logger, "Insufficient length to read a short! remaining: {}", m_remaining);
+            return DeserializationResult::PARTIAL_RECORD;
+        }
         m_record_size = read_short();
         // check the end of one buffer
         // BUG: we do not need to check the end of one buffer. For, if currently there is only 
         //      one byte in the buffer, we can just read it for the data can be splitted.
         //      We just need to check the one buffer if we finish one read, for there cannot locate
         //      a data-len in short (2 bytes).
-        // check_end_with_one_byte();
     } 
 
     if (m_record_size <= m_remaining) {
@@ -38,8 +41,6 @@ DeserializationResult TypeDeserializerImpl::read_into(std::shared_ptr<IOReadable
     // finish reading, re-initialize m_record_size
     m_record_size = -1;
 
-    // check whether their is one byte left, skip it
-    check_end_with_one_byte();
 
     return m_remaining == 0 ? DeserializationResult::LAST_RECORD_FROM_BUFFER : DeserializationResult::INTERMEDIATE_RECORD_FROM_BUFFER;
 }
@@ -72,6 +73,7 @@ int TypeDeserializerImpl::read_short() {
     char* buf = new char[2];
 
     for (int i = 0; i < 2; i++) {
+        // SPDLOG_LOGGER_INFO(m_logger, dump_state());
         int ret = m_last_buffers.front()->get(buf + i, m_position++);
         if (ret == -1) {
             throw new std::runtime_error("read error, reach end, bug in evict used buffer()");
@@ -161,37 +163,7 @@ void TypeDeserializerImpl::evict_used_buffer(bool is_finish_read) {
                                     first_buf->get_buffer_id());
             std::cout << "Ref count of a buffer slice in Buffer " << first_buf->get_buffer_id() <<" is not zero, when finish reading" << std::endl;
         }
-
-        
-    } else if (is_finish_read && m_position == buf_size - 1) {
-        check_end_with_one_byte();
-    }
-    // TODO: recycle first buf
+    } 
 }
 
-void TypeDeserializerImpl::check_end_with_one_byte() {
-    if ((int)m_last_buffers.size() == 0) {
-        SPDLOG_LOGGER_DEBUG(m_logger, "check_end_with_one_byte(): useless buffer evict");
-        return;
-    }
-    std::shared_ptr<BufferBase> first_buf = m_last_buffers.front();
-    int buf_size = first_buf->get_max_capacity();
-    if (m_position == buf_size - 1) {
-        m_remaining--;
-        m_last_buffers.pop_front();
-
-        if (first_buf.use_count() != 1) {
-            SPDLOG_LOGGER_ERROR(m_logger, "Ref count of a buffer slice in Buffer {} is not zero, when finish reading", 
-                                    first_buf->get_buffer_id());
-            std::cout << "Ref count of a buffer slice in Buffer " << first_buf->get_buffer_id() <<" is not zero, when finish reading" << std::endl;
-        }
-
-        if ((int) m_last_buffers.size() == 0) {
-            // nothing left in deserializer
-            m_position = -1;
-        } else {
-            m_position = 0;
-        }
-    }
-}
 

@@ -12,6 +12,7 @@ class StreamTaskInput
 {
 private:
 public:
-    virtual InputStatus emit_next(std::shared_ptr<DataOutput<T>> output) = 0;
-    virtual int get_input_index() = 0;
+    virtual InputStatus     emit_next(std::shared_ptr<DataOutput<T>> output) = 0;
+    virtual int             get_input_index() = 0;
+    virtual void            close() {}
 };

@@ -89,12 +89,13 @@ inline void ResultWriter<T>::copy_to_buffer_builder(int target_channel, std::sha
         SPDLOG_LOGGER_DEBUG(m_logger, "Write one record span {} Buffers, total number of Buffers: {}", num_copied_buffers,
                                 m_target_result_partition->get_buffer_pool_capacity());
         if (result == NONE_RECORD) {
+            // length is still not written
             result = this->m_record_serializer->serialize(record, buffer_builder, true);
         } else {
             result = this->m_record_serializer->serialize(record, buffer_builder, false);
         }
     }
-    SPDLOG_LOGGER_DEBUG(m_logger, "Finish write one record, span {} Buffers", num_copied_buffers);
+    SPDLOG_LOGGER_DEBUG(m_logger, "Finish write one record, span {} Buffers", num_copied_buffers);    
 
     // TODO: setup a flusher, current always flush
     flush(target_channel);

@@ -251,6 +251,7 @@ public:
                                                                             new std::reference_wrapper<const std::type_info>[2]{typeid(std::string), typeid(int)});
 
         stream_record_deserializer->set_next_buffer(buf_1);
+        buf_1.reset();
 
         stream_record_deserializer->get_next_record(tuple_deserialize_delegate);
 

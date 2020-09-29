@@ -29,6 +29,7 @@ public:
 
     void                                        flush_output() {this->m_stream_output->flush();}
 
+    void                                        close() {m_core_operator->close();}
 
     /* Properties */
     std::shared_ptr<StreamOperator<OUT>>        get_head_operator() {return m_core_operator;}
@@ -41,6 +42,7 @@ m_result_writer(result_writer) {
     this->m_stream_output = create_result_stream_output();
     // this->m_core_operator = operator_factory->create_stream_operator(std::make_shared<StreamOperatorParameters<OUT>>(containing_task, this->m_stream_output));
     this->m_core_operator = operator_factory->create_stream_operator(std::make_shared<StreamOperatorParameters<OUT>>(this->m_stream_output));
+    this->m_core_operator->open();
 }
 
 template <class OUT>

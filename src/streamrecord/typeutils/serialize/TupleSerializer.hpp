@@ -21,6 +21,7 @@ private:
     bool*                                       m_is_finished;
     bool*                                       m_is_new_record;
     std::shared_ptr<TypeSerializerBase>*        m_field_serializers;
+    int                                         m_data_remaining;
 public:
 
     StreamRecordAppendResult    serialize(std::shared_ptr<Tuple2<T1, T2>> record, std::shared_ptr<BufferBuilder> buffer_builder, bool is_new_record);
@@ -28,18 +29,13 @@ public:
 
 template <class T0, class T1>
 inline StreamRecordAppendResult TupleSerializer<Tuple2<T0, T1>>::serialize(std::shared_ptr<Tuple2<T0, T1>> tuple, std::shared_ptr<BufferBuilder> buffer_builder, bool is_new_record) {
-    if (is_new_record) {
-        int total_tuple_size = tuple->get_buf_size();
-        char* length_buf = new char[2];
-        SerializeUtils::serialize_short(length_buf, total_tuple_size);
-        int data_length_write = buffer_builder->append(length_buf, 0, 2, true);
-        delete length_buf;
-        if(data_length_write == 0) {
-            return NONE_RECORD;
-        }
+    int value_size = tuple->get_buf_size();
 
+    if (is_new_record) {
+        m_data_remaining = value_size + 2;
         m_arity = tuple->get_arity();
         assert(m_arity == 2);
+
         m_is_finished = new bool[m_arity + 1];
         m_is_new_record = new bool[m_arity + 1];
         m_field_serializers = new std::shared_ptr<TypeSerializerBase>[m_arity + 1];
@@ -52,6 +48,43 @@ inline StreamRecordAppendResult TupleSerializer<Tuple2<T0, T1>>::serialize(std::
         }
         m_field_serializers[0] = TypeSerializerUtil::create_type_basic_type_serializer(typeid(T0));
         m_field_serializers[1] = TypeSerializerUtil::create_type_basic_type_serializer(typeid(T1));
+
+        char* length_buf = new char[2];
+        SerializeUtils::serialize_short(length_buf, value_size);
+        int data_length_write = buffer_builder->append(length_buf, 0, 2, false);
+        delete length_buf;
+
+        // the length of record is not totally written, partially write
+        m_data_remaining -= data_length_write;
+        if (data_length_write < 2) {
+            return PARTITAL_RECORD_BUFFER_FULL;
+        }
+    }
+
+    // check if data_length is completely written
+    if (m_data_remaining > value_size) {
+        // have unwritten data_length
+        int left_data_length = m_data_remaining - value_size;
+        if (left_data_length == 2) {
+            char* length_buf = new char[2];
+            SerializeUtils::serialize_short(length_buf, value_size);
+            int data_length_write = buffer_builder->append(length_buf, 0, 2, false);
+            delete length_buf;
+            // the length of record is not totally written, partially write
+            m_data_remaining -= data_length_write;
+            assert(data_length_write == 2);
+        } else if (left_data_length == 1) {
+            char* length_buf = new char[2];
+            SerializeUtils::serialize_short(length_buf, value_size);
+            // start write from offset 1, write length 1
+            int data_length_write = buffer_builder->append(length_buf, 1, 1, false);
+            delete length_buf;
+            // the length of record is not totally written, partially write
+            m_data_remaining -= data_length_write;
+            assert(data_length_write == 1);
+        } else {
+            throw std::runtime_error("unwritten data_length is illegal: " + std::to_string(m_data_remaining - value_size));
+        }
     }
 
     for (int i = 0; i < m_arity; i++) {
@@ -71,12 +104,6 @@ inline StreamRecordAppendResult TupleSerializer<Tuple2<T0, T1>>::serialize(std::
             break;
         }
          
-
-        // check whether the length of data is written into buffer
-        if (m_is_new_record[i] && partial_result == StreamRecordAppendResult::NONE_RECORD){
-            // the data length of this field is not written, need new BufferBuilder
-            return StreamRecordAppendResult::PARTITAL_RECORD_BUFFER_FULL;
-        }
         m_is_new_record[i] = false;
 
         // check whether data in the field is all written into buffer

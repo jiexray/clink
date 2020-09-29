@@ -75,5 +75,14 @@ std::shared_ptr<BufferBase> BufferConsumer::build() {
         m_write_position_marker_ptr = nullptr;
     }
 
+    // // DEBUG
+    // std::ostringstream oss;
+    // oss << "slice dump, size" << bufferSlice->get_max_capacity() << " value: ";
+    // for(int i = 0; i < bufferSlice->get_max_capacity(); i++) {
+    //     char c;
+    //     bufferSlice->get(&c, i);
+    //     oss << (int)c << " ";
+    // }
+    // SPDLOG_LOGGER_INFO(m_logger, oss.str());
     return bufferSlice;
 }
