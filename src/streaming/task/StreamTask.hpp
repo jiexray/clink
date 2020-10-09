@@ -24,7 +24,7 @@
 
 
 
-template <class OUT>
+template <class OUT = NullType>
 class StreamTask : public AbstractInvokable, public std::enable_shared_from_this<StreamTask<OUT>>
 {
 private:

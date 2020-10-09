@@ -9,10 +9,11 @@
 #include "../io/StreamTaskNetworkOutput.hpp"
 #include "../io/StreamOneInputProcessor.hpp"
 #include "StreamTaskNetworkInputFactory.hpp"
+#include "TemplateHelper.hpp"
 
-template <class IN, class OUT> class OneInputStreamTask;
+template <class IN, class OUT = NullType> class OneInputStreamTask;
 
-template <class IN, class OUT = std::string>
+template <class IN, class OUT>
 class OneInputStreamTask: public StreamTask<OUT> 
 {
 public:
@@ -20,7 +21,7 @@ public:
     OneInputStreamTask(std::shared_ptr<Environment> env): StreamTask<OUT>(env) {}
 
     void                        init() {
-        std::shared_ptr<StreamOperatorFactory<OUT>> operator_factory = this->m_configuration->template get_stream_operator_factory<IN, OUT>();
+        std::shared_ptr<StreamOperatorFactory<OUT>> operator_factory = this->m_configuration->template get_stream_operator_factory<IN, OUT, TemplateHelper<OUT>::is_null_type>();
 
         this->m_operator_chain = std::make_shared<OperatorChain<OUT>>(this->get_result_writer(), 
                                                                     operator_factory);
@@ -54,8 +55,7 @@ public:
     }
 
     void                        init() {
-        std::shared_ptr<StreamOperatorFactory<OUT>> operator_factory = this->m_configuration->template get_stream_operator_factory<IN<IN1, IN2>, OUT>();
-
+        std::shared_ptr<StreamOperatorFactory<OUT>> operator_factory = this->m_configuration->template get_stream_operator_factory<IN<IN1, IN2>, OUT, TemplateHelper<OUT>::is_null_type>();
         // this->m_operator_chain = std::make_shared<OperatorChain<OUT>>(this->shared_from_this(), 
         //                                                             this->get_result_writer(), 
         //                                                             operator_factory);

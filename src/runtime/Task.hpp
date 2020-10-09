@@ -17,6 +17,7 @@
 
 #include "OneInputStreamTask.hpp"
 #include "SourceStreamTask.hpp"
+#include "StreamTaskFactory.hpp"
 
 
 #include <memory>

@@ -4,6 +4,7 @@
 #include "DoubleSerializer.hpp"
 #include "TupleSerializer.hpp"
 #include "IntSerializer.hpp"
+#include "TemplateHelper.hpp"
 
 template <class T> class TypeSerializerFactory; 
 

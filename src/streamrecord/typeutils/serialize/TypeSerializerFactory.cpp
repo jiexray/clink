@@ -14,3 +14,8 @@ template<>
 std::shared_ptr<TypeSerializer<int>> TypeSerializerFactory<int>::of() {
     return std::make_shared<IntSerializer>();
 }
+
+template<>
+std::shared_ptr<TypeSerializer<NullType>> TypeSerializerFactory<NullType>::of() {
+    throw std::runtime_error("Cannot create serializer for NullType");
+}

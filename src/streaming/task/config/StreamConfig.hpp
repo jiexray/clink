@@ -23,7 +23,7 @@ public:
     template <class OUT>
     std::shared_ptr<StreamEdge<OUT>>            get_out_edge();
     int                                         get_number_of_inputs();
-    template <class IN, class OUT>
+    template <class IN, class OUT, bool IS_SINK = false>
     std::shared_ptr<StreamOperatorFactory<OUT>> get_stream_operator_factory();
 };
 
@@ -37,8 +37,8 @@ inline int StreamConfig::get_number_of_inputs() {
     return *(m_config->get_value<int>(StreamConfig::NUMBER_OF_INPUTS).get());
 }
 
-template <class IN, class OUT>
+template <class IN, class OUT, bool IS_SINK>
 inline std::shared_ptr<StreamOperatorFactory<OUT>> StreamConfig::get_stream_operator_factory() {
-    return m_config->get_operator_factory<IN, OUT>(StreamConfig::OPERATOR_FACTORY);
+    return m_config->get_operator_factory<IN, OUT, IS_SINK>(StreamConfig::OPERATOR_FACTORY);
 }
 

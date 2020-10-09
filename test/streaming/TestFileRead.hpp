@@ -25,8 +25,8 @@ public:
         std::cout << "test testStreamFlatMap()" << std::endl;
         std::shared_ptr<StreamOperator<std::string>> stream_flat_map = std::make_shared<StreamFlatMap<std::string, std::string>>(std::make_shared<FileReadFunction>());
         std::shared_ptr<StreamOperatorFactory<std::string>> operator_factory_1 = SimpleStreamOperatorFactory<std::string>::of(stream_flat_map);
-        std::shared_ptr<StreamOperator<std::string>> stream_sink = std::make_shared<StreamSink<std::string>>(std::make_shared<MySinkFunction>());
-        std::shared_ptr<StreamOperatorFactory<std::string>> operator_factory_2 = SimpleStreamOperatorFactory<std::string>::of(stream_sink);
+        std::shared_ptr<StreamOperator<>> stream_sink = std::make_shared<StreamSink<std::string>>(std::make_shared<MySinkFunction>());
+        std::shared_ptr<StreamOperatorFactory<>> operator_factory_2 = SimpleStreamOperatorFactory<>::of(stream_sink);
 
         std::string node_name_1("flat-map");
         std::string node_name_2("sink");
@@ -93,7 +93,7 @@ public:
         /* set configuration */
         std::shared_ptr<Configuration> test_conf_2 = std::make_shared<Configuration>();
         test_conf_2->set_edge<std::string>(StreamConfig::EDGE_NAME, nullptr);
-        test_conf_2->set_operator_factory<std::string, std::string>(StreamConfig::OPERATOR_FACTORY, operator_factory_2);
+        test_conf_2->set_operator_factory<std::string>(StreamConfig::OPERATOR_FACTORY, operator_factory_2);
         test_conf_2->set_value<int>(StreamConfig::NUMBER_OF_INPUTS, std::make_shared<int>(1));
 
         std::shared_ptr<TaskInfo> task_info_2 = std::make_shared<TaskInfo>("sink", "sink-0", 0, 1);

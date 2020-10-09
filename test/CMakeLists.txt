@@ -105,4 +105,9 @@ if(CXXTEST_FOUND)
   # runtime wordcount-with-file-sink
   CXXTEST_ADD_TEST(unitest_runtime_wordcount_with_file_sink runtime_wordcount_with_file_sink.cpp ${CMAKE_CURRENT_SOURCE_DIR}/runtime/TestWordCountWriteFile.hpp)
   target_link_libraries(unitest_runtime_wordcount_with_file_sink runtime)
+
+  # streaming stream-task-factory
+  CXXTEST_ADD_TEST(unitest_streaming_stream_task_factory streaming_stream_task_factory.cpp ${CMAKE_CURRENT_SOURCE_DIR}/streaming/TestStreamTaskFactory.hpp)
+  target_link_libraries(unitest_streaming_stream_task_factory streaming runtime)
+
 endif()

@@ -5,8 +5,9 @@
 #include "StreamOperator.hpp"
 #include "StreamOperatorParameters.hpp"
 #include <memory>
+#include "TemplateHelper.hpp"
 
-template <class OUT>
+template <class OUT = NullType>
 class StreamOperatorFactory
 {
 public:

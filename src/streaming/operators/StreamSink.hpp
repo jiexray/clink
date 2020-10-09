@@ -6,13 +6,14 @@
 #include "AbstractUdfStreamOperator.hpp"
 #include "../functions/SinkFunction.hpp"
 #include "OneInputStreamOperator.hpp"
+#include "TemplateHelper.hpp"
 
 // NOTE: the second template parameter of AbstractUdfStreamOperator is just a place holder.
-template <class IN, class OUT = std::string>
-class StreamSink final: public AbstractUdfStreamOperator<Function, OUT>, public OneInputStreamOperator<IN, std::string>
+template <class IN>
+class StreamSink final: public AbstractUdfStreamOperator<Function, NullType>, public OneInputStreamOperator<IN, NullType>
 {
 public:
-    StreamSink(std::shared_ptr<SinkFunction<IN>> sink_function): AbstractUdfStreamOperator<Function, OUT>(sink_function){}
+    StreamSink(std::shared_ptr<SinkFunction<IN>> sink_function): AbstractUdfStreamOperator<Function, NullType>(sink_function){}
 
     void process_element(std::shared_ptr<StreamRecord<IN>> record) {
         // std::cout << "[DEBUG] StreamSink::process_element()" << std::endl;

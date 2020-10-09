@@ -345,7 +345,7 @@ public:
     void testSinkStreamTaskInit( void ){
         std::cout << "test testSinkStreamTaskInit()" << std::endl;
         std::shared_ptr<StreamSink<std::string>> sink_operator = std::make_shared<StreamSink<std::string>>(std::make_shared<MySinkFunction>());
-        std::shared_ptr<StreamOperatorFactory<std::string>> operator_factory = SimpleStreamOperatorFactory<std::string>::of(sink_operator);
+        std::shared_ptr<StreamOperatorFactory<>> operator_factory = SimpleStreamOperatorFactory<>::of(sink_operator);
 
         // sink operator no out-edges
 
@@ -387,7 +387,7 @@ public:
         std::shared_ptr<ResultPartition> partition_0 = result_partition_factory.create("fake-test-task", 0, 
                                                                                     std::make_shared<ResultPartitionDeploymentDescriptor>(4), buffer_pool);
         
-        std::shared_ptr<StreamTask<std::string>> stream_task = std::make_shared<OneInputStreamTask<std::string>>(env);
+        std::shared_ptr<StreamTask<>> stream_task = std::make_shared<OneInputStreamTask<std::string>>(env);
         stream_task->before_invoke();
 
         std::shared_ptr<ResultWriter<std::string>> result_writer_0 = std::make_shared<ResultWriter<std::string>>(partition_0, "test");
@@ -608,7 +608,7 @@ public:
         std::cout << "test testSinkStreamTaskWithFileWrite()" << std::endl;
         std::shared_ptr<OutputFormat<std::string>> format = std::make_shared<TextOutputFormat<std::string>>(Constant::CLINK_BASE + "resource/test_write_string.txt");
         std::shared_ptr<StreamSink<std::string>> sink_operator = std::make_shared<StreamSink<std::string>>(std::make_shared<OutputFormatSinkFunction<std::string>>(format));
-        std::shared_ptr<StreamOperatorFactory<std::string>> operator_factory = SimpleStreamOperatorFactory<std::string>::of(sink_operator);
+        std::shared_ptr<StreamOperatorFactory<>> operator_factory = SimpleStreamOperatorFactory<>::of(sink_operator);
 
         // sink operator no out-edges
 
@@ -648,7 +648,7 @@ public:
         std::shared_ptr<ResultPartition> partition_0 = result_partition_factory.create("fake-test-task", 0, 
                                                                                     std::make_shared<ResultPartitionDeploymentDescriptor>(4), buffer_pool);
         
-        std::shared_ptr<StreamTask<std::string>> stream_task = std::make_shared<OneInputStreamTask<std::string>>(env);
+        std::shared_ptr<StreamTask<>> stream_task = std::make_shared<OneInputStreamTask<std::string>>(env);
         stream_task->before_invoke();
 
         std::shared_ptr<ResultWriter<std::string>> result_writer_0 = std::make_shared<ResultWriter<std::string>>(partition_0, "test");

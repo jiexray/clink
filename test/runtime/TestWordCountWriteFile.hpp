@@ -91,6 +91,16 @@ class TestWordCount: public CxxTest::TestSuite{
 public:
     void testWordCount( void ) {
         std::cout << "test testWordCount()" << std::endl;
+        //---------------------------------------------------
+        // Initialize StreamTaskFactory
+        //---------------------------------------------------
+        typedef Tuple2<std::string, int> MyTuple;
+        StreamTaskFactory<>::instance()->register_stream_task(typeid(SourceStreamTask<std::string>).name(), StreamTaskFactoryCreator::create_source_stream_task<std::string>);
+        StreamTaskFactory<>::instance()->register_stream_task(typeid(OneInputStreamTask<std::string, std::string>).name(), StreamTaskFactoryCreator::create_one_input_stream_task<std::string, std::string>);
+        StreamTaskFactory<>::instance()->register_stream_task(typeid(OneInputStreamTask<std::string, Tuple2<std::string, int>>).name(), StreamTaskFactoryCreator::create_one_input_stream_task<std::string, MyTuple>);
+        StreamTaskFactory<>::instance()->register_stream_task(typeid(OneInputStreamTask<Tuple2<std::string, int>, Tuple2<std::string, int>>).name(), StreamTaskFactoryCreator::create_one_input_stream_task<MyTuple, MyTuple>);
+        StreamTaskFactory<>::instance()->register_stream_task(typeid(OneInputStreamTask<Tuple2<std::string, int>>).name(), StreamTaskFactoryCreator::create_one_input_stream_task<MyTuple>);
+
         // create ResultParititionManager, ResultPartitionFactory, InputGateFactory
         std::shared_ptr<ResultPartitionManager> result_partition_manager = std::make_shared<ResultPartitionManager>();
         std::shared_ptr<InputGateFactory> input_gate_factory = std::make_shared<InputGateFactory>(result_partition_manager);
@@ -136,15 +146,15 @@ public:
 
         std::shared_ptr<TextOutputFormat<Tuple2<std::string, int>>> format = 
                         std::make_shared<TextOutputFormat<Tuple2<std::string, int>>>(Constant::CLINK_BASE + "/resource/wordcount_result.txt"); 
-        std::shared_ptr<StreamOperator<std::string>> stream_sink = 
+        std::shared_ptr<StreamOperator<>> stream_sink = 
                                             std::make_shared<StreamSink<Tuple2<std::string, int>>>(std::make_shared<OutputFormatSinkFunction<Tuple2<std::string, int>>>(format));
-        std::shared_ptr<StreamOperatorFactory<std::string>> operator_factory_5 = SimpleStreamOperatorFactory<std::string>::of(stream_sink);
+        std::shared_ptr<StreamOperatorFactory<>> operator_factory_5 = SimpleStreamOperatorFactory<>::of(stream_sink);
 
         task_configuration_1->set_operator_factory<std::string, std::string>(StreamConfig::OPERATOR_FACTORY, operator_factory_1);
         task_configuration_2->set_operator_factory<std::string, std::string>(StreamConfig::OPERATOR_FACTORY, operator_factory_2);
         task_configuration_3->set_operator_factory<std::string, Tuple2<std::string, int>>(StreamConfig::OPERATOR_FACTORY, operator_factory_3);
         task_configuration_4->set_operator_factory<Tuple2<std::string, int>, Tuple2<std::string, int>>(StreamConfig::OPERATOR_FACTORY, operator_factory_4);
-        task_configuration_5->set_operator_factory<Tuple2<std::string, int>, std::string>(StreamConfig::OPERATOR_FACTORY, operator_factory_5);
+        task_configuration_5->set_operator_factory<Tuple2<std::string, int>>(StreamConfig::OPERATOR_FACTORY, operator_factory_5);
 
         // init edge
         std::string node_name_1("source");
@@ -189,31 +199,31 @@ public:
                                                                                                 "test-source-task",             // task_name
                                                                                                 1,                              // subtask_number
                                                                                                 task_configuration_1,             
-                                                                                                "SourceStreamTask<std::string>"); // invokable name
+                                                                                                typeid(SourceStreamTask<std::string>).name()); // invokable name
 
         std::shared_ptr<TaskInformation> task_information_2 = std::make_shared<TaskInformation>(1,                              // job_vertex_id
                                                                                                 "test-file-read-task",                // task_name
                                                                                                 1,                              // subtask_number
                                                                                                 task_configuration_2,             
-                                                                                                "OneInputStreamTask<std::string, std::string>"); // invokable name
+                                                                                                typeid(OneInputStreamTask<std::string, std::string>).name()); // invokable name
         
         std::shared_ptr<TaskInformation> task_information_3 = std::make_shared<TaskInformation>(3,                              // job_vertex_id
                                                                                                 "test-tokenize-task",               // task_name
                                                                                                 1,                              // subtask_number
                                                                                                 task_configuration_3,             
-                                                                                                "OneInputStreamTask<std::string, Tuple2<std::string, int>>"); // invokable name
+                                                                                                typeid(OneInputStreamTask<std::string, Tuple2<std::string, int>>).name()); // invokable name
 
         std::shared_ptr<TaskInformation> task_information_4 = std::make_shared<TaskInformation>(4,                              // job_vertex_id
                                                                                                 "test-counter-task",               // task_name
                                                                                                 1,                              // subtask_number
                                                                                                 task_configuration_4,             
-                                                                                                "OneInputStreamTask<Tuple2<std::string, int>, Tuple2<std::string, int>>"); // invokable name
+                                                                                                typeid(OneInputStreamTask<Tuple2<std::string, int>, Tuple2<std::string, int>>).name()); // invokable name
         
         std::shared_ptr<TaskInformation> task_information_5 = std::make_shared<TaskInformation>(5,                              // job_vertex_id
                                                                                                 "test-sink-task",               // task_name
                                                                                                 1,                              // subtask_number
                                                                                                 task_configuration_5,             
-                                                                                                "OneInputStreamTask<Tuple2<std::string, int>, std::string>"); // invokable name
+                                                                                                typeid(OneInputStreamTask<Tuple2<std::string, int>>).name()); // invokable name
         
 
 

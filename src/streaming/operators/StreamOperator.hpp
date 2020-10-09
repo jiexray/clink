@@ -2,9 +2,10 @@
  * Basic interface for stream operators.
  */
 #pragma once
+#include "TemplateHelper.hpp"
 
 
-template <class OUT>
+template <class OUT = NullType>
 class StreamOperator
 {
 public:

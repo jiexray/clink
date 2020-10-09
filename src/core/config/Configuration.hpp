@@ -16,6 +16,7 @@
 #include "StreamSource.hpp"
 #include "StreamSink.hpp"
 #include "StreamFlatMap.hpp"
+#include "TemplateHelper.hpp"
 #include <cstring>
 
 
@@ -36,6 +37,12 @@ class Configuration
 private:
     std::map<std::string, char*>                m_conf_data;
 
+    template <class IN, class OUT>
+    std::shared_ptr<StreamOperator<OUT>>        get_stream_operator(std::string key, Int2Type<true> is_sink);
+
+    template <class IN, class OUT>
+    std::shared_ptr<StreamOperator<OUT>>        get_stream_operator(std::string key, Int2Type<false> is_not_sink);
+
 public:
     
 
@@ -50,16 +57,16 @@ public:
     template <class T>
     std::shared_ptr<StreamEdge<T>>              get_edge(std::string key);
 
-    template <class IN, class OUT = std::string>
+    template <class IN, class OUT = NullType>
     void                                        set_operator_factory(std::string key, 
                                                                     std::shared_ptr<StreamOperatorFactory<OUT>> operator_factory);
-    template <class IN, class OUT = std::string>
+    template <class IN, class OUT = NullType, bool IS_SINK = false>
     std::shared_ptr<StreamOperatorFactory<OUT>> get_operator_factory(std::string key);
 
-    template <class IN, class OUT = std::string>                          
+    template <class IN, class OUT = NullType>                          
     void                                        set_stream_operator(std::string key,
                                                                         std::shared_ptr<StreamOperator<OUT>> stream_operator);
-    template <class IN, class OUT = std::string>
+    template <class IN, class OUT = NullType, bool IS_SINK = false>
     std::shared_ptr<StreamOperator<OUT>>        get_stream_operator(std::string key);
     
     // template <class IN, class OUT>                          
@@ -216,10 +223,10 @@ inline void Configuration::set_operator_factory(std::string key,
     }
 }
 
-template <class IN, class OUT>
+template <class IN, class OUT, bool IS_SINK>
 inline std::shared_ptr<StreamOperatorFactory<OUT>> Configuration::get_operator_factory(std::string key) {
     if (m_conf_data.find(key) != m_conf_data.end()) {
-        std::shared_ptr<StreamOperator<OUT>> stream_operator = get_stream_operator<IN, OUT>(key + "_operator");
+        std::shared_ptr<StreamOperator<OUT>> stream_operator = get_stream_operator<IN, OUT, IS_SINK>(key + "_operator");
 
         if (stream_operator == nullptr) {
             throw std::runtime_error("Error when deserialize operator factory, stream operator is null");
@@ -285,8 +292,31 @@ inline void Configuration::set_stream_operator(std::string key, std::shared_ptr<
 }
 
 
-template <class IN, class OUT>
+template <class IN, class OUT, bool IS_SINK>
 inline std::shared_ptr<StreamOperator<OUT>>  Configuration::get_stream_operator(std::string key){
+    return get_stream_operator<IN, OUT>(key, Int2Type<IS_SINK>());
+}
+
+
+template <class IN, class OUT>
+inline std::shared_ptr<StreamOperator<OUT>> Configuration::get_stream_operator(std::string key, Int2Type<true> is_sink) {
+    std::string func_key = key + "_user-function";
+    if (m_conf_data.find(func_key) != m_conf_data.end()) {
+        Function* func_ptr = (Function*) (m_conf_data[func_key]);
+        if(dynamic_cast<SinkFunction<IN>*>(func_ptr) != nullptr) {
+            std::shared_ptr<SinkFunction<IN>> gen_func = (dynamic_cast<SinkFunction<IN>*>(func_ptr))->deserialize(m_conf_data[func_key]);
+            // return std::make_shared<StreamSink<IN, OUT>>(gen_func); 
+            return std::make_shared<StreamSink<IN>>(gen_func);            
+        } else {
+            throw std::runtime_error("Stream operator deserialization only support StreamSink at function: " + std::string(__PRETTY_FUNCTION__));
+        }
+    } else {
+        return nullptr;
+    }
+}
+
+template <class IN, class OUT>
+inline std::shared_ptr<StreamOperator<OUT>> Configuration::get_stream_operator(std::string key, Int2Type<false> is_not_sink) {
     std::string func_key = key + "_user-function";
     if (m_conf_data.find(func_key) != m_conf_data.end()) {
         Function* func_ptr = (Function*) (m_conf_data[func_key]);
@@ -296,14 +326,11 @@ inline std::shared_ptr<StreamOperator<OUT>>  Configuration::get_stream_operator(
         } else if(dynamic_cast<SourceFunction<OUT>*>(func_ptr) != nullptr) {
             std::shared_ptr<SourceFunction<OUT>> gen_func = (dynamic_cast<SourceFunction<OUT>*>(func_ptr))->deserialize();
             return std::make_shared<StreamSource<OUT>>(gen_func);
-        } else if(dynamic_cast<SinkFunction<IN>*>(func_ptr) != nullptr) {
-            std::shared_ptr<SinkFunction<IN>> gen_func = (dynamic_cast<SinkFunction<IN>*>(func_ptr))->deserialize(m_conf_data[func_key]);
-            return std::make_shared<StreamSink<IN, OUT>>(gen_func);            
         } else if(dynamic_cast<FlatMapFunction<IN, OUT>*>(func_ptr) != nullptr) {
             std::shared_ptr<FlatMapFunction<IN, OUT>> gen_func = (dynamic_cast<FlatMapFunction<IN, OUT>*>(func_ptr))->deserialize();
             return std::make_shared<StreamFlatMap<IN, OUT>>(gen_func);
         } else {
-            throw std::runtime_error("Stream operator deserialization only support StreamMap, StreamSource, StreamSink, StreamFlatMap at function: " + std::string(__PRETTY_FUNCTION__));
+            throw std::runtime_error("Stream operator deserialization only support StreamMap, StreamSource, StreamFlatMap at function: " + std::string(__PRETTY_FUNCTION__));
         }
     } else {
         return nullptr;

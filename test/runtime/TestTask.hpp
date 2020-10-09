@@ -46,6 +46,9 @@ class TestTask: public CxxTest::TestSuite{
 public:
     void testTaskInit( void ) {
         std::cout << "test testTaskInit()" << std::endl;
+        // Initialize StreamTaskFactory
+        StreamTaskFactory<>::instance()->register_stream_task(typeid(OneInputStreamTask<std::string, std::string>).name(), StreamTaskFactoryCreator::create_one_input_stream_task<std::string, std::string>);
+
         std::shared_ptr<ResultPartitionManager> result_partition_manager = std::make_shared<ResultPartitionManager>();
 
         /* InputGate and ResultPartition factory */
@@ -85,7 +88,7 @@ public:
 
         /* create task_information*/
         std::shared_ptr<TaskInformation> task_information = std::make_shared<TaskInformation>(0, "test-map-task", 1, task_configuration,
-                                                                                            "OneInputStreamTask<std::string, std::string>");
+                                                                                            typeid(OneInputStreamTask<std::string, std::string>).name());
 
 
         typedef std::vector<std::shared_ptr<ResultPartitionDeploymentDescriptor>> ResultPartitionDeploymentDescriptorList;
@@ -125,6 +128,10 @@ public:
 
     void testTastExecutorInit() {
         std::cout << "test testTastExecutorInit()" << std::endl;
+        // Initialize StreamTaskFactory
+        StreamTaskFactory<>::instance()->register_stream_task(typeid(OneInputStreamTask<std::string, std::string>).name(), StreamTaskFactoryCreator::create_one_input_stream_task<std::string, std::string>);
+
+
         // create ResultParititionManager, ResultPartitionFactory, InputGateFactory
         std::shared_ptr<ResultPartitionManager> result_partition_manager = std::make_shared<ResultPartitionManager>();
         std::shared_ptr<InputGateFactory> input_gate_factory = std::make_shared<InputGateFactory>(result_partition_manager);
@@ -171,7 +178,7 @@ public:
         task_configuration->set_value<int>(StreamConfig::NUMBER_OF_INPUTS, std::make_shared<int>(1));
 
         std::shared_ptr<TaskInformation> task_information = std::make_shared<TaskInformation>(0, "test-map-task", 1, task_configuration,
-                                                                                            "OneInputStreamTask<std::string, std::string>");
+                                                                                            typeid(OneInputStreamTask<std::string, std::string>).name());
 
 
         /* create ResultPartition & InputGate descriptors */

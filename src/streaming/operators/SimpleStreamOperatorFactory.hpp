@@ -13,7 +13,7 @@ template <class F, class OUT> class AbstractUdfStreamOperator;
 template <class OUT> class StreamOperatorFactory;
 
 
-template <class OUT>
+template <class OUT = NullType>
 class SimpleStreamOperatorFactory : public StreamOperatorFactory<OUT>
 {
 private:

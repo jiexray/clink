@@ -12,8 +12,8 @@ class SourceStreamTask : public StreamTask<OUT>
 private:
     std::shared_ptr<std::thread>    source_thread;
 public:
-    SourceStreamTask(std::shared_ptr<Environment> env): StreamTask<OUT>(env){
-    }
+    SourceStreamTask(std::shared_ptr<Environment> env): StreamTask<OUT>(env){}
+
 
     void                            init() override;
 
