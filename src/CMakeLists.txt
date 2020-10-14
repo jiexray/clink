@@ -30,6 +30,12 @@ set(ALL_INCLUDE_DIRS
   ${CMAKE_SOURCE_DIR}/src/runtime/executiongraph
   ${CMAKE_SOURCE_DIR}/src/runtime/shuffle
   ${CMAKE_SOURCE_DIR}/src/runtime/taskexecutor
+  ${CMAKE_SOURCE_DIR}/src/metrics
+  ${CMAKE_SOURCE_DIR}/src/metrics/reporter
+  ${CMAKE_SOURCE_DIR}/src/metrics/groups
+  ${CMAKE_SOURCE_DIR}/src/runtime/metrics
+  ${CMAKE_SOURCE_DIR}/src/runtime/metrics/groups
+  ${CMAKE_SOURCE_DIR}/src/runtime/metrics/scope
 )
 
 find_package(spdlog REQUIRED)
@@ -125,6 +131,25 @@ target_sources(runtime
     runtime/taskexecutor/TaskSlotTable.cpp
     runtime/taskexecutor/TaskExecutor.cpp
     runtime/shuffle/ShuffleEnvironment.cpp
+    
+    runtime/metrics/groups/TaskManagerMetricGroup.cpp
+    runtime/metrics/groups/TaskManagerJobMetricGroup.cpp
+    runtime/metrics/groups/TaskMetricGroup.cpp
+    runtime/metrics/groups/TaskIOMetricGroup.cpp
+    runtime/metrics/groups/OperatorMetricGroup.cpp
+    runtime/metrics/groups/OperatorIOMetricGroup.cpp
+
+
+    runtime/metrics/MetricRegistry.cpp
+    runtime/metrics/MetricNames.cpp
+
+    runtime/metrics/scope/ScopeFormat.cpp
+    runtime/metrics/scope/ScopeFormats.cpp
+    runtime/metrics/scope/TaskManagerJobScopeFormat.cpp
+    runtime/metrics/scope/TaskScopeFormat.cpp
+    runtime/metrics/scope/OperatorScopeFormat.cpp
+
+    metrics/MeterView.cpp
 )
 target_include_directories(runtime PUBLIC
   ${ALL_INCLUDE_DIRS}

@@ -28,10 +28,17 @@ set(TEST_HEADER_DIRS ${CMAKE_SOURCE_DIR}/src/buffer
   ${CMAKE_SOURCE_DIR}/src/core/config
   ${CMAKE_SOURCE_DIR}/src/core/common
   ${CMAKE_SOURCE_DIR}/src/core/common/io
+  ${CMAKE_SOURCE_DIR}/src/core/util
   ${CMAKE_SOURCE_DIR}/src/runtime/executiongraph
   ${CMAKE_SOURCE_DIR}/src/runtime/shuffle
   ${CMAKE_SOURCE_DIR}/src/runtime/taskexecutor
+  ${CMAKE_SOURCE_DIR}/src/metrics
+  ${CMAKE_SOURCE_DIR}/src/metrics/groups
+  ${CMAKE_SOURCE_DIR}/src/metrics/reporter
   ${CMAKE_SOURCE_DIR}/deps/spdlog/include
+  ${CMAKE_SOURCE_DIR}/src/runtime/metrics
+  ${CMAKE_SOURCE_DIR}/src/runtime/metrics/groups
+  ${CMAKE_SOURCE_DIR}/src/runtime/metrics/scope
   )
 
 if(CXXTEST_FOUND)
@@ -110,4 +117,15 @@ if(CXXTEST_FOUND)
   CXXTEST_ADD_TEST(unitest_streaming_stream_task_factory streaming_stream_task_factory.cpp ${CMAKE_CURRENT_SOURCE_DIR}/streaming/TestStreamTaskFactory.hpp)
   target_link_libraries(unitest_streaming_stream_task_factory streaming runtime)
 
+  # metrics meter
+  CXXTEST_ADD_TEST(unitest_metrics_meter metrics_meter.cpp ${CMAKE_CURRENT_SOURCE_DIR}/metrics/TestMeter.hpp)
+  # target_link_libraries(unitest_metrics_meter)
+
+  # metric scope-format
+  CXXTEST_ADD_TEST(unitest_metrics_scope_format metrics_scope_format.cpp ${CMAKE_CURRENT_SOURCE_DIR}/metrics/TestScopeFormat.hpp)
+  target_link_libraries(unitest_metrics_scope_format runtime)
+
+  # metrics metric-group
+  CXXTEST_ADD_TEST(unitest_metrics_metric_group metrics_metric_group.cpp ${CMAKE_CURRENT_SOURCE_DIR}/metrics/TestMetricGroup.hpp)
+  target_link_libraries(unitest_metrics_metric_group runtime)
 endif()
