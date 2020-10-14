@@ -119,7 +119,7 @@ if(CXXTEST_FOUND)
 
   # metrics meter
   CXXTEST_ADD_TEST(unitest_metrics_meter metrics_meter.cpp ${CMAKE_CURRENT_SOURCE_DIR}/metrics/TestMeter.hpp)
-  # target_link_libraries(unitest_metrics_meter)
+  target_link_libraries(unitest_metrics_meter runtime)
 
   # metric scope-format
   CXXTEST_ADD_TEST(unitest_metrics_scope_format metrics_scope_format.cpp ${CMAKE_CURRENT_SOURCE_DIR}/metrics/TestScopeFormat.hpp)

@@ -268,7 +268,6 @@ public:
         if (m_groups.find(name) != m_groups.end()) {
             return m_groups[name];
         } else {
-            // TODO: implement ChildType::KEY
             std::shared_ptr<AbstractMetricGroup<MetricGroup>> new_group = 
                             std::make_shared<AbstractMetricGroup<MetricGroup>>(m_registry, this->shared_from_this(), name);
             m_groups.insert(std::make_pair(name, new_group));

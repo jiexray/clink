@@ -11,6 +11,11 @@
 
 #include "cxxtest/TestSuite.h"
 
+#include <boost/asio.hpp>
+#include <boost/thread.hpp>
+#include <thread>
+#include <chrono>
+
 class TestMetricGroup: public CxxTest::TestSuite
 {
 private: 
@@ -24,6 +29,7 @@ private:
     typedef std::shared_ptr<MetricGroup> MetricGroupPtr;
     typedef std::shared_ptr<Counter> CounterPtr;
     typedef std::shared_ptr<Meter> MeterPtr;
+    typedef std::shared_ptr<ViewUpdater> ViewUpdaterPtr;
 
 public:
     void testTaskManagerMetricGroupCreate( void ) {
@@ -42,6 +48,7 @@ public:
         // operator_id, operator_name
         OperatorMetricGroupPtr operator_metric_group = std::make_shared<OperatorMetricGroup>(registry, task_metric_group, 0, "test-operator");
         
+        registry->shutdown();
     }
 
     void testAddGroup( void ){
@@ -67,6 +74,8 @@ public:
             std::cout << s << ".";
         }
         std::cout << std::endl;
+
+        registry->shutdown();
     }
 
     void testAddMetric( void ) {
@@ -86,6 +95,40 @@ public:
         meter->mark_event();
 
         // task_manager_metric_group->get_metric_identifier();
+
+        registry->shutdown();
+    }
+
+    void testViewUpdater( void ) {
+        std::cout << "test testViewUpdater()" << std::endl;
+        boost::asio::io_service io_service;
+        boost::asio::io_service::work work(io_service);
+        boost::thread_group thr_grp;
+        thr_grp.create_thread(boost::bind(&boost::asio::io_service::run, &io_service));
+
+        ViewUpdaterPtr view_updater = std::make_shared<ViewUpdater>(io_service);
+        // io_service.run();
+
+        std::this_thread::sleep_for(std::chrono::seconds(3));
+
+        io_service.stop();
+        thr_grp.join_all();
+    }
+
+    void testMetricRegistry( void ) {
+        std::cout << "test testMetricRegistry()" << std::endl;
+        MetricRegistryConfigurationPtr registry_config = MetricRegistryConfiguration::from_configuration();
+        std::vector<ReporterSetupPtr> reporters;
+
+        MetricRegistryPtr registry = std::make_shared<MetricRegistry>(registry_config, reporters);
+
+        MetricGroupPtr task_manager_metric_group = std::make_shared<TaskManagerMetricGroup>(registry, "host-1", "tm-1");
+
+        MeterPtr meter = task_manager_metric_group->meter("test-meter", std::make_shared<MeterView>(20));
+
+        std::this_thread::sleep_for(std::chrono::seconds(10));
+
+        registry->shutdown();
     }
 };
 

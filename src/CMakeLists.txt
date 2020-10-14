@@ -1,8 +1,12 @@
 # src cmake file
 cmake_minimum_required (VERSION 3.13)
 
+find_package(spdlog REQUIRED)
+find_package(Boost COMPONENTS system thread REQUIRED)
+
 # all include files
 set(ALL_INCLUDE_DIRS 
+  ${Boost_INCLUDE_DIR}
   ${CMAKE_SOURCE_DIR}/src/buffer
   ${CMAKE_SOURCE_DIR}/src/result 
   ${CMAKE_SOURCE_DIR}/src/result/consumer
@@ -38,7 +42,6 @@ set(ALL_INCLUDE_DIRS
   ${CMAKE_SOURCE_DIR}/src/runtime/metrics/scope
 )
 
-find_package(spdlog REQUIRED)
 
 # ------------------------
 #   build buffer module
@@ -131,7 +134,7 @@ target_sources(runtime
     runtime/taskexecutor/TaskSlotTable.cpp
     runtime/taskexecutor/TaskExecutor.cpp
     runtime/shuffle/ShuffleEnvironment.cpp
-    
+
     runtime/metrics/groups/TaskManagerMetricGroup.cpp
     runtime/metrics/groups/TaskManagerJobMetricGroup.cpp
     runtime/metrics/groups/TaskMetricGroup.cpp
@@ -150,12 +153,13 @@ target_sources(runtime
     runtime/metrics/scope/OperatorScopeFormat.cpp
 
     metrics/MeterView.cpp
+    metrics/View.cpp
 )
 target_include_directories(runtime PUBLIC
   ${ALL_INCLUDE_DIRS}
 )
 
-target_link_libraries(runtime streaming pthread result streamrecord spdlog::spdlog buffer)
+target_link_libraries(runtime streaming pthread result streamrecord spdlog::spdlog buffer ${Boost_LIBRARIES})
 
 
 

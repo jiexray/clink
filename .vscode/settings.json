@@ -59,6 +59,14 @@
         "optional": "cpp",
         "string_view": "cpp",
         "iomanip": "cpp",
-        "regex": "cpp"
+        "regex": "cpp",
+        "codecvt": "cpp",
+        "csignal": "cpp",
+        "future": "cpp",
+        "cinttypes": "cpp",
+        "typeindex": "cpp",
+        "*.ipp": "cpp",
+        "strstream": "cpp",
+        "cfenv": "cpp"
     }
 }
