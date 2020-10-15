@@ -167,21 +167,21 @@ public:
     }
 
     /* Return the fully qualified metric name */
-    std::string get_metric_identifier(std::string metric_name) override {
+    std::string get_metric_identifier(const std::string& metric_name) override {
         return get_metric_identifier(metric_name, -1, m_registry->get_delimiter());
     }
 
-    std::string get_metric_identifier(std::string metric_name, int report_index, char delimiter) {
+    std::string get_metric_identifier(const std::string& metric_name, int report_index, char delimiter) {
         if (m_scope_strings_size == 0 || (report_index < 0 || report_index >= m_scope_strings_size)) {
             std::string new_scope_string = ScopeFormat::concat(delimiter, m_scope_components);
-            return new_scope_string + std::to_string(delimiter) + metric_name;
+            return new_scope_string + delimiter + metric_name;
         } else {
             if (m_scope_strings_init[report_index] == false) {
                 m_scope_strings_init[report_index] = true;
                 m_scope_strings[report_index] = ScopeFormat::concat(delimiter, m_scope_components);
             }
 
-            return m_scope_strings[report_index] + std::to_string(delimiter) + metric_name;
+            return m_scope_strings[report_index] + delimiter + metric_name;
         }
     }
 

@@ -6,7 +6,7 @@ project (clink)
 add_compile_definitions(SPDLOG_ACTIVE_LEVEL=0)
 
 # specify the C++ standard
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 add_library(buffer "")
@@ -15,6 +15,7 @@ add_library(streamrecord "")
 add_library(streaming "")
 add_library(runtime "")
 add_library(core "")
+add_library(metrics "")
 
 # install (TARGETS result
 #   PUBLIC_HEADER

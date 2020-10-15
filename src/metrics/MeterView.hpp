@@ -9,6 +9,8 @@
 #include "SimpleCounter.hpp"
 #include <cmath>
 #include <memory>
+#include <iostream>
+#include <cstring>
 
 class MeterView: public Meter, public View
 {
@@ -22,16 +24,19 @@ private:
     long*                           m_values;
     int                             m_values_length;
     /** The index in the array for the currenttime */
-    int                             m_time = 0; 
+    int                             m_time; 
     /** The last rate we computed */
-    double                          m_current_rate = 0;
+    double                          m_current_rate;
 public:
     MeterView(std::shared_ptr<Counter> counter, int time_span_in_seconds) {
+        m_time = 0;
+        m_current_rate = 0.0;
         m_counter = counter;
         m_time_span_in_seconds = std::max(time_span_in_seconds - (time_span_in_seconds % UPDATE_INTERVAL_SECONDS),
                                             UPDATE_INTERVAL_SECONDS);
         m_values_length = m_time_span_in_seconds / UPDATE_INTERVAL_SECONDS + 1;
         m_values = new long[m_values_length];
+        memset(m_values, 0, m_values_length * sizeof(long));
     }
 
     MeterView(std::shared_ptr<Counter> counter): MeterView(counter, DEFAULT_TIME_SPAN_IN_SECONDS) {}
@@ -51,7 +56,7 @@ public:
     void                            update() {
         m_time = (m_time + 1) % (m_values_length);
         m_values[m_time] = m_counter->get_count();
-        m_current_rate = ((double) (m_values[m_time] - m_values[(m_time + 1) % m_values_length])) / m_time_span_in_seconds;
+        m_current_rate = ((double) (m_values[m_time] - m_values[(m_time + 1) % m_values_length])) / (double)m_time_span_in_seconds;
     }
 
 };

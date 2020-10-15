@@ -3,14 +3,17 @@
  */
 #pragma once
 #include <string>
+#include <map>
 
 // TODO: implement metric configuation
 class MetricConfig
 {
 public:
+    const static std::string MERTICS_REPORTER_INTERVAL;
+
     int get_integer(const std::string& key, int default_value) const {
         // TODO
-
+        return default_value;
     }
 
     long get_long(const std::string& key, long default_value) const {

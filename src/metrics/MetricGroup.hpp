@@ -31,7 +31,7 @@ public:
     virtual std::vector<std::string>& get_scope_components() = 0;
 
     /* Return the fully qualified metric name */
-    virtual std::string get_metric_identifier(std::string metric_name) = 0;
+    virtual std::string get_metric_identifier(const std::string& metric_name) = 0;
 
     virtual void close() {};
 };

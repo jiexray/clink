@@ -70,7 +70,7 @@ target_sources(core
 target_include_directories(core PUBLIC
   ${ALL_INCLUDE_DIRS}
 )
-target_link_libraries(core spdlog::spdlog)
+target_link_libraries(core spdlog::spdlog ${Boost_LIBRARIES})
 
 # ------------------------
 #   build result module
@@ -151,19 +151,25 @@ target_sources(runtime
     runtime/metrics/scope/TaskManagerJobScopeFormat.cpp
     runtime/metrics/scope/TaskScopeFormat.cpp
     runtime/metrics/scope/OperatorScopeFormat.cpp
-
-    metrics/MeterView.cpp
-    metrics/View.cpp
 )
 target_include_directories(runtime PUBLIC
   ${ALL_INCLUDE_DIRS}
 )
 
-target_link_libraries(runtime streaming pthread result streamrecord spdlog::spdlog buffer ${Boost_LIBRARIES})
+target_link_libraries(runtime metrics streaming pthread result streamrecord spdlog::spdlog buffer ${Boost_LIBRARIES})
 
+# ------------------------
+#   build metrics module
+# ------------------------
+target_sources(metrics 
+  PRIVATE
+    metrics/MeterView.cpp
+    metrics/View.cpp
+    metrics/reporter/LoggerReporter.cpp
+    metrics/MetricConfig.cpp
+)
+target_include_directories(metrics PUBLIC
+  ${ALL_INCLUDE_DIRS}
+)
 
-
-# target_include_directories(result PUBLIC 
-#   ${CMAKE_SOURCE_DIR}/include/result 
-#   ${CMAKE_SOURCE_DIR}/include/result/consumer
-# )
+target_link_libraries(metrics core)

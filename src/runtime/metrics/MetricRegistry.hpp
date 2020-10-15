@@ -12,16 +12,22 @@
 #include "ProxyMetricGroup.hpp"
 #include "LoggerFactory.hpp"
 #include "MetricRegistryConfiguration.hpp"
+#include "Scheduled.hpp"
+#include "Scheduler.hpp"
 #include <memory>
 #include <vector>
 #include <mutex>
-#include <boost/asio.hpp>
 #include <boost/thread.hpp>
 #include <functional>
 
 class MetricRegistry
 {
 private:
+    typedef Scheduler::PeriodicScheduler            PeriodicScheduler;
+    typedef std::shared_ptr<PeriodicScheduler>      PeriodicSchedulerPtr;
+    typedef std::shared_ptr<MetricRegistry>         MetricRegistryPtr;
+    typedef std::shared_ptr<Scheduled>              ScheduledPtr;
+    typedef std::shared_ptr<boost::asio::deadline_timer> TimerPtr;
     typedef std::shared_ptr<ReporterSetup>          ReporterSetupPtr;
     typedef std::shared_ptr<MetricReporter>         MetricReporterPtr;
     typedef std::shared_ptr<ViewUpdater>            ViewUpdaterPtr;
@@ -36,33 +42,37 @@ private:
 
     static std::shared_ptr<spdlog::logger>          m_logger;
 
-    /* Boost */
-    boost::asio::io_service                         m_io_service;
-    // for io_service not stop
-    boost::asio::io_service::work*                  m_io_service_work;
-    boost::thread                                   m_io_service_executor;
-    
-    
+    /* Periodical scheduler */
+    PeriodicSchedulerPtr                            m_scheduler;
+    boost::thread                                   m_executor;
 public:
     // MetricRegistry(MetricRegistryConfigurationPtr config, const std::vector<ReporterSetupPtr>& reporter_configurations);
     MetricRegistry(MetricRegistryConfigurationPtr config, const std::vector<ReporterSetupPtr>& reporter_configurations) {
+        // start io_service for view updater
+        m_scheduler = std::make_shared<PeriodicScheduler>();
+        m_executor = boost::thread(boost::bind(&PeriodicScheduler::run, m_scheduler));
+
         if (!reporter_configurations.empty()) {
+            int reporter_idx = 0;
             for (ReporterSetupPtr reporter_setup: reporter_configurations) {
                 std::string named_reporter = reporter_setup->get_name();
                 MetricReporterPtr reporter_instance = reporter_setup->get_reporter();
                 
-                // TODO: Add reporter to the Timer
+                // Add reporter to the Timer
+                int period = reporter_setup->get_interval_setting();
+                if (std::dynamic_pointer_cast<LoggerReporter>(reporter_instance) != nullptr) {
+                    m_scheduler->add_task("reporter-timer", boost::bind(&Scheduled::report, std::dynamic_pointer_cast<LoggerReporter>(reporter_instance)), period);
+                } else {
+                    throw std::invalid_argument("Reporter is not a Scheduled instance");
+                }
 
                 m_reporters.push_back(reporter_instance);
+                reporter_idx++;
             }
         }
         m_global_delimiter = config->get_delimiter();
         m_view_updater = nullptr;
-        m_is_shutdown = false;
-
-        // start io_service for view updater
-        m_io_service_work = new boost::asio::io_service::work(m_io_service);
-        m_io_service_executor = boost::thread(boost::bind(&boost::asio::io_service::run, &m_io_service));
+        m_is_shutdown = false; 
     }
 
     /* Properties */
@@ -92,7 +102,7 @@ public:
         if (std::dynamic_pointer_cast<MeterView>(metric) != nullptr) {
             // metric is a view, register it to view_updater
             if (m_view_updater == nullptr) {
-                m_view_updater = std::make_shared<ViewUpdater>(m_io_service);
+                m_view_updater = std::make_shared<ViewUpdater>(m_scheduler);
             }
             m_view_updater->notify_of_add_view(std::dynamic_pointer_cast<MeterView>(metric));
         }
@@ -132,9 +142,8 @@ public:
             m_reporters.clear();
 
             // stop io_service, finish its executor
-            m_io_service.stop();
-            delete m_io_service_work;
-            m_io_service_executor.join();
+            m_scheduler->stop();
+            m_executor.join();
         }
     }
 };

@@ -40,7 +40,7 @@ public:
     }
 
     /* Return the fully qualified metric name */
-    std::string get_metric_identifier(std::string metric_name) {
-        m_parent_metric_group->get_metric_identifier(metric_name);
+    std::string get_metric_identifier(const std::string& metric_name) {
+        return m_parent_metric_group->get_metric_identifier(metric_name);
     }
 };

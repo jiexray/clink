@@ -20,7 +20,7 @@ const std::string ScopeFormat::SCOPE_OPERATOR_NAME = "<operator_name>";
 
 
 ScopeFormat::ScopeFormat(std::string format, std::shared_ptr<ScopeFormat> parent, const std::vector<std::string>& variables) {
-    std::vector<std::string> raw_components = StringUtils::split(format, SCOPE_SEPARATOR[0]);
+    std::vector<std::string> raw_components = StringUtils::StringUtils::split(format, SCOPE_SEPARATOR[0]);
 
     bool parent_as_prefix = (raw_components.size() > 0) && (raw_components[0] == SCOPE_INHERIT_PARENT);
     // check if begin with "*"
@@ -69,7 +69,7 @@ std::string ScopeFormat::concat(char delimiter, const std::vector<std::string>& 
     std::string full_components = "";
     full_components += components[0];
     for (int i = 1; i < components.size(); i++) {
-        full_components += std::to_string(delimiter);
+        full_components += delimiter;
         full_components += components[i];
     }
     return full_components;
