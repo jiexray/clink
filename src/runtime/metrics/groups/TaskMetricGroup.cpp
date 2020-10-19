@@ -14,8 +14,8 @@ TaskMetricGroup::TaskMetricGroup(MetricRegistryPtr registry,
         m_io_metrics = nullptr;
 }
 
-TaskMetricGroup::OperatorMetricGroupPtr TaskMetricGroup::get_or_add_operator(int operator_id, std::string operator_name) {
-    std::string key = std::to_string(operator_id) + operator_name;
+TaskMetricGroup::OperatorMetricGroupPtr TaskMetricGroup::get_or_add_operator(const std::string& operator_id, const std::string& operator_name) {
+    std::string key = operator_id + operator_name;
 
     std::unique_lock<std::mutex> operators_lock(m_global_mtx);
 

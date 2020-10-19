@@ -4,12 +4,14 @@
 #pragma once
 #include "StreamTask.hpp"
 #include <thread>
+#include "OperatorMetricGroup.hpp"
 
 
 template <class OUT>
 class SourceStreamTask : public StreamTask<OUT>
 {
 private:
+    typedef std::shared_ptr<OperatorMetricGroup>    OperatorMetricGroupPtr;
     std::shared_ptr<std::thread>    source_thread;
 public:
     SourceStreamTask(std::shared_ptr<Environment> env): StreamTask<OUT>(env){}
@@ -25,11 +27,10 @@ public:
 
 template <class OUT>
 inline void SourceStreamTask<OUT>::init() {
-    // The first template parameter is no-use, just a placeholder
+    OperatorMetricGroupPtr operator_metric_group = this->m_task_metric_group->get_or_add_operator(this->m_configuration->get_operator_id(), this->m_configuration->get_operator_name());
     std::shared_ptr<StreamOperatorFactory<OUT>> operator_factory = this->m_configuration->template get_stream_operator_factory<std::string, OUT>();
 
-    this->m_operator_chain = std::make_shared<OperatorChain<OUT>>(this->get_result_writer(), 
-                                                                operator_factory);
+    this->m_operator_chain = std::make_shared<OperatorChain<OUT>>(this->get_result_writer(), operator_factory, operator_metric_group);
 
     if (this->m_operator_chain == nullptr) {
         throw std::runtime_error("Fail to create OperatorChain when initializing SourceStreamTask");

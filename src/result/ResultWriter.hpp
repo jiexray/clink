@@ -11,18 +11,31 @@
 #include <memory>
 #include <string>
 #include "Tuple.hpp"
+#include "Counter.hpp"
+#include "Meter.hpp"
+#include "MetricGroup.hpp"
+#include "TaskIOMetricGroup.hpp"
 
 template <class T>
 class ResultWriter
 {
 private:
+    typedef std::shared_ptr<Counter>            CounterPtr;
+    typedef std::shared_ptr<Meter>              MeterPtr;
+    typedef std::shared_ptr<TaskIOMetricGroup>  TaskIOMetricGroupPtr;
+
     std::shared_ptr<ResultPartition>            m_target_result_partition;
     int                                         m_number_of_channels;
     std::string                                 m_task_name;
     std::vector<std::shared_ptr<BufferBuilder>> m_buffer_builders;
     std::shared_ptr<StreamRecordSerializer<T>>  m_record_serializer; 
 
-    std::shared_ptr<spdlog::logger>      m_logger;   
+    std::shared_ptr<spdlog::logger>             m_logger;
+
+    /* Metrics indices */
+    CounterPtr                                  m_bytes_out;
+    CounterPtr                                  m_buffers_out;
+    MeterPtr                                    m_idle_time_ms_per_second;
 
 public:
     ResultWriter(std::shared_ptr<ResultPartition> result_partition, std::string task_name);
@@ -42,6 +55,18 @@ public:
 
     /* Properties */
     int                                         get_number_of_channels() {return m_number_of_channels;}
+
+    /* Metrics */
+    void                                        set_metric_group(TaskIOMetricGroupPtr metrics) {
+        m_bytes_out = metrics->get_bytes_out_counter();
+        m_buffers_out = metrics->get_buffers_out_counter();
+        m_idle_time_ms_per_second = metrics->get_idle_time_ms_per_second();
+    }
+
+    void                                        finish_buffer_builder(std::shared_ptr<BufferBuilder> buffer_builder) {
+        m_bytes_out->inc(buffer_builder->finish());
+        m_buffers_out->inc();
+    }
 };
 
 template<class T>
@@ -71,6 +96,7 @@ inline void ResultWriter<T>::copy_to_buffer_builder(int target_channel, std::sha
     }
 
     while (result == FULL_RECORD_BUFFER_FULL || result == PARTITAL_RECORD_BUFFER_FULL || result == NONE_RECORD) {
+        finish_buffer_builder(buffer_builder);
         if (result == FULL_RECORD_BUFFER_FULL || result == NONE_RECORD) {
             // Full record has been copied to buffer, and the buffer is full.
             // Free the currrent buffer builder, and the buffer consumer in the result subpartition (target_channel) 

@@ -33,6 +33,7 @@ set(ALL_INCLUDE_DIRS
   ${CMAKE_SOURCE_DIR}/src/core/tuple
   ${CMAKE_SOURCE_DIR}/src/runtime/executiongraph
   ${CMAKE_SOURCE_DIR}/src/runtime/shuffle
+  ${CMAKE_SOURCE_DIR}/src/runtime/shuffle/metrics
   ${CMAKE_SOURCE_DIR}/src/runtime/taskexecutor
   ${CMAKE_SOURCE_DIR}/src/metrics
   ${CMAKE_SOURCE_DIR}/src/metrics/reporter
@@ -40,6 +41,7 @@ set(ALL_INCLUDE_DIRS
   ${CMAKE_SOURCE_DIR}/src/runtime/metrics
   ${CMAKE_SOURCE_DIR}/src/runtime/metrics/groups
   ${CMAKE_SOURCE_DIR}/src/runtime/metrics/scope
+  ${CMAKE_SOURCE_DIR}/src/runtime/metrics/util
 )
 
 
@@ -122,7 +124,7 @@ target_include_directories(streaming PUBLIC
   ${ALL_INCLUDE_DIRS}
 )
 
-target_link_libraries(streaming streamrecord result pthread core buffer spdlog::spdlog)
+target_link_libraries(streaming streamrecord result pthread core buffer spdlog::spdlog runtime)
 
 # ------------------------
 #   build runtime module
@@ -133,7 +135,10 @@ target_sources(runtime
     runtime/Task.cpp
     runtime/taskexecutor/TaskSlotTable.cpp
     runtime/taskexecutor/TaskExecutor.cpp
+    runtime/taskexecutor/TaskExecutorRunner.cpp
     runtime/shuffle/ShuffleEnvironment.cpp
+    runtime/shuffle/metrics/ShuffleMetricFactory.cpp
+    runtime/shuffle/metrics/InputChannelMetrics.cpp
 
     runtime/metrics/groups/TaskManagerMetricGroup.cpp
     runtime/metrics/groups/TaskManagerJobMetricGroup.cpp
@@ -145,12 +150,16 @@ target_sources(runtime
 
     runtime/metrics/MetricRegistry.cpp
     runtime/metrics/MetricNames.cpp
+    runtime/metrics/ReporterSetup.cpp
+    runtime/metrics/MetricRegistryConfiguration.cpp
 
     runtime/metrics/scope/ScopeFormat.cpp
     runtime/metrics/scope/ScopeFormats.cpp
     runtime/metrics/scope/TaskManagerJobScopeFormat.cpp
     runtime/metrics/scope/TaskScopeFormat.cpp
     runtime/metrics/scope/OperatorScopeFormat.cpp
+
+    runtime/metrics/util/MetricUtils.cpp
 )
 target_include_directories(runtime PUBLIC
   ${ALL_INCLUDE_DIRS}

@@ -50,11 +50,7 @@ public:
      */
     std::shared_ptr<TaskIOMetricGroup>                      get_IO_metric_group() {
         if (m_io_metrics == nullptr) {
-            std::unique_lock<std::mutex> global_lock(m_global_mtx);
-            if (m_io_metrics == nullptr) {
-                m_io_metrics = std::make_shared<TaskIOMetricGroup>(inheritable_enable_shared_from_this<TaskMetricGroup>::shared_from_this());
-            }
-            global_lock.unlock();
+            m_io_metrics = std::make_shared<TaskIOMetricGroup>(inheritable_enable_shared_from_this<TaskMetricGroup>::shared_from_this());
         }
         return m_io_metrics;
     }
@@ -63,7 +59,7 @@ public:
     //  operators and cleanup
     // -------------------------------------------------------------------------
 
-    OperatorMetricGroupPtr get_or_add_operator(int operator_id, std::string operator_name);
+    OperatorMetricGroupPtr get_or_add_operator(const std::string& operator_id, const std::string& operator_name);
 
     void close() override;
 

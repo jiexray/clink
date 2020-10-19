@@ -61,3 +61,7 @@ int BufferBuilder::append(const char* const source, int offset, int length, bool
 std::shared_ptr<BufferConsumer> BufferBuilder::create_buffer_consumer() {
     return std::make_shared<BufferConsumer>(m_buffer, m_write_position_marker_ptr, 0);
 }
+
+int BufferBuilder::finish() {
+    return m_buffer->get_max_capacity();
+}

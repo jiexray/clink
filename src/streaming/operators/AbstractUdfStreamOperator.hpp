@@ -4,7 +4,7 @@
  */
 #pragma once
 #include "StreamOperator.hpp"
-#include "../functions/Function.hpp"
+#include "Function.hpp"
 #include "Output.hpp"
 #include <iostream>
 

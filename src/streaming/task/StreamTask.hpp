@@ -37,6 +37,7 @@ protected:
     std::shared_ptr<StreamConfig>               m_configuration;
     std::shared_ptr<MailboxProcessor>           m_mailbox_processor;
     std::shared_ptr<spdlog::logger>             m_logger;
+    std::shared_ptr<TaskMetricGroup>            m_task_metric_group;
 
 public:
     // for test
@@ -84,9 +85,7 @@ public:
  */
 template <class OUT>
 inline StreamTask<OUT>::StreamTask(std::shared_ptr<Environment> env): AbstractInvokable(env) {
-    spdlog::set_pattern(Constant::SPDLOG_PATTERN);
-    spdlog::set_level(Constant::SPDLOG_LEVEL);
-
+    m_task_metric_group = env->get_metric_group();
     m_is_running = true;
     m_configuration = std::make_shared<StreamConfig>(env->get_task_configuration());
     m_logger = LoggerFactory::get_logger("StreamTask");
@@ -101,13 +100,13 @@ inline StreamTask<OUT>::StreamTask(std::shared_ptr<Environment> env): AbstractIn
 }
 
 /**
- * Create a ResultWriter for the StreamTask.
- * @parameter edge: the edge (logical edge) for this physical subtask.
- * @parameter output_idx: the output index for this stream task in the TaskManager, which 
- *   takes charge of creating ResultPartitions. Currently, the output_idx can only be zero,
- *   for a StreamTask (JobVertex) only have one out edge (represent a StreamEdge between consequtive
- *   tasks).
- * @paramenter task_name: the name of the subtask.
+  Create a ResultWriter for the StreamTask.
+  @param edge: the edge (logical edge) for this physical subtask.
+  @param output_idx: the output index for this stream task in the TaskManager, which 
+   takes charge of creating ResultPartitions. Currently, the output_idx can only be zero,
+    for a StreamTask (JobVertex) only have one out edge (represent a StreamEdge between consequtive
+    tasks).
+  @param task_name: the name of the subtask.
  */
 template <class OUT>
 inline std::shared_ptr<ResultWriter<OUT>> StreamTask<OUT>::create_result_writer(std::shared_ptr<StreamEdge<OUT>> edge, int output_idx, std::string task_name) {
@@ -116,7 +115,10 @@ inline std::shared_ptr<ResultWriter<OUT>> StreamTask<OUT>::create_result_writer(
     SPDLOG_LOGGER_INFO(m_logger, "Using partitioner {} for output {} of StreamTask {}", output_partitioner->to_string(), output_idx, task_name);
 
     std::shared_ptr<ResultPartition> buffer_writter = this->get_environment()->get_writer(output_idx);
-    return std::make_shared<ChannelSelectorResultWriter<OUT>>(buffer_writter, task_name, output_partitioner);
+
+    std::shared_ptr<ResultWriter<OUT>> output = std::make_shared<ChannelSelectorResultWriter<OUT>>(buffer_writter, task_name, output_partitioner);
+    output->set_metric_group(this->get_environment()->get_metric_group()->get_IO_metric_group());
+    return output;
 }
 
 template <class OUT>

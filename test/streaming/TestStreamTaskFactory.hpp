@@ -198,6 +198,7 @@ public:
                                                             result_partition_descriptors,
                                                             input_gate_descriptors,
                                                             shuffle_environment,
-                                                            buffer_pool);
+                                                            buffer_pool,
+                                                            nullptr);
     }
 };

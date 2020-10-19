@@ -34,6 +34,10 @@ public:
     void                                    free();
 
     /* Properties */
+
+    /**
+      Get the total capacity of a buffer. If it is a ReadOnlySlideBuffer, this is its size.
+     */
     int                                     get_max_capacity() override {return m_size;}
     int                                     get_buffer_id() override {return m_buffer_id;}
     std::shared_ptr<BufferPoolManager>      get_buffer_pool_manager() {return m_buffer_pool_manager;}

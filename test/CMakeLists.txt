@@ -31,6 +31,7 @@ set(TEST_HEADER_DIRS ${CMAKE_SOURCE_DIR}/src/buffer
   ${CMAKE_SOURCE_DIR}/src/core/util
   ${CMAKE_SOURCE_DIR}/src/runtime/executiongraph
   ${CMAKE_SOURCE_DIR}/src/runtime/shuffle
+  ${CMAKE_SOURCE_DIR}/src/runtime/shuffle/metrics
   ${CMAKE_SOURCE_DIR}/src/runtime/taskexecutor
   ${CMAKE_SOURCE_DIR}/src/metrics
   ${CMAKE_SOURCE_DIR}/src/metrics/groups
@@ -39,6 +40,7 @@ set(TEST_HEADER_DIRS ${CMAKE_SOURCE_DIR}/src/buffer
   ${CMAKE_SOURCE_DIR}/src/runtime/metrics
   ${CMAKE_SOURCE_DIR}/src/runtime/metrics/groups
   ${CMAKE_SOURCE_DIR}/src/runtime/metrics/scope
+  ${CMAKE_SOURCE_DIR}/src/runtime/metrics/util
   )
 
 if(CXXTEST_FOUND)
@@ -128,4 +130,8 @@ if(CXXTEST_FOUND)
   # metrics metric-group
   CXXTEST_ADD_TEST(unitest_metrics_metric_group metrics_metric_group.cpp ${CMAKE_CURRENT_SOURCE_DIR}/metrics/TestMetricGroup.hpp)
   target_link_libraries(unitest_metrics_metric_group runtime)
+
+  # runtime wordcount-with-metrics
+  CXXTEST_ADD_TEST(unitest_runtime_wordcount_with_metrics runtime_wordcount_with_metrics.cpp ${CMAKE_CURRENT_SOURCE_DIR}/runtime/TestWordCountWithMetrics.hpp)
+  target_link_libraries(unitest_runtime_wordcount_with_metrics runtime)
 endif()

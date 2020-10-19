@@ -2,8 +2,8 @@
  * Metric group that contains sharable pre-define IO-related metrics.
  */
 #pragma once
-#include "ComponentMetricGroup.hpp"
 #include "OperatorMetricGroup.hpp"
+#include "ProxyMetricGroup.hpp"
 #include "Counter.hpp"
 #include "Meter.hpp"
 #include "MeterView.hpp"
@@ -11,7 +11,7 @@
 
 class OperatorMetricGroup;
 
-class OperatorIOMetricGroup: ProxyMetricGroup<OperatorMetricGroup>
+class OperatorIOMetricGroup: public ProxyMetricGroup<OperatorMetricGroup>
 {
 private:
     std::shared_ptr<Counter>    m_records_in;

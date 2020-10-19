@@ -13,6 +13,12 @@ struct Int2Type {
     enum {value = v};
 };
 
+template <typename T>
+struct Type2Type {
+    typedef T OriginalType;
+};
+
+
 template <typename U> struct IsNullType: std::false_type {};
 template <> struct IsNullType<NullType>: std::true_type {};
 

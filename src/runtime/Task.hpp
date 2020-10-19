@@ -10,10 +10,11 @@
 #include "executiongraph/JobInformation.hpp"
 #include "ResultPartitionDeploymentDescriptor.hpp"
 #include "InputGateDeploymentDescriptor.hpp"
-#include "shuffle/ShuffleEnvironment.hpp"
+#include "ShuffleEnvironment.hpp"
 #include "RuntimeEnvironment.hpp"
 #include "Constant.hpp"
 #include "LoggerFactory.hpp"
+#include "TaskMetricGroup.hpp"
 
 #include "OneInputStreamTask.hpp"
 #include "SourceStreamTask.hpp"
@@ -29,6 +30,12 @@
 class Task
 {
 private:
+    typedef std::vector<std::shared_ptr<ResultPartitionDeploymentDescriptor>> ResultPartitionDeploymentDescriptorList;
+    typedef std::vector<std::shared_ptr<InputGateDeploymentDescriptor>> InputGateDeploymentDescriptorList;
+    typedef std::shared_ptr<TaskMetricGroup> TaskMetricGroupPtr;
+    typedef std::shared_ptr<ShuffleIOOwnerContext> ShuffleIOOwnerContextPtr;
+    typedef std::shared_ptr<InputGate> InputGatePtr;
+
     int                                 m_job_id;
     int                                 m_vertex_id;
     int                                 m_execution_id;
@@ -49,8 +56,7 @@ private:
 
     std::shared_ptr<BufferPool>         m_buffer_pool;
 
-    typedef std::vector<std::shared_ptr<ResultPartitionDeploymentDescriptor>> ResultPartitionDeploymentDescriptorList;
-    typedef std::vector<std::shared_ptr<InputGateDeploymentDescriptor>> InputGateDeploymentDescriptorList;
+    TaskMetricGroupPtr                  m_metrics;
 
     // logger for local thread
     static std::shared_ptr<spdlog::logger>     m_logger;
@@ -61,7 +67,7 @@ public:
             ResultPartitionDeploymentDescriptorList & result_partition_descriptors,
             InputGateDeploymentDescriptorList & input_gate_descriptors,
             std::shared_ptr<ShuffleEnvironment> shuffle_environment,
-            std::shared_ptr<BufferPool> buffer_pool);
+            std::shared_ptr<BufferPool> buffer_pool, TaskMetricGroupPtr metrics);
 
     void                                        do_run();
     void                                        run() {do_run();}

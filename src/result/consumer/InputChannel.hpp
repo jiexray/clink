@@ -5,8 +5,9 @@
 #include "InputChannelInfo.hpp"
 #include "InputGate.hpp"
 #include <memory>
-#include "../ResultPartitionManager.hpp"
-#include "../ResultSubpartitionView.hpp"
+#include "ResultPartitionManager.hpp"
+#include "ResultSubpartitionView.hpp"
+#include "Counter.hpp"
 
 class InputGate;
 
@@ -20,13 +21,23 @@ private:
     std::shared_ptr<ResultPartitionManager>     m_partition_manager;
     std::shared_ptr<ResultSubpartitionView>     m_subpartition_view;
 
+protected:
+    typedef std::shared_ptr<Counter>            CounterPtr;
+    CounterPtr                                  m_bytes_in;
+    CounterPtr                                  m_buffers_in;
+
 
 public:
     InputChannel(std::shared_ptr<InputGate> input_gate, int channel_idx, int partition_idx, 
                 std::shared_ptr<ResultPartitionManager> partition_manager);
 
     InputChannel(std::shared_ptr<InputGate> input_gate, int channel_idx, std::string partition_id,
-                std::shared_ptr<ResultPartitionManager> partition_manager);
+                std::shared_ptr<ResultPartitionManager> partition_manager): 
+                InputChannel(input_gate, channel_idx, partition_id, partition_manager, nullptr, nullptr) {}
+
+    InputChannel(std::shared_ptr<InputGate> input_gate, int channel_idx, std::string partition_id,
+                std::shared_ptr<ResultPartitionManager> partition_manager,
+                CounterPtr bytes_in, CounterPtr buffers_in);
 
     void                                        notify_data_available();
     void                                        request_subpartition(int subpartition_idx);

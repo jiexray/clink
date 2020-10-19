@@ -32,6 +32,15 @@ void TaskExecutor::submit_task(std::shared_ptr<TaskDeploymentDescriptor> tdd) {
     }
     std::shared_ptr<BufferPool> buffer_pool = std::make_shared<BufferPool>(total_number_of_subpartitions * 2, Constant::BUFFER_SIZE);
 
+    // create TaskMetricGroup
+    std::shared_ptr<TaskMetricGroup> task_metric_group = m_task_manager_metric_group->add_task_for_job(
+        job_id, 
+        tdd->get_job_information()->get_job_name(), 
+        tdd->get_task_information()->get_job_vertex_id(),  
+        tdd->get_execution_id(),
+        tdd->get_task_information()->get_task_name(),
+        tdd->get_subtask_idx());
+
     // create task
     std::shared_ptr<Task> task = std::make_shared<Task>(
                                                         tdd->get_job_information(),
@@ -42,7 +51,8 @@ void TaskExecutor::submit_task(std::shared_ptr<TaskDeploymentDescriptor> tdd) {
                                                         result_partitions,
                                                         input_gates,
                                                         m_shuffle_environment,
-                                                        buffer_pool);
+                                                        buffer_pool,
+                                                        task_metric_group); 
     // m_logger->info("Receive Task {}", task->get_task_info()->get_task_name_with_sub_tasks());
     SPDLOG_LOGGER_INFO(m_logger, "Receive Task {}", task->get_task_info()->get_task_name_with_sub_tasks());
 

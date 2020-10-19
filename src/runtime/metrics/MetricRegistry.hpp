@@ -84,7 +84,7 @@ public:
     //  Metrics (de)registration
     // -------------------------------------------------------------
 
-    void register_metric(std::shared_ptr<Metric> metric, std::string metric_name, std::shared_ptr<MetricGroup> group) {
+    void register_metric(std::shared_ptr<Metric> metric, const std::string& metric_name, std::shared_ptr<MetricGroup> group) {
         std::unique_lock<std::mutex> lock(m_register_mtx);
         if(m_is_shutdown) {
             SPDLOG_LOGGER_WARN(m_logger, "Cannot register metric, because the MetricRegistry has already been shut down.");
@@ -108,7 +108,7 @@ public:
         }
     }
 
-    void unregister_metric(std::shared_ptr<Metric> metric, std::string metric_name, std::shared_ptr<MetricGroup> group) {
+    void unregister_metric(std::shared_ptr<Metric> metric, const std::string& metric_name, std::shared_ptr<MetricGroup> group) {
         std::unique_lock<std::mutex> lock(m_register_mtx);
         if(m_is_shutdown) {
             SPDLOG_LOGGER_WARN(m_logger, "Cannot register metric, because the MetricRegistry has already been shut down.");

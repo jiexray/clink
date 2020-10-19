@@ -36,6 +36,11 @@ public:
     Buffer*                         get_buffer() {return m_buffer;}
     bool                            is_full();
 
+    /**
+      @return number of written bytes.
+     */
+    int                             finish();
+
     /* Write data to buffer */
     int                             append(const char* const source, int offset, int length);
     int                             append(const char* const source, int offset, int length, bool must_complete);

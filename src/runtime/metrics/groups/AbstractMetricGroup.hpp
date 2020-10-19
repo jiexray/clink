@@ -86,7 +86,6 @@ protected:
 
 public:
     AbstractMetricGroup(std::shared_ptr<MetricRegistry> registry, ParentMetricGroupPtr parent, std::string name) {
-        std::cout << "AbstractMetricGroup::ctor(std::shared_ptr<MetricRegistry> registry, ParentMetricGroupPtr parent, std::string name)" << std::endl;
         this->m_registry = registry;
 
         m_scope_components = make_scope_component(parent, name);
@@ -217,24 +216,30 @@ public:
     // ----------------------------------------------------------------------------- 
     //  Metrics
     // ----------------------------------------------------------------------------- 
-    std::shared_ptr<Counter> counter(std::string name) {
+    std::shared_ptr<Counter> counter(const std::string& name) {
         return counter(name, std::make_shared<SimpleCounter>());
     }
 
     /* Register a Counter */
-    std::shared_ptr<Counter> counter(std::string name, std::shared_ptr<Counter> counter) {
+    std::shared_ptr<Counter> counter(const std::string& name, std::shared_ptr<Counter> counter) {
         add_metric(name, counter);
         return counter;
     }
 
     /* Register a Meter */
-    std::shared_ptr<Meter> meter(std::string name, std::shared_ptr<Meter> meter) {
+    std::shared_ptr<Meter> meter(const std::string& name, std::shared_ptr<Meter> meter) {
         add_metric(name, meter);
         return meter;
     }
 
+    /* Register a Gauge */
+    std::shared_ptr<Gauge> gauge(const std::string& name, std::shared_ptr<Gauge> gauge) {
+        add_metric(name, gauge);
+        return gauge;
+    }
 
-    void add_metric(std::string name, std::shared_ptr<Metric> metric) {
+
+    void add_metric(const std::string& name, std::shared_ptr<Metric> metric) {
         std::unique_lock<std::mutex> register_lck(m_global_mtx);
         if (m_closed) {
             return;
@@ -255,11 +260,11 @@ public:
     // ----------------------------------------------------------------------------- 
 
     // Creates a new MetricGroup and adds it to this group sub-groups
-    std::shared_ptr<MetricGroup> add_group(std::string name) {
+    std::shared_ptr<MetricGroup> add_group(const std::string& name) {
         return add_group(name, ChildType::GENERIC);
     }
 
-    std::shared_ptr<MetricGroup> add_group(std::string name, ChildType child_type) {
+    std::shared_ptr<MetricGroup> add_group(const std::string& name, ChildType child_type) {
         std::unique_lock<std::mutex> register_lck(m_global_mtx);
         if (m_closed) {
             return nullptr;

@@ -32,6 +32,7 @@
                 "/home/tian/software/vscode/projects/clink/src/core/tuple",
                 "/home/tian/software/vscode/projects/clink/src/runtime/executiongraph",
                 "/home/tian/software/vscode/projects/clink/src/runtime/shuffle",
+                "/home/tian/software/vscode/projects/clink/src/runtime/shuffle/metrics",
                 "/home/tian/software/vscode/projects/clink/src/runtime/taskexecutor",
                 "/home/tian/software/vscode/projects/clink/src/metrics",
                 "/home/tian/software/vscode/projects/clink/src/metrics/reporter",

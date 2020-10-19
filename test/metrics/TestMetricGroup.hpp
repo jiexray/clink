@@ -34,7 +34,7 @@ private:
 public:
     void testTaskManagerMetricGroupCreate( void ) {
         std::cout << "test testTaskManagerMetricGroupCreate()" << std::endl;
-        MetricRegistryConfigurationPtr registry_config = MetricRegistryConfiguration::from_configuration();
+        MetricRegistryConfigurationPtr registry_config = MetricRegistryConfiguration::from_configuration(nullptr);
         std::vector<ReporterSetupPtr> reportes;
 
         MetricRegistryPtr registry = std::make_shared<MetricRegistry>(registry_config, reportes);
@@ -46,14 +46,14 @@ public:
         // vertex-id, execution-id, task-name, subtask-index
         TaskMetricGroupPtr task_metric_group = std::make_shared<TaskMetricGroup>(registry, task_manager_job_metric_group, 0, 0, "test-task", 0); 
         // operator_id, operator_name
-        OperatorMetricGroupPtr operator_metric_group = std::make_shared<OperatorMetricGroup>(registry, task_metric_group, 0, "test-operator");
+        OperatorMetricGroupPtr operator_metric_group = std::make_shared<OperatorMetricGroup>(registry, task_metric_group, "test-operator-id", "test-operator");
         
         registry->shutdown();
     }
 
     void testAddGroup( void ){
         std::cout << "test testAddGroup()" << std::endl;
-        MetricRegistryConfigurationPtr registry_config = MetricRegistryConfiguration::from_configuration();
+        MetricRegistryConfigurationPtr registry_config = MetricRegistryConfiguration::from_configuration(nullptr);
         std::vector<ReporterSetupPtr> reportes;
 
         MetricRegistryPtr registry = std::make_shared<MetricRegistry>(registry_config, reportes);
@@ -80,7 +80,7 @@ public:
 
     void testAddMetric( void ) {
         std::cout << "test testAddMetric()" << std::endl;
-        MetricRegistryConfigurationPtr registry_config = MetricRegistryConfiguration::from_configuration();
+        MetricRegistryConfigurationPtr registry_config = MetricRegistryConfiguration::from_configuration(nullptr);
         std::vector<ReporterSetupPtr> reportes;
 
         MetricRegistryPtr registry = std::make_shared<MetricRegistry>(registry_config, reportes);
@@ -117,7 +117,7 @@ public:
 
     void testMetricRegistry( void ) {
         std::cout << "test testMetricRegistry()" << std::endl;
-        MetricRegistryConfigurationPtr registry_config = MetricRegistryConfiguration::from_configuration();
+        MetricRegistryConfigurationPtr registry_config = MetricRegistryConfiguration::from_configuration(nullptr);
         std::vector<ReporterSetupPtr> reporters;
 
         MetricRegistryPtr registry = std::make_shared<MetricRegistry>(registry_config, reporters);
@@ -133,7 +133,7 @@ public:
 
     void testMetricReporter( void ) {
         std::cout << "test testMetricReporter()" << std::endl;
-        MetricRegistryConfigurationPtr registry_config = MetricRegistryConfiguration::from_configuration();
+        MetricRegistryConfigurationPtr registry_config = MetricRegistryConfiguration::from_configuration(nullptr);
 
         MetricRegistryPtr registry = std::make_shared<MetricRegistry>(registry_config, ReporterSetup::from_configuration(nullptr));
 

@@ -17,6 +17,8 @@ public:
     static std::string                          EDGE_NAME;
     static std::string                          NUMBER_OF_INPUTS;
     static std::string                          OPERATOR_FACTORY;
+    static std::string                          OPERATOR_ID;
+    static std::string                          OPERATOR_NAME;
 
     StreamConfig(std::shared_ptr<Configuration> config): m_config(config) {}
 
@@ -25,6 +27,9 @@ public:
     int                                         get_number_of_inputs();
     template <class IN, class OUT, bool IS_SINK = false>
     std::shared_ptr<StreamOperatorFactory<OUT>> get_stream_operator_factory();
+
+    std::string                                 get_operator_id();
+    std::string                                 get_operator_name();
 };
 
 template <class OUT>
@@ -42,3 +47,12 @@ inline std::shared_ptr<StreamOperatorFactory<OUT>> StreamConfig::get_stream_oper
     return m_config->get_operator_factory<IN, OUT, IS_SINK>(StreamConfig::OPERATOR_FACTORY);
 }
 
+inline std::string StreamConfig::get_operator_id() {
+    // TODO: implement get operator from config
+    return "test-operator-id";
+}
+
+inline std::string StreamConfig::get_operator_name() {
+    // TODO: implement get operator from config
+    return "test-operator";
+}

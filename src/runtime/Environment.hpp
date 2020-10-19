@@ -9,6 +9,7 @@
 #include "InputGate.hpp"
 #include "Configuration.hpp"
 #include "TaskInfo.hpp"
+#include "TaskMetricGroup.hpp"
 
 class Configuration;
 
@@ -25,5 +26,6 @@ public:
     virtual std::shared_ptr<InputGate>          get_input_gate(int idx) = 0;
     virtual std::shared_ptr<Configuration>      get_task_configuration() = 0;
     virtual std::shared_ptr<TaskInfo>           get_task_info() = 0;
+    virtual std::shared_ptr<TaskMetricGroup>    get_metric_group() = 0;
 };
 

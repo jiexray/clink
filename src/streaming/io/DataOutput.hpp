@@ -3,7 +3,8 @@
  * base module for input processing in a StreamTask. It is one component of (StreamTaskInput, DataOutput)-pair.
  */
 #pragma once
-#include "../../streamrecord/StreamRecord.hpp"
+#include "StreamRecord.hpp"
+#include "Counter.hpp"
 
 template <class T>
 class DataOutput
@@ -12,4 +13,5 @@ private:
 public:
     virtual void emit_record(std::shared_ptr<StreamRecord<T>> stream_record) = 0;
     virtual void close() {}
+    virtual void set_num_records_in(std::shared_ptr<Counter>) {}
 };

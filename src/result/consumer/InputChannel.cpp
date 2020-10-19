@@ -12,10 +12,13 @@ m_partition_idx(partition_idx){
 
 
 InputChannel::InputChannel(std::shared_ptr<InputGate> input_gate, int channel_idx, std::string partition_id,
-                std::shared_ptr<ResultPartitionManager> partition_manager):
+                std::shared_ptr<ResultPartitionManager> partition_manager,
+                CounterPtr bytes_in, CounterPtr buffers_in):
 m_input_gate(input_gate),
 m_partition_manager(partition_manager),
-m_partition_id(partition_id){
+m_partition_id(partition_id),
+m_bytes_in(bytes_in),
+m_buffers_in(buffers_in){
     m_channel_info = std::make_shared<InputChannelInfo>(input_gate->get_gate_idx(), channel_idx);
 }
 
@@ -45,5 +48,12 @@ std::shared_ptr<BufferAndBacklog> InputChannel::get_next_buffer() {
         throw std::runtime_error("subpartition view is NULL");
     }
 
-    return m_subpartition_view->get_next_buffer();
+    std::shared_ptr<BufferAndBacklog> next = m_subpartition_view->get_next_buffer();
+
+    if (m_bytes_in != nullptr && m_buffers_in != nullptr){
+        m_buffers_in->inc();
+        m_bytes_in->inc(next->get_buffer()->get_max_capacity());
+    }
+
+    return next;
 }

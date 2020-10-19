@@ -7,7 +7,8 @@ Task::Task(std::shared_ptr<JobInformation> job_information, std::shared_ptr<Task
         ResultPartitionDeploymentDescriptorList & result_partition_descriptors,
         InputGateDeploymentDescriptorList & input_gate_descriptors,
         std::shared_ptr<ShuffleEnvironment> shuffle_environment,
-        std::shared_ptr<BufferPool> buffer_pool){
+        std::shared_ptr<BufferPool> buffer_pool,
+        TaskMetricGroupPtr metrics){
     /* Basic information */
     this->m_job_id                  = job_information->get_job_id();
     this->m_vertex_id               = task_information->get_job_vertex_id();
@@ -23,15 +24,22 @@ Task::Task(std::shared_ptr<JobInformation> job_information, std::shared_ptr<Task
     this->m_buffer_pool             = buffer_pool;
     this->m_executing_thread        = nullptr;
 
+    this->m_metrics                 = metrics;
+
+    // bind TaskMetricGroup to Task's input and output
+    ShuffleIOOwnerContextPtr task_shuffle_context = shuffle_environment->create_shuffle_io_owner_context(m_task_name_with_subtask, m_execution_id, metrics->get_IO_metric_group());
+
     /* Initializer ResultPartition and InputGates */
     this->m_number_of_result_partitions     = (int) result_partition_descriptors.size();
-    this->m_result_partitions               = shuffle_environment->create_result_partitions(m_task_name_with_subtask, result_partition_descriptors, m_buffer_pool);
+    this->m_result_partitions               = shuffle_environment->create_result_partitions(m_task_name_with_subtask, result_partition_descriptors, m_buffer_pool, task_shuffle_context);
 
     this->m_number_of_input_gates           = (int) input_gate_descriptors.size();
-    this->m_input_gates                     = shuffle_environment->create_input_gates(m_task_name_with_subtask, input_gate_descriptors);
+    this->m_input_gates                     = shuffle_environment->create_input_gates(m_task_name_with_subtask, input_gate_descriptors, task_shuffle_context);
+    for (int i = 0; i < m_number_of_input_gates; i++) {
+        m_input_gates[i]->set_bytes_in_counter(metrics->get_IO_metric_group()->get_bytes_in_counter());
+    }
 
-    spdlog::set_pattern(Constant::SPDLOG_PATTERN);
-    spdlog::set_level(Constant::SPDLOG_LEVEL);
+    // TODO: setup task's metrics
 }
 
 /**
@@ -47,7 +55,7 @@ void Task::do_run() {
     //   initialize Environment
     // -----------------------------------------
     std::shared_ptr<Environment> env = std::make_shared<RuntimeEnvironment>(m_job_id, m_vertex_id, m_execution_id, m_result_partitions, m_number_of_result_partitions,
-                                                                                m_input_gates, m_number_of_input_gates, m_task_configuration, m_task_info);
+                                                                                m_input_gates, m_number_of_input_gates, m_task_configuration, m_task_info, m_metrics);
 
     // -----------------------------------------
     //   load Invokable (StreamTask)

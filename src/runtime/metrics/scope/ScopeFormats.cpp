@@ -14,7 +14,8 @@ ScopeFormats* ScopeFormats::get_instance() {
     std::string tm_format = "<host>.taskmanager.<tm_id>";
     std::string task_format = "<host>.taskmanager.<tm_id>.<job_name>.<task_name>.<subtask_index>";
     std::string task_manager_job_format = "<host>.taskmanager.<tm_id>.<job_name>";
-    std::string operator_format = "<host>.taskmanager.<tm_id>.<job_name>.<operator_name>.<subtask_index>";
+    // TODO: add unique operator_name and operator-id, and omit <task-name> and <subtask_index> here
+    std::string operator_format = "<host>.taskmanager.<tm_id>.<job_name>.<task_name>.<subtask_index>.<operator_name>.<subtask_index>";
 
     if (!m_instance_ptr) {
         static ScopeFormats the_instance(tm_format, task_manager_job_format, task_format, operator_format);

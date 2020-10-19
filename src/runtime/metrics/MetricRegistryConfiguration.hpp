@@ -3,10 +3,14 @@
  */
 #pragma once
 #include <memory>
+#include "Configuration.hpp"
+
+class Configuration;
 
 class MetricRegistryConfiguration
 {
 private:
+    typedef std::shared_ptr<Configuration> ConfigurationPtr;
     char                            m_delimiter;
 
 public:
@@ -18,10 +22,6 @@ public:
 
     /* Static factory method */
     // TODO: config from the Configuration
-    static std::shared_ptr<MetricRegistryConfiguration> from_configuration() {
-        char delim = '.';
-
-        return std::make_shared<MetricRegistryConfiguration>(delim);
-    }
+    static std::shared_ptr<MetricRegistryConfiguration> from_configuration(ConfigurationPtr configuration);
 };
 

@@ -3,7 +3,7 @@
 OperatorScopeFormat::OperatorScopeFormat(std::string format, std::shared_ptr<TaskScopeFormat> parent_format):
 ScopeFormat(format, parent_format, std::vector<std::string>{
     SCOPE_HOST,
-    SCOPE_TASK_SUBTASK_INDEX,
+    SCOPE_TASKMANAGER_ID,
     SCOPE_JOB_ID,
     SCOPE_JOB_NAME,
     SCOPE_TASK_VERTEX_ID,
@@ -14,7 +14,7 @@ ScopeFormat(format, parent_format, std::vector<std::string>{
     SCOPE_OPERATOR_NAME
 }) {}
 
-std::vector<std::string> OperatorScopeFormat::format_scope(std::shared_ptr<TaskMetricGroup> parent, int operator_id, std::string operator_name) {
+std::vector<std::string> OperatorScopeFormat::format_scope(std::shared_ptr<TaskMetricGroup> parent, const std::string& operator_id, std::string operator_name) {
     std::vector<std::string> templates = copy_template();
     std::vector<std::string> values{
         parent->get_parent()->get_parent()->get_hostname(),
@@ -25,7 +25,7 @@ std::vector<std::string> OperatorScopeFormat::format_scope(std::shared_ptr<TaskM
         std::to_string(parent->get_execution_id()),
         parent->get_task_name(),
         std::to_string(parent->get_subtask_index()),
-        std::to_string(operator_id),
+        operator_id,
         operator_name
     };
     bind_variables(templates, values);

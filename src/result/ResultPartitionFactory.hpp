@@ -9,7 +9,7 @@
 #include "ResultPartitionManager.hpp"
 #include "ResultPartition.hpp"
 #include "ResultSubpartition.hpp"
-#include "../deployment/ResultPartitionDeploymentDescriptor.hpp"
+#include "ResultPartitionDeploymentDescriptor.hpp"
 
 class ResultPartitionFactory
 {

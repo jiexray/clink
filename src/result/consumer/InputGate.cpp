@@ -87,7 +87,8 @@ std::shared_ptr<BufferOrEvent> InputGate::poll_next() {
             }
 
             if (result != nullptr) {
-                return std::make_shared<BufferOrEvent>(result->get_buffer(), input_channel->get_channel_idx(), !m_input_channels_with_data.empty());
+                return update_metrics(
+                    std::make_shared<BufferOrEvent>(result->get_buffer(), input_channel->get_channel_idx(), !m_input_channels_with_data.empty()));
             }
         }
     }

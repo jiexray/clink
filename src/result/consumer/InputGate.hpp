@@ -3,11 +3,12 @@
  */
 #pragma once
 
-#include "../SubpartitionAvailableListener.hpp"
+#include "SubpartitionAvailableListener.hpp"
 #include "InputChannel.hpp"
-#include "../../buffer/BufferPool.hpp"
+#include "BufferPool.hpp"
 #include "BufferOrEvent.hpp"
 #include "LoggerFactory.hpp"
+#include "Counter.hpp"
 #include <map>
 #include <string>
 #include <deque>
@@ -19,6 +20,9 @@ class InputChannel;
 class InputGate 
 {
 private:
+    typedef std::shared_ptr<Counter>                    CounterPtr;
+    CounterPtr                                          m_bytes_in;
+
     std::string                                         m_owning_task_name;
     int                                                 m_gate_idx;
 
@@ -44,6 +48,16 @@ private:
     std::shared_ptr<BufferPool>                         m_buffer_pool;
     static std::shared_ptr<spdlog::logger>              m_logger;
 
+    /**
+      Update pass-by bytes
+     */
+    std::shared_ptr<BufferOrEvent>                      update_metrics(std::shared_ptr<BufferOrEvent> buffer_or_event) {
+        if (m_bytes_in != nullptr) {
+            m_bytes_in->inc(buffer_or_event->get_buffer()->get_max_capacity());
+        }
+        return buffer_or_event;
+    }
+
 public:
     InputGate(int gate_idx):m_gate_idx(gate_idx){}
     InputGate(std::string owning_task_name, int gate_idx, int consumed_subpartition_idx, int number_of_input_channels):
@@ -64,6 +78,7 @@ public:
     int                                                 get_gate_idx() {return m_gate_idx;}
     std::map<int, std::shared_ptr<InputChannel>>&       get_input_channels() {return m_input_channels;}
     int                                                 get_number_of_input_channels() {return m_number_of_input_channels;}
+    void                                                set_bytes_in_counter(CounterPtr bytes_in) {m_bytes_in = bytes_in;}
 
     void                                                set_input_channels(std::shared_ptr<InputChannel>* input_channels, int num_input_channels);           
 };
