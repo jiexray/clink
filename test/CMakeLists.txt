@@ -134,4 +134,8 @@ if(CXXTEST_FOUND)
   # runtime wordcount-with-metrics
   CXXTEST_ADD_TEST(unitest_runtime_wordcount_with_metrics runtime_wordcount_with_metrics.cpp ${CMAKE_CURRENT_SOURCE_DIR}/runtime/TestWordCountWithMetrics.hpp)
   target_link_libraries(unitest_runtime_wordcount_with_metrics runtime)
+
+  # core configuration
+  CXXTEST_ADD_TEST(unitest_core_configuration core_configuration.cpp ${CMAKE_CURRENT_SOURCE_DIR}/core/TestConfiguration.hpp)
+  target_link_libraries(unitest_core_configuration core)
 endif()

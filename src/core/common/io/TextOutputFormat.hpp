@@ -23,7 +23,7 @@ public:
     void write_record(IT& record) {
         // std::string str_record = record->to_string();
         std::string str_record = IOUtils::to_string<IT>(record);
-        std::cout << "write to file " << str_record << std::endl;
+        // std::cout << "write to file " << str_record << std::endl;
         this->m_stream << str_record;
         this->m_stream << "\n";
         this->m_stream.flush();

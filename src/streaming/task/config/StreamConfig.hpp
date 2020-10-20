@@ -49,10 +49,11 @@ inline std::shared_ptr<StreamOperatorFactory<OUT>> StreamConfig::get_stream_oper
 
 inline std::string StreamConfig::get_operator_id() {
     // TODO: implement get operator from config
-    return "test-operator-id";
+    return std::string(*(m_config->get_value<std::string>(StreamConfig::OPERATOR_ID)));
+    // return "test-operator-id";
 }
 
 inline std::string StreamConfig::get_operator_name() {
     // TODO: implement get operator from config
-    return "test-operator";
+    return std::string(*(m_config->get_value<std::string>(StreamConfig::OPERATOR_NAME)));
 }

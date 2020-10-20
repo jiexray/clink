@@ -47,10 +47,10 @@ public:
     
 
     template <class T>
-    void                                        set_value(std::string key, std::shared_ptr<T> value);
+    void                                        set_value(const std::string& key, std::shared_ptr<T> value);
 
     template <class T>
-    std::shared_ptr<T>                          get_value(std::string key);
+    std::shared_ptr<T>                          get_value(const std::string& key);
 
     template <class T>
     void                                        set_edge(std::string key, std::shared_ptr<StreamEdge<T>> edge);
@@ -83,18 +83,35 @@ public:
 //------------------------------------------------------
 
 template<>
-inline void Configuration::set_value<std::string>(std::string key, std::shared_ptr<std::string> value) {
-    // TODO
-    throw std::runtime_error("set string value is not implemented yet");
+inline void Configuration::set_value<std::string>(const std::string& key, std::shared_ptr<std::string> value) {
+    if (value == nullptr)
+        return;
+    
+    if (this->m_conf_data.find(key) != this->m_conf_data.end()) {
+        throw std::runtime_error("key " + key + " has already inserted into the conf_data");
+    }
+    char* value_in_char = new char[value->size() + 1];
+    memcpy(value_in_char, value.get()->c_str(), value->size());
+    // mark end of a c-string
+    value_in_char[value->size()] = 0;
+    m_conf_data.insert(std::make_pair(key, value_in_char));
 }
 
 template<>
-inline std::shared_ptr<std::string> Configuration::get_value<std::string>(std::string key) {
+inline std::shared_ptr<std::string> Configuration::get_value<std::string>(const std::string& key) {
     // TODO
-    throw std::runtime_error("get string value is not implement yes");
-    // if (m_conf_data.find(key) != m_conf_data.end()) {
-    //     return std::make_shared<std::string>()
-    // }
+    if (m_conf_data.find(key) == m_conf_data.end()) {
+        return nullptr;
+    }
+
+    char *value_in_char = m_conf_data[key];
+    std::shared_ptr<std::string> value = std::make_shared<std::string>(value_in_char);
+
+    // remove key
+    delete[] value_in_char;
+    m_conf_data.erase(key);
+
+    return value;
 }
 
 //------------------------------------------------------
@@ -103,7 +120,7 @@ inline std::shared_ptr<std::string> Configuration::get_value<std::string>(std::s
 
 
 template<>
-inline void Configuration::set_value<int>(std::string key, std::shared_ptr<int> value) {
+inline void Configuration::set_value<int>(const std::string& key, std::shared_ptr<int> value) {
     if (value == nullptr) 
         return;
 
@@ -116,7 +133,7 @@ inline void Configuration::set_value<int>(std::string key, std::shared_ptr<int> 
 }
 
 template<>
-inline std::shared_ptr<int> Configuration::get_value<int>(std::string key) {
+inline std::shared_ptr<int> Configuration::get_value<int>(const std::string& key) {
     if (m_conf_data.find(key) == m_conf_data.end()) {
         return nullptr;
     }
@@ -125,7 +142,7 @@ inline std::shared_ptr<int> Configuration::get_value<int>(std::string key) {
     std::shared_ptr<int>    value               = std::make_shared<int>(*((int*)value_in_char));
 
     // remove key
-    free(value_in_char);
+    delete[] value_in_char;
     m_conf_data.erase(key);
 
     return value; 
