@@ -19,7 +19,10 @@ public:
 
 
     /* implement interface from Output */
-    void                                    collect(std::shared_ptr<StreamRecord<OUT>> record) {this->m_result_writer->emit(record);}
+    void                                    collect(std::shared_ptr<StreamRecord<OUT>> record) {
+        // std::cout << "ResultWriterOutput::collect(), output record: " << record->to_string() << std::endl;
+        this->m_result_writer->emit(record);
+    }
     void                                    flush() {this->m_result_writer->flush_all();}
 };
 

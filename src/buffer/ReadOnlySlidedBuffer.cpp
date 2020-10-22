@@ -41,7 +41,7 @@ std::shared_ptr<BufferBase> ReadOnlySlidedBuffer::read_only_slice(int offset, in
     parent_buffer->read_only_slice(m_buffer_offset + offset, length);
 }
 
-int ReadOnlySlidedBuffer::get(char* buf, int index) {
+int ReadOnlySlidedBuffer::get(unsigned char* buf, int index) {
     if (index >= m_size) {
         std::cerr << "index [" << index << "] is out of the range [" << m_size << "]" << std::endl;
         return -1; 

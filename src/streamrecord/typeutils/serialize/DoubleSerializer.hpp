@@ -8,8 +8,8 @@
 class DoubleSerializer : public TypeSerializer<double>
 {
 private:
-    int         m_data_remaining;
-    char*       m_data_in_char;
+    int             m_data_remaining;
+    unsigned char*  m_data_in_char;
 public:
     StreamRecordAppendResult        serialize(std::shared_ptr<double> record, std::shared_ptr<BufferBuilder> buffer_builder, bool is_new_record);
 };

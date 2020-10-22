@@ -2,3 +2,6 @@
 /build
 /include
 /lib
+resource/Data-1G-simple.txt
+resource/Data-1G.txt
+resource/wordcount_result.txt

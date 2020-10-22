@@ -10,10 +10,10 @@
 #include "StreamRecordDeserializer.hpp"
 
 
-void isBufferEqualToString(std::shared_ptr<BufferBase> buf, std::string str) {
-    char char_in_buffer;
+void isBufferEqualToString(std::shared_ptr<BufferBase> buf, unsigned char* str, int length) {
+    unsigned char char_in_buffer;
     int ret;
-    for (int i = 0; i < str.length(); i++) {
+    for (int i = 0; i < length; i++) {
         ret = buf->get(&char_in_buffer, i);
         TS_ASSERT_EQUALS(ret == -1, false);
         TS_ASSERT_EQUALS(char_in_buffer, str[i]);
@@ -79,32 +79,38 @@ public:
         std::shared_ptr<BufferBase> buf_1 = buffer_consumer_1->build();
         int buf_size_1 = buf_1->get_max_capacity();
 
-        char* int_buf_total_len = new char[2];
+        unsigned char* target_buf = new unsigned char[buf_size_1];
+        unsigned char* int_buf_total_len = new unsigned char[2];
         SerializeUtils::serialize_short(int_buf_total_len, 11 + 4 + 2 + 2);
-        std::string buf_total_len_part = std::string(int_buf_total_len, 2);
+        // std::string buf_total_len_part = std::string((char*)int_buf_total_len, 2);
+        memcpy(target_buf, int_buf_total_len, 2);
 
-        char* int_buf_str = new char[2];
+        unsigned char* int_buf_str = new unsigned char[2];
         SerializeUtils::serialize_short(int_buf_str, 11);
-        std::string buf_string_part= std::string(int_buf_str, 2) + "Hello world";
+        // std::string buf_string_part= std::string((char*)int_buf_str, 2) + "Hello world";
+        memcpy(target_buf + 2, int_buf_str, 2);
+        memcpy(target_buf + 2 + 2, (unsigned char*)"Hello world", 11);
 
-        char* int_buf_int = new char[2];
+        unsigned char* int_buf_int = new unsigned char[2];
         SerializeUtils::serialize_short(int_buf_int, 4);   
         int val = 100;
-        char* int_value_buf = (char*)(&val);
-        char result_buf[7];
+        unsigned char* int_value_buf = (unsigned char*)(&val);
+        unsigned char result_buf[7];
         memset(result_buf, 0, 7);
         memcpy(result_buf, int_buf_int, 2);
         memcpy(result_buf + 2, int_value_buf, 4);
-        std::string buf_int_part = std::string(result_buf, 6);
+        // std::string buf_int_part = std::string((char*)result_buf, 6);
+        memcpy(target_buf + 2 + 2 + 11, result_buf, 6);
 
-        std::string buf_final = buf_total_len_part + buf_string_part + buf_int_part;
+        // std::string buf_final = buf_total_len_part + buf_string_part + buf_int_part;
 
-        TS_ASSERT_EQUALS(buf_size_1, buf_final.size());
+        TS_ASSERT_EQUALS(buf_size_1, 2 + 2 + 11 + 6);
+        // isBufferEqualToString(buf_1, target_buf, 2 + 2 + 12 + 6);
 
         for (int i = 0; i < buf_size_1; i++) {
-            char c;
+            unsigned char c;
             buf_1->get(&c, i);
-            TS_ASSERT_EQUALS(c, buf_final[i]);
+            TS_ASSERT_EQUALS(c, target_buf[i]);
         }
     } 
 
@@ -124,68 +130,85 @@ public:
         TS_ASSERT_EQUALS(result, StreamRecordAppendResult::FULL_RECORD);
         std::shared_ptr<BufferBase> buf_2 = buffer_builder_2->create_buffer_consumer()->build();
 
-        char* int_buf_total_len = new char[2];
+        unsigned char* target_buf = new unsigned char[16];
+        unsigned char* int_buf_total_len = new unsigned char[2];
         SerializeUtils::serialize_short(int_buf_total_len, 11 + 4 + 2 + 2);
-        std::string buf_total_len_part = std::string(int_buf_total_len, 2);
+        // std::string buf_total_len_part = std::string((char*)int_buf_total_len, 2);
+        memcpy(target_buf, int_buf_total_len, 2);
 
-        char* int_buf_str = new char[2];
+        unsigned char* int_buf_str = new unsigned char[2];
         SerializeUtils::serialize_short(int_buf_str, 11);
-        std::string buf_string_part= std::string(int_buf_str, 2) + "Hello world";
+        // std::string buf_string_part= std::string((char*)int_buf_str, 2) + "Hello world";
+        memcpy(target_buf + 2, int_buf_str, 2);
+        memcpy(target_buf + 2 + 2, (unsigned char*)"Hello world", 11);
 
-        char* int_buf_int = new char[2];
+        unsigned char* int_buf_int = new unsigned char[2];
         SerializeUtils::serialize_short(int_buf_int, 4);   
         int val = 100;
-        char* int_value_buf = (char*)(&val);
-        char result_buf[7];
+        unsigned char* int_value_buf = (unsigned char*)(&val);
+        unsigned char result_buf[7];
         memset(result_buf, 0, 7);
         memcpy(result_buf, int_buf_int, 2);
         memcpy(result_buf + 2, int_value_buf, 4);
-        std::string buf_int_part = std::string(result_buf, 6);
+        
+        memcpy(target_buf + 2 + 2 + 11, result_buf, 6);
+        // std::string buf_int_part = std::string((char*) result_buf, 6);
 
-        std::string buf_final = buf_string_part + buf_int_part;
+        // std::string buf_final = buf_string_part + buf_int_part;
 
         int idx = 0;
 
-        for (int i = 0; i < buf_total_len_part.size(); i++) {
-            char c;
-            if (idx < buf_1->get_max_capacity()) {
-                buf_1->get(&c, idx++);
-                TS_ASSERT_EQUALS(buf_total_len_part[i], c);
+        for (int i = 0; i < (2 + 2 + 11 + 6); i++) {
+            unsigned char c;
+            if (i < buf_1->get_max_capacity()) {
+                buf_1->get(&c, i);
+                TS_ASSERT_EQUALS(target_buf[i], c);
             } else {
-                buf_2->get(&c, idx - buf_1->get_max_capacity());
-                idx++;
-                TS_ASSERT_EQUALS(buf_total_len_part[i], c);
+                buf_2->get(&c, i - buf_1->get_max_capacity());
+                TS_ASSERT_EQUALS(target_buf[i], c);
             }
         }
 
-        for (int i = 0; i < buf_string_part.size(); i++) {
-            char c;
-            if (idx < buf_1->get_max_capacity()) {
-                buf_1->get(&c, idx++);
-                TS_ASSERT_EQUALS(buf_string_part[i], c);
-            } else {
-                buf_2->get(&c, idx - buf_1->get_max_capacity());
-                idx++;
-                TS_ASSERT_EQUALS(buf_string_part[i], c);
-            }
-        }
+        // for (int i = 0; i < 2; i++) {
+        //     unsigned char c;
+        //     if (idx < buf_1->get_max_capacity()) {
+        //         buf_1->get(&c, idx++);
+        //         TS_ASSERT_EQUALS(buf_total_len_part[i], c);
+        //     } else {
+        //         buf_2->get(&c, idx - buf_1->get_max_capacity());
+        //         idx++;
+        //         TS_ASSERT_EQUALS(buf_total_len_part[i], c);
+        //     }
+        // }
 
-        // skip one char if there is only one byte left in the buf_1
-        if (idx == buf_1->get_max_capacity() - 1) {
-            idx++;
-        }
+        // for (int i = 0; i < buf_string_part.size(); i++) {
+        //     unsigned char c;
+        //     if (idx < buf_1->get_max_capacity()) {
+        //         buf_1->get(&c, idx++);
+        //         TS_ASSERT_EQUALS(buf_string_part[i], c);
+        //     } else {
+        //         buf_2->get(&c, idx - buf_1->get_max_capacity());
+        //         idx++;
+        //         TS_ASSERT_EQUALS(buf_string_part[i], c);
+        //     }
+        // }
 
-        for (int i = 0; i < buf_int_part.size(); i++) {
-            char c;
-            if (idx < buf_1->get_max_capacity()) {
-                buf_1->get(&c, idx++);
-                TS_ASSERT_EQUALS(buf_int_part[i], c);
-            } else {
-                buf_2->get(&c, idx - buf_1->get_max_capacity());
-                idx++;
-                TS_ASSERT_EQUALS(buf_int_part[i], c);
-            }
-        }
+        // // skip one char if there is only one byte left in the buf_1
+        // if (idx == buf_1->get_max_capacity() - 1) {
+        //     idx++;
+        // }
+
+        // for (int i = 0; i < buf_int_part.size(); i++) {
+        //     unsigned char c;
+        //     if (idx < buf_1->get_max_capacity()) {
+        //         buf_1->get(&c, idx++);
+        //         TS_ASSERT_EQUALS(buf_int_part[i], c);
+        //     } else {
+        //         buf_2->get(&c, idx - buf_1->get_max_capacity());
+        //         idx++;
+        //         TS_ASSERT_EQUALS(buf_int_part[i], c);
+        //     }
+        // }
     } 
 
     void testTupleDeserialize( void ) {

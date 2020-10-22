@@ -18,7 +18,7 @@ m_buffer(buffer) {
 
 BufferBuilder::~BufferBuilder() {}
 
-int BufferBuilder::append(const char* const source, int offset, int length) {
+int BufferBuilder::append(const unsigned char* const source, int offset, int length) {
     // sychronize function in write part
     int buffer_capacity = m_buffer->get_max_capacity();
     // NOTE: this get and set of writer_marker is ok, for the writer marker is only modified in this file.
@@ -36,7 +36,7 @@ int BufferBuilder::append(const char* const source, int offset, int length) {
     return to_copy;
 }
 
-int BufferBuilder::append(const char* const source, int offset, int length, bool must_complete){
+int BufferBuilder::append(const unsigned char* const source, int offset, int length, bool must_complete){
     // sychronize function in write part
     if (!must_complete) {
         return append(source, offset, length);
@@ -47,6 +47,7 @@ int BufferBuilder::append(const char* const source, int offset, int length, bool
             // force to fill the unfinished buffer with fake chars
             for (int i = 0; i < available; i++) {
                 // same to append(const char* const, int, int)
+                throw std::runtime_error("No zero byte padding, cause bug");
                 m_buffer->put(m_cached_write_postition++, (char)0);
 
                 (*m_write_position_marker_ptr)++;

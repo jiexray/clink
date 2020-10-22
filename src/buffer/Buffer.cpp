@@ -7,7 +7,7 @@ std::shared_ptr<spdlog::logger>  Buffer::m_logger = LoggerFactory::get_logger("B
  */
 Buffer::Buffer(int capacity) {
     //TODO: OOM problem check
-    m_data      = new char[capacity];
+    m_data      = new unsigned char[capacity];
     m_size      = capacity;
     m_buffer_id = get_next_id();
     m_buffer_pool_manager = nullptr;
@@ -21,7 +21,7 @@ Buffer::Buffer(int capacity, std::shared_ptr<BufferPoolManager> buffer_pool_mana
     this->m_buffer_pool_manager = buffer_pool_mananger;
 }
 
-int Buffer::get(char* buf, int index) {
+int Buffer::get(unsigned char* buf, int index) {
     if (index >= m_size) {
         // std::cerr << "index [" << index << "] is out of the range [" << m_size << "]" << std::endl;
         return -1;
@@ -30,7 +30,7 @@ int Buffer::get(char* buf, int index) {
     return 1;
 }
 
-void Buffer::put(int index, char value) {
+void Buffer::put(int index, const unsigned char value) {
     if (index >= m_size) {
         std::string error_info = "index [" + std::to_string(index) + "] is out of the range [" + std::to_string(m_size) + "]";
         throw std::invalid_argument(error_info);

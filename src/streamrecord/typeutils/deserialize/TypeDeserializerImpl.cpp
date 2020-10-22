@@ -47,7 +47,7 @@ DeserializationResult TypeDeserializerImpl::read_into(std::shared_ptr<IOReadable
 
 
 int TypeDeserializerImpl::read_int() {
-    char* buf = new char[4];
+    unsigned char* buf = new unsigned char[4];
     // TODO: use more efficient buffer copy
     for (int i = 0; i < 4; i++) {
         int ret = m_last_buffers.front()->get(buf + i, m_position++);
@@ -70,7 +70,7 @@ int TypeDeserializerImpl::read_short() {
     if (m_last_buffers.empty()) {
         throw std::runtime_error("read error, empty buffer lists");
     }
-    char* buf = new char[2];
+    unsigned char* buf = new unsigned char[2];
 
     for (int i = 0; i < 2; i++) {
         // SPDLOG_LOGGER_INFO(m_logger, dump_state());
@@ -91,7 +91,7 @@ int TypeDeserializerImpl::read_short() {
 }
 
 int TypeDeserializerImpl::read_byte() {
-    char* buf = new char[1];
+    unsigned char* buf = new unsigned char[1];
     int ret = m_last_buffers.front()->get(buf, m_position++);
     if (ret == -1) {
         throw new std::runtime_error("error, no buffer to read for read_byte()");
@@ -112,7 +112,7 @@ int TypeDeserializerImpl::read_unsigned_byte() {
 }
 
 double TypeDeserializerImpl::read_double() {
-    char* buf = new char[8];
+    unsigned char* buf = new unsigned char[8];
 
     for (int i = 0; i < 8; i++) {
         int ret = m_last_buffers.front()->get(buf + i, m_position++);

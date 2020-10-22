@@ -86,10 +86,12 @@ template <class T>
 inline void ResultWriter<T>::copy_to_buffer_builder(int target_channel, std::shared_ptr<StreamRecord<T>> record) {
     int num_copied_buffers = 0;
     std::shared_ptr<BufferBuilder> buffer_builder = get_buffer_builder(target_channel);
-    // SPDLOG_LOGGER_DEBUG(m_logger, "ResultWriter<T>::copy_to_buffer_builder() after get builder with Buffer {}, current write position {}", 
-    //                                     buffer_builder->get_buffer()->get_buffer_id(), buffer_builder->get_write_position());
+    SPDLOG_LOGGER_DEBUG(m_logger, "ResultWriter<T>::copy_to_buffer_builder() after get builder with Buffer {}, current write position {}, buffer_size {}", 
+                                        buffer_builder->get_buffer()->get_buffer_id(), buffer_builder->get_write_position(), buffer_builder->get_buffer()->get_max_capacity());
     // StreamRecordAppendResult result = record->serialize_record_to_buffer_builder(buffer_builder);
     StreamRecordAppendResult result = this->m_record_serializer->serialize(record, buffer_builder, true);
+    SPDLOG_LOGGER_DEBUG(m_logger, "ResultWriter<T>::copy_to_buffer_builder() after first serialize, result {}, current write position {}", 
+                                        result, buffer_builder->get_write_position());
 
     if (result != NONE_RECORD) {
         num_copied_buffers++;
@@ -124,6 +126,7 @@ inline void ResultWriter<T>::copy_to_buffer_builder(int target_channel, std::sha
 
     // TODO: setup a flusher, current always flush
     flush(target_channel);
+    SPDLOG_LOGGER_DEBUG(m_logger, "Finish flush channel {}", target_channel); 
 }
 
 /**

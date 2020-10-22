@@ -26,7 +26,7 @@ public:
         } else {
             m_counter[*value.f0] = *value.f1;
         }
-        std::cout << "word {" << *value.f0 << ", " << m_counter[*value.f0] << "}" << std::endl;
+        // std::cout << "word {" << *value.f0 << ", " << m_counter[*value.f0] << "}" << std::endl;
         return std::make_shared<Tuple2<std::string, int>>(std::make_shared<std::string>(*value.f0), std::make_shared<int>(m_counter[*value.f0]));
         // std::cout << "word {" << *value.f0 << ", " << m_counter[*value.f0] << "}" << std::endl;
         // return std::make_shared<std::string>("f0: " + (*value.f0) + ", f1: " + std::to_string(*value.f1));
@@ -39,10 +39,16 @@ public:
 
 // map one line to multiple single word with (word, 1)
 class TokenizeFunction: public FlatMapFunction<std::string, Tuple2<std::string, int>>{
+private:
+    int m_lines = 0;
 public:
     void flat_map(std::shared_ptr<std::string> value, std::shared_ptr<Collector<Tuple2<std::string, int>>> collector) {
         std::istringstream iss(*value);
         std::string tmp_string;
+        m_lines++;
+        if (m_lines % 10000 == 0) {
+            std::cout << "have processed " << m_lines << " lines" << std::endl;
+        }
         while(iss >> tmp_string) {
             collector->collect(std::make_shared<Tuple2<std::string, int>>(
                                                                 std::make_shared<std::string>(tmp_string),
@@ -56,7 +62,8 @@ public:
 
 class MySourceFunction: public SourceFunction<std::string> {
     void run(std::shared_ptr<SourceContext<std::string>> ctx) {
-        ctx->collect(std::make_shared<std::string>(std::string("resource/wordcount.txt")));
+        // ctx->collect(std::make_shared<std::string>(std::string("resource/wordcount.txt")));
+        ctx->collect(std::make_shared<std::string>(std::string("resource/Data-1G.txt")));
     }
 
     char* serialize() override {return (char*)this;}
@@ -317,7 +324,7 @@ public:
         task_exeuctor->start_task(105);
         task_exeuctor->start_task(106);
 
-        std::this_thread::sleep_for(std::chrono::seconds(3));
+        std::this_thread::sleep_for(std::chrono::seconds(120));
 
         task_exeuctor->cancel_task(102);
         task_exeuctor->cancel_task(103);

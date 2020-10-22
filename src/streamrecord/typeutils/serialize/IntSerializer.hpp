@@ -8,8 +8,8 @@
 class IntSerializer : public TypeSerializer<int>
 {
 private:
-    int         m_data_remaining;
-    char*       m_data_in_char;
+    int             m_data_remaining;
+    unsigned char*  m_data_in_char;
 public:
     StreamRecordAppendResult        serialize(std::shared_ptr<int> record, std::shared_ptr<BufferBuilder> buffer_builder, bool is_new_record);
 };

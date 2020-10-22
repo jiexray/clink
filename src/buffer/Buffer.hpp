@@ -16,7 +16,7 @@ class BufferPoolManager;
 class Buffer : public BufferBase
 {
 private:
-    char*                                   m_data;
+    unsigned char*                          m_data;
     int                                     m_size;
     int                                     m_buffer_id;
     std::shared_ptr<BufferPoolManager>      m_buffer_pool_manager;
@@ -43,8 +43,8 @@ public:
     std::shared_ptr<BufferPoolManager>      get_buffer_pool_manager() {return m_buffer_pool_manager;}
 
     /* Random Access get() and put() methods */
-    int                                     get(char* buf, int index) override;
-    void                                    put(int index, char value);
+    int                                     get(unsigned char* buf, int index) override;
+    void                                    put(int index, const unsigned char value);
 
     /* Slice the buffer, override from BufferBase */
     int                                     get_buffer_offset() override {return 0;}

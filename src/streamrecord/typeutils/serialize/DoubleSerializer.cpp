@@ -6,8 +6,8 @@ StreamRecordAppendResult DoubleSerializer::serialize(std::shared_ptr<double> rec
 
     if (is_new_record) {
         m_data_remaining = value_size + 2;
-        m_data_in_char = (char*) record.get();
-        char* length_buf = new char[2];
+        m_data_in_char = (unsigned char*) record.get();
+        unsigned char* length_buf = new unsigned char[2];
         SerializeUtils::serialize_short(length_buf, value_size);
         int data_length_write = buffer_builder->append(length_buf, 0, 2, false);
         delete length_buf;
@@ -23,7 +23,7 @@ StreamRecordAppendResult DoubleSerializer::serialize(std::shared_ptr<double> rec
         // have unwritten data_length
         int left_data_length = m_data_remaining - value_size;
         if (left_data_length == 2) {
-            char* length_buf = new char[2];
+            unsigned char* length_buf = new unsigned char[2];
             SerializeUtils::serialize_short(length_buf, value_size);
             int data_length_write = buffer_builder->append(length_buf, 0, 2, false);
             delete length_buf;
@@ -31,7 +31,7 @@ StreamRecordAppendResult DoubleSerializer::serialize(std::shared_ptr<double> rec
             m_data_remaining -= data_length_write;
             assert(data_length_write == 2);
         } else if (left_data_length == 1) {
-            char* length_buf = new char[2];
+            unsigned char* length_buf = new unsigned char[2];
             SerializeUtils::serialize_short(length_buf, value_size);
             // start write from offset 1, write length 1
             int data_length_write = buffer_builder->append(length_buf, 1, 1, false);

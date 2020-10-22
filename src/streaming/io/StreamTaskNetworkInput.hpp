@@ -3,14 +3,15 @@
  */
 #pragma once
 
-#include "../../result/consumer/InputGate.hpp"
+#include "InputGate.hpp"
 #include "StreamTaskInput.hpp"
-#include "../../streamrecord/StreamRecord.hpp"
-#include "../../result/consumer/BufferOrEvent.hpp"
-#include "../../streamrecord/StreamRecordDeserializer.hpp"
-#include "../../streamrecord/types/DeserializationDelegate.hpp"
+#include "StreamRecord.hpp"
+#include "BufferOrEvent.hpp"
+#include "StreamRecordDeserializer.hpp"
+#include "DeserializationDelegate.hpp"
 #include "TupleDeserializationDelegate.hpp"
 #include "Tuple.hpp"
+#include "LoggerFactory.hpp"
 #include <memory>
 #include <vector>
 
@@ -32,6 +33,8 @@ private:
 
 
     RECORD_TYPE                                             m_record_type;
+
+    static std::shared_ptr<spdlog::logger>                  m_logger;
 
 public:
     StreamTaskNetworkInput(std::shared_ptr<InputGate> input_gate): StreamTaskNetworkInput(input_gate, 0) {}
@@ -121,3 +124,5 @@ public:
     }
 };
 
+template<class OUT>
+std::shared_ptr<spdlog::logger> StreamTaskNetworkInput<OUT>::m_logger = LoggerFactory::get_logger("StreamTaskNetworkInput");

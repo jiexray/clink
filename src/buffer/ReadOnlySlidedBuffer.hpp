@@ -35,6 +35,6 @@ public:
     int                             get_buffer_id() override;
 
     /* Random access to data */
-    int                             get(char* buf, int index) override;
+    int                             get(unsigned char* buf, int index) override;
     void                            release();
 };

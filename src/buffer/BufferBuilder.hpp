@@ -42,8 +42,8 @@ public:
     int                             finish();
 
     /* Write data to buffer */
-    int                             append(const char* const source, int offset, int length);
-    int                             append(const char* const source, int offset, int length, bool must_complete);
+    int                             append(const unsigned char* const source, int offset, int length);
+    int                             append(const unsigned char* const source, int offset, int length, bool must_complete);
 
     /* create / delelte buffer consumer */
     std::shared_ptr<BufferConsumer> create_buffer_consumer();

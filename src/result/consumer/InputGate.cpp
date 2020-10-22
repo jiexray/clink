@@ -81,7 +81,7 @@ std::shared_ptr<BufferOrEvent> InputGate::poll_next() {
         // put input_channel back to input_channels_with_data, if there is more available data in the input_channel
         { // critical section for getting access to input_channels_with_data
             std::unique_lock<std::mutex> channels_with_data_lock(m_input_channels_with_data_mtx);
-
+            
             if (result != nullptr && result->get_data_available()) {
                 m_input_channels_with_data.push_back(input_channel);
             }

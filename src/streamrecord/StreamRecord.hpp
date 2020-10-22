@@ -6,6 +6,7 @@
 #include <memory>
 #include <typeinfo>
 #include "Tuple.hpp"
+#include "TemplateHelper.hpp"
 
 enum StreamRecordAppendResult {
     FULL_RECORD,
@@ -18,6 +19,27 @@ enum DeserializationResult {
     PARTIAL_RECORD,
     INTERMEDIATE_RECORD_FROM_BUFFER,
     LAST_RECORD_FROM_BUFFER
+};
+
+class StreamRecordPrinter {
+public:
+    template <class T>
+    static std::string to_string(void*, Type2Type<T>) {
+        return "Not yet support type";
+    }
+
+    static std::string to_string(void* val, Type2Type<std::string>) {
+        return std::string(*((std::string*) val));
+    }
+    static std::string to_string(void* val, Type2Type<int>) {
+        return std::to_string(*((int*) val));
+    }
+    static std::string to_string(void* val, Type2Type<double>) {
+        return std::to_string(*((double*) val));
+    }
+    static std::string to_string(void* val, Type2Type<NullType>) {
+        return "NullType";
+    }
 };
 
 
@@ -53,6 +75,10 @@ public:
     }
     long                                    get_timestamp() {return m_timestamp;}
     long                                    set_timestamp(long timestamp) {m_timestamp = timestamp;}
+
+    std::string                             to_string() {
+        return StreamRecordPrinter::to_string(m_value.get(), Type2Type<T>());
+    }
     
     // virtual StreamRecordAppendResult        serialize_record_to_buffer_builder(std::shared_ptr<BufferBuilder> buffer_builder) {};
 };

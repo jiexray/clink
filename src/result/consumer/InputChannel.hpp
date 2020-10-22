@@ -8,6 +8,7 @@
 #include "ResultPartitionManager.hpp"
 #include "ResultSubpartitionView.hpp"
 #include "Counter.hpp"
+#include "LoggerFactory.hpp"
 
 class InputGate;
 
@@ -20,6 +21,8 @@ private:
     std::shared_ptr<InputGate>                  m_input_gate;
     std::shared_ptr<ResultPartitionManager>     m_partition_manager;
     std::shared_ptr<ResultSubpartitionView>     m_subpartition_view;
+
+    static std::shared_ptr<spdlog::logger>      m_logger;
 
 protected:
     typedef std::shared_ptr<Counter>            CounterPtr;

@@ -16,10 +16,10 @@
 #include <memory>
 #include <string>
 
-void isBufferEqualToString(std::shared_ptr<BufferBase> buf, std::string str) {
-    char c;
+void isBufferEqualToString(std::shared_ptr<BufferBase> buf, unsigned char* str, int length) {
+    unsigned char c;
     int ret;
-    for (int i = 0; i < str.length(); i++) {
+    for (int i = 0; i < length; i++) {
         ret = buf->get(&c, i);
         TS_ASSERT_EQUALS(ret == -1, false);
         TS_ASSERT_EQUALS(c, str[i]);
@@ -107,7 +107,7 @@ public:
         std::shared_ptr<BufferBase> buf = buffer_consumer->build();
 
         for(int i = 0; i < 4; i++) {
-            char c;
+            unsigned char c;
             buf->get(&c, i);
             TS_ASSERT_EQUALS(c, '1' + i);
         }
@@ -125,7 +125,7 @@ public:
         
         // "12345" have been written to previous buffer builder, this buffer builder only contain "6"
         for(int i = 0; i < 1; i++) {
-            char c;
+            unsigned char c;
             buf->get(&c, i);
             TS_ASSERT_EQUALS(c, '6');
         }
@@ -140,7 +140,7 @@ public:
 
         // "1234" and "1" is written to previous buffer builder, this buffer contain "2345"
         for(int i = 0; i < 4; i++) {
-            char c;
+            unsigned char c;
             buf->get(&c, i);
             TS_ASSERT_EQUALS(c, '2' + i);
         }
@@ -166,8 +166,9 @@ public:
 
 
     // this test should block the notification response from ResultReader
+    // Note: depercated, no padding byte at end of the buffer
     void testsubpartitionAddBufferConsumer( void ) {
-        // TS_SKIP("skip testsubpartitionAddBufferConsumer");   
+        TS_SKIP("skip testsubpartitionAddBufferConsumer");   
         std::shared_ptr<BufferPool> buffer_pool = std::make_shared<BufferPool>(10, 7);
         std::shared_ptr<ResultPartitionManager> result_partition_manager = std::make_shared<ResultPartitionManager>();
 
@@ -221,7 +222,7 @@ public:
         TS_ASSERT_EQUALS(subpartition_0->get_number_of_finished_buffers(), 1);
         TS_ASSERT_EQUALS(buffer_and_backlog == nullptr, false);
         std::shared_ptr<BufferBase> buf = buffer_and_backlog->get_buffer();
-        isBufferEqualToString(buf, "\0x0\0x41234\0x0");
+        isBufferEqualToString(buf, (unsigned char *)"\0x0\0x41234\0x0", 7);
         TS_ASSERT_EQUALS(buffer_and_backlog->get_data_available(), true);
         TS_ASSERT_EQUALS(buffer_and_backlog->get_buffers_in_backlog(), 1);
 
@@ -232,7 +233,7 @@ public:
         TS_ASSERT_EQUALS(subpartition_0->get_number_of_finished_buffers(), 0);
         TS_ASSERT_EQUALS(buffer_and_backlog == nullptr, false);
         buf = buffer_and_backlog->get_buffer();
-        isBufferEqualToString(buf, "\0x0\0x512345");
+        isBufferEqualToString(buf, (unsigned char*)"\0x0\0x512345", 7);
         TS_ASSERT_EQUALS(buffer_and_backlog->get_data_available(), false);
         TS_ASSERT_EQUALS(buffer_and_backlog->get_buffers_in_backlog(), 0);
 
@@ -251,7 +252,7 @@ public:
         TS_ASSERT_EQUALS(subpartition_0->get_number_of_finished_buffers(), 0);
         TS_ASSERT_EQUALS(buffer_and_backlog == nullptr, false);
         buf = buffer_and_backlog->get_buffer();
-        isBufferEqualToString(buf, "\0x0\0x612345");
+        isBufferEqualToString(buf, (unsigned char*)"\0x0\0x612345", 7);
 
         TS_ASSERT_EQUALS(buffer_and_backlog->get_data_available(), false);
         TS_ASSERT_EQUALS(buffer_and_backlog->get_buffers_in_backlog(), 0);
@@ -264,7 +265,7 @@ public:
         TS_ASSERT_EQUALS(buffer_and_backlog == nullptr, false);
         buf = buffer_and_backlog->get_buffer();
 
-        isBufferEqualToString(buf, "6");
+        isBufferEqualToString(buf, (unsigned char*)"6", 1);
         TS_ASSERT_EQUALS(buffer_and_backlog->get_data_available(), false);
         TS_ASSERT_EQUALS(buffer_and_backlog->get_buffers_in_backlog(), 0);
             // result_writer->emit(record_4, 1);
@@ -383,7 +384,7 @@ public:
     }
 
     void testInputGateAndResultPartitionsDataTransfer( void ) {
-        TS_SKIP("skip testInputGateAndResultPartitionsDataTransfer");
+        // TS_SKIP("skip testInputGateAndResultPartitionsDataTransfer");
         int* partition_idxs = new int[5] {0};
         /* set consumed_subpartition_index to 0 */
         std::shared_ptr<InputGateDeploymentDescriptor> input_gate_deployment_descriptor = std::make_shared<InputGateDeploymentDescriptor>(0, partition_idxs, 1);
@@ -428,7 +429,7 @@ public:
         std::shared_ptr<BufferAndBacklog> buffer_and_backlog = view_0->get_next_buffer();
         TS_ASSERT_EQUALS(buffer_and_backlog == nullptr, false);
         std::shared_ptr<BufferBase> buf = buffer_and_backlog->get_buffer();
-        isBufferEqualToString(buf, "1234");
+        isBufferEqualToString(buf, (unsigned char*)"1234", 4);
         TS_ASSERT_EQUALS(buffer_and_backlog->get_data_available(), false);
         TS_ASSERT_EQUALS(buffer_and_backlog->get_buffers_in_backlog(), 0);
     }

@@ -15,6 +15,6 @@ public:
     virtual int                             get_buffer_id() = 0;
 
     /* Random access to buffer */
-    virtual int                             get(char*, int) = 0;
+    virtual int                             get(unsigned char*, int) = 0;
     virtual void                            release() = 0;
 };

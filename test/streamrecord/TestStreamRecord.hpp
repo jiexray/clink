@@ -14,10 +14,10 @@
 
 #include <memory>
 
-void isBufferEqualToString(std::shared_ptr<BufferBase> buf, std::string str) {
-    char char_in_buffer;
+void isBufferEqualToString(std::shared_ptr<BufferBase> buf, unsigned char* str, int length) {
+    unsigned char char_in_buffer;
     int ret;
-    for (int i = 0; i < str.length(); i++) {
+    for (int i = 0; i < length; i++) {
         ret = buf->get(&char_in_buffer, i);
         TS_ASSERT_EQUALS(ret == -1, false);
         TS_ASSERT_EQUALS(char_in_buffer, str[i]);
@@ -36,13 +36,19 @@ public:
     //     TS_ASSERT_EQUALS(int_record->get_timestamp(), 10);
     // }
 
-    // void testIntSerializeAndDeserialize() {
-    //     TS_SKIP("skip testIntSerializeAndDeserialize");
-    //     int v = 10;
-    //     char* buf = new char[4];
-    //     SerializeUtils::serialize_int(buf, v);
-    //     TS_ASSERT_EQUALS(v, SerializeUtils::deserialize_int(buf));
-    // }
+    void testIntSerializeAndDeserialize() {
+        int v = 10000000;
+        unsigned char* buf = new unsigned char[4];
+        SerializeUtils::serialize_int(buf, v);
+        TS_ASSERT_EQUALS(v, SerializeUtils::deserialize_int(buf));
+
+        int v_short = 65535;
+        unsigned char* buf_short = new unsigned char[2];
+        memset(buf_short, 0, sizeof(buf_short));
+        SerializeUtils::serialize_short(buf_short, v_short);
+        std::cout << "buf_short[0]: " << (int)buf_short[0]  << ", buf_short[1]: " << (int)buf_short[1]  << std::endl;
+        TS_ASSERT_EQUALS(v_short, SerializeUtils::deserialize_short(buf_short));
+    }
 
 
     void testStringStreamRecordSerialize( void ) {
@@ -70,17 +76,23 @@ public:
         
         std::shared_ptr<BufferBase> buf = buffer_builder_1->create_buffer_consumer()->build();
 
-        char* int_buf = new char[2];
+        unsigned char* target_buf = new unsigned char[6];
+        unsigned char* int_buf = new unsigned char[2];
         SerializeUtils::serialize_short(int_buf, 7);
-        std::string buf_1 = std::string(int_buf, 2) + "123";
-        isBufferEqualToString(buf, buf_1);
+        memcpy(target_buf, int_buf, 2);
+        memcpy(target_buf + 2, "123", 3);
+        isBufferEqualToString(buf, target_buf, 5);
 
         buf = buffer_builder_2->create_buffer_consumer()->build();
-        isBufferEqualToString(buf, std::string("4567\0"));
+        memcpy(target_buf, "4567\0", 5);
+        // isBufferEqualToString(buf, std::string("4567\0"));
+        isBufferEqualToString(buf, target_buf, 5);
 
         buf = buffer_builder_3->create_buffer_consumer()->build();
-        std::string buf_2 = int_buf[1]+ "1234";
-        isBufferEqualToString(buf, buf_2);
+        // std::string buf_2 = int_buf[1]+ "1234";
+        memcpy(target_buf, int_buf + 1, 1);
+        memcpy(target_buf + 1, "1234", 4);
+        isBufferEqualToString(buf, target_buf, 5);
     }
 
     void testDoubleStreamRecordSerializeNonSplit( void ) {
@@ -95,17 +107,17 @@ public:
         TS_ASSERT_EQUALS(serialize_result_1, FULL_RECORD_BUFFER_FULL);
 
         std::shared_ptr<BufferBase> buf = buffer_builder_1->create_buffer_consumer()->build();
-        char* int_buf = new char[2];
+        unsigned char* int_buf = new unsigned char[2];
         SerializeUtils::serialize_short(int_buf, 8);   
         double val = 12.34;
-        char* double_buf = (char*)(&val);
-        char result_buf[11];
+        unsigned char* double_buf = (unsigned char*)(&val);
+        unsigned char result_buf[11];
         memset(result_buf, 0, 11);
         memcpy(result_buf, int_buf, 2);
         memcpy(result_buf + 2, double_buf, 8);
-        std::string buf_1 = std::string(result_buf, 10);
+        // std::string buf_1 = std::string(result_buf, 10);
         
-        isBufferEqualToString(buf, buf_1);
+        isBufferEqualToString(buf, result_buf, 10);
     }
 
     void testTypeSerializer(void) {
@@ -123,10 +135,13 @@ public:
         
         std::shared_ptr<BufferBase> buf = buffer_builder_1->create_buffer_consumer()->build();
 
-        char* int_buf = new char[2];
+        unsigned char* int_buf = new unsigned char[2];
         SerializeUtils::serialize_short(int_buf, 7);
-        std::string buf_1 = std::string(int_buf, 2) + "1234567";
-        isBufferEqualToString(buf, buf_1);
+        unsigned char* target_buf = new unsigned char[10];
+        memcpy(target_buf, int_buf, 2);
+        memcpy(target_buf + 2, "1234567", 7);
+        // std::string buf_1 = std::string((char*)int_buf, 2) + "1234567";
+        isBufferEqualToString(buf, target_buf, 9);
 
         TypeDeserializerImpl deserializer;
 
@@ -152,10 +167,13 @@ public:
         
         std::shared_ptr<BufferBase> buf = buffer_builder_1->create_buffer_consumer()->build();
 
-        char* int_buf = new char[2];
+        unsigned char* int_buf = new unsigned char[2];
         SerializeUtils::serialize_short(int_buf, 7);
-        std::string buf_1 = std::string(int_buf, 2) + "1234567";
-        isBufferEqualToString(buf, buf_1);
+        // std::string buf_1 = std::string((char*) int_buf, 2) + "1234567";
+        unsigned char* target_buf = new unsigned char[9];
+        memcpy(target_buf, int_buf, 2);
+        memcpy(target_buf + 2, "1234567", 7);
+        isBufferEqualToString(buf, target_buf, 9);
 
         TypeDeserializerImpl deserializer;
 

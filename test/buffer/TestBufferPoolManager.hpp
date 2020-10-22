@@ -15,7 +15,8 @@
 void buffer_write(std::shared_ptr<BufferBuilder> buffer_builder, volatile bool* start_write, volatile bool* stop) {
     while(!(*stop)){
         if (*start_write){
-            buffer_builder->append("1", 0, 1);
+            unsigned char c = '1';
+            buffer_builder->append(&c, 0, 1);
             std::cout << "start a write" << std::endl;
             *start_write = false;
         }
@@ -48,7 +49,7 @@ public:
 
         std::shared_ptr<BufferPoolManager> buffer_pool_mananger = buffer_pool->get_buffer_pool_mananger();
 
-        char data[10] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
+        unsigned char data[10] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
         for (int i = 0; i < 10; i++) {
             buffer_builder_1->append(data, i, 1);
         }

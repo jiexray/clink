@@ -1,4 +1,5 @@
 #include "InputChannel.hpp"
+std::shared_ptr<spdlog::logger> InputChannel::m_logger = LoggerFactory::get_logger("InputChannel");
 
 /* For test */
 InputChannel::InputChannel(std::shared_ptr<InputGate> input_gate, int channel_idx, int partition_idx, 

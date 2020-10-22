@@ -23,8 +23,10 @@ public:
         // Iteratively read the file lines, and output each line to collector
         std::string line;
         while (std::getline(stream, line)) {
+            // std::cout << "read line: " << line << std::endl;
             out->collect(std::make_shared<std::string>(line));
         }
+        std::cout << "finish reading file: " << *val << std::endl;
     }
 
     char*                                   serialize() override {return (char*)this;}

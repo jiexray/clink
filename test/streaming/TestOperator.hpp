@@ -45,10 +45,10 @@
 #include <memory>
 #include <cstring>
 
-void isBufferEqualToString(BufferBase* buf, std::string str) {
-    char c;
+void isBufferEqualToString(BufferBase* buf, unsigned char* str, int length) {
+    unsigned char c;
     int ret;
-    for (int i = 0; i < str.length(); i++) {
+    for (int i = 0; i < length; i++) {
         ret = buf->get(&c, i);
         TS_ASSERT_EQUALS(ret == -1, false);
         TS_ASSERT_EQUALS(c, str[i]);

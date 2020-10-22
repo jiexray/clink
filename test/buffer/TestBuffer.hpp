@@ -65,7 +65,7 @@ public:
     void testGetAndPutBuffer( void ) {
         Buffer* buffer = new Buffer(100);
         buffer->put(0, '1');
-        char c;
+        unsigned char c;
         buffer->get(&c, 0);
         TS_ASSERT_EQUALS('1', c);
     }
@@ -74,10 +74,10 @@ public:
         Buffer* buffer = new Buffer(100);
         BufferBuilder* bufferBuilder = new BufferBuilder(buffer);
 
-        char data[10] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
+        unsigned char data[10] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
         bufferBuilder->append(data, 0, 10);
         for(int i = 0; i < 10; i++) {
-            char c;
+            unsigned char c;
             buffer->get(&c, i);
             TS_ASSERT_EQUALS(c, '0' + i);
         }
@@ -88,7 +88,7 @@ public:
         BufferBuilder* bufferBuilder = new BufferBuilder(buffer);
         std::shared_ptr<BufferConsumer> bufferConsumer = bufferBuilder->create_buffer_consumer();
 
-        char data[10] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
+        unsigned char data[10] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
         for (int i = 0; i < 10; i++) {
             bufferBuilder->append(data, i, 1);
             TS_ASSERT_EQUALS(bufferConsumer->get_write_position(), bufferBuilder->get_write_position());
@@ -96,7 +96,7 @@ public:
         std::shared_ptr<BufferBase> read_buffer = bufferConsumer->build();
         TS_ASSERT_EQUALS(10, read_buffer->get_max_capacity());
         for (int i = 0; i < 10; i++) {
-            char c;
+            unsigned char c;
             read_buffer->get(&c, i);
             TS_ASSERT_EQUALS(c, '0' + i);
         }
@@ -107,7 +107,7 @@ public:
         std::shared_ptr<BufferBuilder> bufferBuilder = bufferPool.request_buffer_builder();
         std::shared_ptr<BufferConsumer> bufferConsumer = bufferBuilder->create_buffer_consumer();
 
-        char data[10] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
+        unsigned char data[10] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
         for (int i = 0; i < 10; i++) {
             bufferBuilder->append(data, i, 1);
             TS_ASSERT_EQUALS(bufferConsumer->get_write_position(), bufferBuilder->get_write_position());
@@ -115,7 +115,7 @@ public:
         std::shared_ptr<BufferBase> read_buffer = bufferConsumer->build();
         TS_ASSERT_EQUALS(10, read_buffer->get_max_capacity());
         for (int i = 0; i < 10; i++) {
-            char c;
+            unsigned char c;
             read_buffer->get(&c, i);
             TS_ASSERT_EQUALS(c, '0' + i);
         }
@@ -149,7 +149,7 @@ public:
         std::shared_ptr<BufferBuilder> bufferBuilder_1 = bufferPool.request_buffer_builder();
         std::shared_ptr<BufferConsumer> bufferConsumer_1 = bufferBuilder_1->create_buffer_consumer();
 
-        char c = '1';
+        unsigned char c = '1';
         bufferBuilder_1->append(&c, 0, 1);
         TS_ASSERT_EQUALS(false, bufferConsumer_1->is_finished());
     }
@@ -197,7 +197,7 @@ public:
     void testIllegalBufferGetAndPut( void ) {
         Buffer* buffer = new Buffer(100);
         TS_ASSERT_THROWS(buffer->put(101, '1'), std::invalid_argument);
-        char c;
+        unsigned char c;
         TS_ASSERT_EQUALS(buffer->get(&c, 110), -1);
     }
 
@@ -228,7 +228,7 @@ public:
         Buffer* buffer = new Buffer(1);
         BufferBuilder* bufferBuilder = new BufferBuilder(buffer);
 
-        char data[10] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
+        unsigned char data[10] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
         int ret = bufferBuilder->append(data, 0, 1);
         TS_ASSERT_EQUALS(ret, 1)
         ret = bufferBuilder->append(data, 0, 2);
