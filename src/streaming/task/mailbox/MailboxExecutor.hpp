@@ -15,7 +15,7 @@ public:
     MailboxExecutor(std::shared_ptr<TaskMailbox> mailbox):
     m_task_mailbox(mailbox) {}
 
-    void execute(std::shared_ptr<Runnable> command, std::string description) {
+    void execute(const Mail::MailFunc & command, std::string description) {
         m_task_mailbox->put(std::make_shared<Mail>(command, description));
     }
 

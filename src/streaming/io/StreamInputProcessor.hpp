@@ -3,8 +3,9 @@
  */
 #pragma once
 #include "InputStatus.hpp"
+#include "AvailabilityProvider.hpp"
 
-class StreamInputProcessor
+class StreamInputProcessor: public AvailabilityProvider
 {
 public:
     virtual InputStatus process_input() = 0;

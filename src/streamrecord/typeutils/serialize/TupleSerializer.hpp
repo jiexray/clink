@@ -52,7 +52,7 @@ inline StreamRecordAppendResult TupleSerializer<Tuple2<T0, T1>>::serialize(std::
         unsigned char* length_buf = new unsigned char[2];
         SerializeUtils::serialize_short(length_buf, value_size);
         int data_length_write = buffer_builder->append(length_buf, 0, 2, false);
-        delete length_buf;
+        delete[] length_buf;
 
         // the length of record is not totally written, partially write
         m_data_remaining -= data_length_write;
@@ -69,7 +69,7 @@ inline StreamRecordAppendResult TupleSerializer<Tuple2<T0, T1>>::serialize(std::
             unsigned char* length_buf = new unsigned char[2];
             SerializeUtils::serialize_short(length_buf, value_size);
             int data_length_write = buffer_builder->append(length_buf, 0, 2, false);
-            delete length_buf;
+            delete[] length_buf;
             // the length of record is not totally written, partially write
             m_data_remaining -= data_length_write;
             assert(data_length_write == 2);
@@ -78,7 +78,7 @@ inline StreamRecordAppendResult TupleSerializer<Tuple2<T0, T1>>::serialize(std::
             SerializeUtils::serialize_short(length_buf, value_size);
             // start write from offset 1, write length 1
             int data_length_write = buffer_builder->append(length_buf, 1, 1, false);
-            delete length_buf;
+            delete[] length_buf;
             // the length of record is not totally written, partially write
             m_data_remaining -= data_length_write;
             assert(data_length_write == 1);

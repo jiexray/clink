@@ -14,7 +14,7 @@ StringValue::StringValue(std::string s){
 void StringValue::read(TypeDeserializer* deserializer) {
     m_len = deserializer->get_record_size();
     if (m_value != nullptr) {
-        delete m_value;
+        delete[] m_value;
         m_value = nullptr;
     }
     m_value = new char[m_len + 1];

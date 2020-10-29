@@ -9,6 +9,7 @@
 #include "BufferOrEvent.hpp"
 #include "LoggerFactory.hpp"
 #include "Counter.hpp"
+#include "AvailabilityProvider.hpp"
 #include <map>
 #include <string>
 #include <deque>
@@ -17,10 +18,14 @@
 
 class InputChannel;
 
-class InputGate 
+class InputGate: public AvailabilityProvider, public std::enable_shared_from_this<InputGate>
 {
 private:
+    typedef std::shared_ptr<AvailabilityProvider::AvailabilityHelper> AvailabilityHelperPtr;
     typedef std::shared_ptr<Counter>                    CounterPtr;
+
+    AvailabilityHelperPtr                               m_availability_helper = nullptr;
+
     CounterPtr                                          m_bytes_in;
 
     std::string                                         m_owning_task_name;
@@ -58,11 +63,25 @@ private:
         return buffer_or_event;
     }
 
+    void                                                mark_available() {
+        std::unique_lock<std::mutex> channels_with_data_lock(m_input_channels_with_data_mtx);
+        CompletableFuturePtr to_notify = m_availability_helper->get_unavailable_to_reset_available();
+        channels_with_data_lock.unlock();
+        to_notify->complete(true);
+    }
+
 public:
     InputGate(int gate_idx):m_gate_idx(gate_idx){}
+
     InputGate(std::string owning_task_name, int gate_idx, int consumed_subpartition_idx, int number_of_input_channels):
     m_owning_task_name(owning_task_name), m_gate_idx(gate_idx), m_consumed_subpartition_idx(consumed_subpartition_idx), 
     m_number_of_input_channels(number_of_input_channels) {}    
+
+    void setup() {
+        if (m_availability_helper == nullptr) {
+            m_availability_helper = std::make_shared<AvailabilityProvider::AvailabilityHelper>(shared_from_this());
+        }
+    }
 
     /* Request subpartitions, connect input channels to the corresponding subpartitions via subpartition view */
     void                                                request_partitions();  
@@ -81,4 +100,13 @@ public:
     void                                                set_bytes_in_counter(CounterPtr bytes_in) {m_bytes_in = bytes_in;}
 
     void                                                set_input_channels(std::shared_ptr<InputChannel>* input_channels, int num_input_channels);           
+
+    /**
+      @return a future that is a completed if there are more records available. If there are more 
+      records available immediately, AVAILABLE should be returned. Previously returned not completed
+      futures should become completed once there are more records available.
+     */
+    CompletableFuturePtr                                get_available_future() override {
+        return m_availability_helper->get_available_future();
+    }
 };

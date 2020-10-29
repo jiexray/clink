@@ -25,6 +25,7 @@ set(TEST_HEADER_DIRS ${CMAKE_SOURCE_DIR}/src/buffer
   ${CMAKE_SOURCE_DIR}/src/streaming/task/mailbox
   ${CMAKE_SOURCE_DIR}/src/streaming/graph
   ${CMAKE_SOURCE_DIR}/src/runtime
+  ${CMAKE_SOURCE_DIR}/src/runtime/io
   ${CMAKE_SOURCE_DIR}/src/core/config
   ${CMAKE_SOURCE_DIR}/src/core/common
   ${CMAKE_SOURCE_DIR}/src/core/common/io
@@ -57,7 +58,7 @@ if(CXXTEST_FOUND)
 
   # result test
   CXXTEST_ADD_TEST(unitest_result result_test.cpp ${CMAKE_CURRENT_SOURCE_DIR}/result/TestResult.hpp)
-  target_link_libraries(unitest_result result streamrecord)
+  target_link_libraries(unitest_result result streamrecord runtime)
 
   # streamrecord test
   CXXTEST_ADD_TEST(unitest_streamrecord streamrecord_test.cpp ${CMAKE_CURRENT_SOURCE_DIR}/streamrecord/TestStreamRecord.hpp)
@@ -138,4 +139,8 @@ if(CXXTEST_FOUND)
   # core configuration
   CXXTEST_ADD_TEST(unitest_core_configuration core_configuration.cpp ${CMAKE_CURRENT_SOURCE_DIR}/core/TestConfiguration.hpp)
   target_link_libraries(unitest_core_configuration core)
+
+  # runtime available
+  CXXTEST_ADD_TEST(unitest_runtime_available runtime_available.cpp ${CMAKE_CURRENT_SOURCE_DIR}/runtime/TestAvailable.hpp)
+  target_link_libraries(unitest_runtime_available runtime)
 endif()

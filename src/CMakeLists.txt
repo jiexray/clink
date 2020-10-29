@@ -26,6 +26,7 @@ set(ALL_INCLUDE_DIRS
   ${CMAKE_SOURCE_DIR}/src/streaming/task/mailbox
   ${CMAKE_SOURCE_DIR}/src/streaming/graph
   ${CMAKE_SOURCE_DIR}/src/runtime
+  ${CMAKE_SOURCE_DIR}/src/runtime/io
   ${CMAKE_SOURCE_DIR}/src/core/config
   ${CMAKE_SOURCE_DIR}/src/core/common
   ${CMAKE_SOURCE_DIR}/src/core/common/io
@@ -160,6 +161,8 @@ target_sources(runtime
     runtime/metrics/scope/OperatorScopeFormat.cpp
 
     runtime/metrics/util/MetricUtils.cpp
+
+    runtime/io/AvailabilityProvider.cpp
 )
 target_include_directories(runtime PUBLIC
   ${ALL_INCLUDE_DIRS}

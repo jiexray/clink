@@ -51,7 +51,7 @@ std::shared_ptr<BufferAndBacklog> InputChannel::get_next_buffer() {
 
     std::shared_ptr<BufferAndBacklog> next = m_subpartition_view->get_next_buffer();
 
-    if (m_bytes_in != nullptr && m_buffers_in != nullptr){
+    if (m_bytes_in != nullptr && m_buffers_in != nullptr && next != nullptr){
         m_buffers_in->inc();
         m_bytes_in->inc(next->get_buffer()->get_max_capacity());
     }

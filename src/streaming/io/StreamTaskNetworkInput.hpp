@@ -97,8 +97,8 @@ public:
                                                                             std::dynamic_pointer_cast<TupleDeserializationDelegate>(m_deserialization_delegate)->get_instance());
                         output->emit_record(new_record);
                     }
+            
                     
-
                     // deserializer conduct a successful record deserialization, we have delivered & processed it to the operator through DataOutput.
                     // There may be more available records in the deserializer's buffer, however, we temporialy return and let the StreamTask
                     // know one record have been processed.
@@ -121,6 +121,13 @@ public:
                 return InputStatus::NOTHING_AVAILABLE;
             }
         }
+    }
+
+    AvailabilityProvider::CompletableFuturePtr              get_available_future() override {
+        if (m_current_record_deserializer != nullptr) {
+            return AvailabilityProvider::AVAILABLE;
+        }
+        return m_input_gate->get_available_future();
     }
 };
 

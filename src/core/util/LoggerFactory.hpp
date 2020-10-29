@@ -31,15 +31,9 @@ public:
     static std::shared_ptr<spdlog::logger> get_logger_with_file_name(const std::string& logger_name, const std::string& file_name) {
         spdlog::set_pattern(Constant::SPDLOG_PATTERN);
         spdlog::set_level(Constant::SPDLOG_LEVEL);
-        if (Constant::SPDLOG_WRITE_FILE) {
-            return spdlog::get(logger_name) == nullptr ?
-                    spdlog::basic_logger_mt(logger_name, "logs/" + file_name + "-" + std::to_string(getpid()) + ".txt"):
-                    spdlog::get(logger_name);
-        } else {
-            return spdlog::get(logger_name) == nullptr ?
-                spdlog::stdout_logger_mt(logger_name):
+        return spdlog::get(logger_name) == nullptr ?
+                spdlog::basic_logger_mt(logger_name, "logs/" + file_name + "-" + std::to_string(getpid()) + ".txt"):
                 spdlog::get(logger_name);
-        }
     }
 };
 

@@ -5,21 +5,26 @@
 
 #include "Runnable.hpp"
 #include <memory>
+#include <functional>
 #include "string"
 
 class Mail
 {
+public:
+    typedef std::function<void()> MailFunc;
 private:
-    std::shared_ptr<Runnable>           m_runnable;
+    // std::shared_ptr<Runnable>           m_runnable;
+    MailFunc                            m_mail_func;
 
     std::string                         m_description;
 
 public:
-    Mail(std::shared_ptr<Runnable> runnable, std::string description):
-    m_runnable(runnable), m_description(description) {}
+    Mail(MailFunc mail_func, const std::string & description) :
+        m_mail_func(mail_func), m_description(description) {
+    }
 
     std::string                         to_string() {return m_description;}
 
-    void                                run() {m_runnable->run();}
+    void                                run() {m_mail_func();}
 
 };

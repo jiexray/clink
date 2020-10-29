@@ -19,7 +19,7 @@ public:
 
     void                            init() override;
 
-    void                            process_input();
+    InputStatus                     process_input() override;
 
     void                            source_thread_run();
 };
@@ -39,7 +39,7 @@ inline void SourceStreamTask<OUT>::init() {
 }
 
 template <class OUT>
-inline void SourceStreamTask<OUT>::process_input() {
+inline InputStatus SourceStreamTask<OUT>::process_input() {
     SPDLOG_LOGGER_DEBUG(this->m_logger, "Task {} start to process streaming input", this->get_name());
     source_thread = std::make_shared<std::thread>(&SourceStreamTask::source_thread_run, this);
 

@@ -5,8 +5,8 @@ std::shared_ptr<spdlog::logger> ResultSubpartition::m_logger = LoggerFactory::ge
 ResultSubpartition::ResultSubpartition(int index, std::shared_ptr<ResultPartition> parent):
 m_parent(parent){
     m_subpartition_info = std::make_shared<ResultSubpartitionInfo>(parent->get_partition_idx(), index);
-    spdlog::set_pattern(Constant::SPDLOG_PATTERN);
-    spdlog::set_level(Constant::SPDLOG_LEVEL);
+    m_flush_requested = false;
+    m_read_view = nullptr;
 }
 
 /**

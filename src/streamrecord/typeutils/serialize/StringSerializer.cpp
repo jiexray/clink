@@ -11,7 +11,7 @@ StreamRecordAppendResult StringSerializer::serialize(std::shared_ptr<std::string
         unsigned char* length_buf = new unsigned char[2];
         SerializeUtils::serialize_short(length_buf, value_size);
         int data_length_write = buffer_builder->append(length_buf, 0, 2, false);
-        delete length_buf;
+        delete[] length_buf;
         // the length of record is not totally written, partially write
         m_data_remaining -= data_length_write;
         if (data_length_write < 2) {
@@ -27,7 +27,7 @@ StreamRecordAppendResult StringSerializer::serialize(std::shared_ptr<std::string
             unsigned char* length_buf = new unsigned char[2];
             SerializeUtils::serialize_short(length_buf, value_size);
             int data_length_write = buffer_builder->append(length_buf, 0, 2, false);
-            delete length_buf;
+            delete[] length_buf;
             // the length of record is not totally written, partially write
             m_data_remaining -= data_length_write;
             assert(data_length_write == 2);
@@ -36,7 +36,7 @@ StreamRecordAppendResult StringSerializer::serialize(std::shared_ptr<std::string
             SerializeUtils::serialize_short(length_buf, value_size);
             // start write from offset 1, write length 1
             int data_length_write = buffer_builder->append(length_buf, 1, 1, false);
-            delete length_buf;
+            delete[] length_buf;
             // the length of record is not totally written, partially write
             m_data_remaining -= data_length_write;
             assert(data_length_write == 1);

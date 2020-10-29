@@ -19,6 +19,7 @@
 #include "MailboxProcessor.hpp"
 #include "Constant.hpp"
 #include "LoggerFactory.hpp"
+#include "CompletableFuture.hpp"
 #include <memory>
 #include <unistd.h>
 
@@ -30,6 +31,8 @@ class StreamTask : public AbstractInvokable, public std::enable_shared_from_this
 private:
     std::shared_ptr<ResultWriter<OUT>>          m_result_writer;
     int volatile                                m_is_running;
+
+    // typedef std::shared_ptr<CompletableFuture<bool>> CompletableFuturePtr;
 protected:
     std::shared_ptr<StreamInputProcessor>       m_input_processor;
     std::shared_ptr<StreamOperator<OUT>>        m_head_operator;
@@ -46,7 +49,7 @@ public:
 
     /* Life cycle methods */
     virtual void                                init() {};
-    virtual void                                process_input();
+    virtual InputStatus                         process_input();
     void                                        clearup() {
         m_input_processor->close();
     }
@@ -64,21 +67,48 @@ public:
     std::shared_ptr<StreamConfig>               get_configuration() {return m_configuration;}
     std::shared_ptr<StreamOperator<OUT>>        get_head_operator() {return m_head_operator;}
     std::shared_ptr<ResultWriter<OUT>>          get_result_writer() {return m_result_writer;}
+    std::shared_ptr<MailboxProcessor>           get_mailbox_processor() {return m_mailbox_processor;}
+    std::shared_ptr<StreamInputProcessor>       get_input_processor() {return m_input_processor;}
     std::string                                 get_name() {return this->get_environment()->get_task_info()->get_task_name_with_sub_tasks();}
+
+//    CompletableFuturePtr                          get_input_output_joint_future(InputStatus status) {
+//         // TODO: support output available
+//         CompletableFuturePtr output_complete_future = CompletableFuture<bool>::complete_future(true);
+//         CompletableFuturePtr input_complete_future;
+
+//         if (status == InputStatus::NOTHING_AVAILABLE) {
+//             input_complete_future = m_input_processor->get_available_future();
+//         }
+
+//         return CompletableFuture<bool>::all_of(std::vector<CompletableFuturePtr>{input_complete_future, output_complete_future});
+//     }
 }; 
 
 template <class OUT>
 class StreamTaskDefaultMailboxAction: public MailboxDefaultAction {
 private:
+    typedef std::shared_ptr<MailboxDefaultAction::Controller> ControllerPtr;
+    typedef std::shared_ptr<CompletableFuture<bool>> CompletableFuturePtr;
     std::shared_ptr<StreamTask<OUT>> m_stream_task;
+
+    static std::shared_ptr<spdlog::logger> m_logger;
 public:
     StreamTaskDefaultMailboxAction(std::shared_ptr<StreamTask<OUT>> stream_task): m_stream_task(stream_task){}
 
-    void run_default_action() {
-        // std::cout << "StreamTask process_input()" << std::endl;
-        m_stream_task->process_input();
+    void run_default_action(ControllerPtr controller) {
+        InputStatus status = m_stream_task->process_input();
+
+        if (status == InputStatus::NOTHING_AVAILABLE) {
+            SPDLOG_LOGGER_DEBUG(m_logger, "Suspend default action of task: {}", m_stream_task->get_name());
+            CompletableFuturePtr joint_future = this->m_stream_task->get_input_processor()->get_available_future();
+            controller->suspend_default_action();
+            joint_future->then(std::bind(&MailboxProcessor::resume, m_stream_task->get_mailbox_processor()));
+        }
     }
 };
+
+template <class OUT>
+std::shared_ptr<spdlog::logger> StreamTaskDefaultMailboxAction<OUT>::m_logger = LoggerFactory::get_logger("StreamTaskDefaultMailboxAction");
 
 /**
  * Constructor of StreamTask, initialize result writer.
@@ -122,9 +152,8 @@ inline std::shared_ptr<ResultWriter<OUT>> StreamTask<OUT>::create_result_writer(
 }
 
 template <class OUT>
-inline void StreamTask<OUT>::process_input() {
-    InputStatus status = m_input_processor->process_input();
-    // TODO: process the return status of input_procesor
+inline InputStatus StreamTask<OUT>::process_input() {
+    return m_input_processor->process_input();
 }
 
 template<class OUT>

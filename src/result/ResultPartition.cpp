@@ -20,7 +20,7 @@ void ResultPartition::setup() {
  * Get a BufferBuilder from buffer pool using blocking mode.
  */
 std::shared_ptr<BufferBuilder> ResultPartition::get_buffer_builder() {
-    SPDLOG_LOGGER_DEBUG(m_logger, "Requesting BufferBuilder in blocking way from BufferPool {}", m_buffer_pool->get_buffer_pool_id());
+    SPDLOG_LOGGER_TRACE(m_logger, "Requesting BufferBuilder in blocking way from BufferPool {}", m_buffer_pool->get_buffer_pool_id());
     return m_buffer_pool->request_buffer_builder_blocking();
 }
 

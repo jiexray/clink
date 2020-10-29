@@ -39,6 +39,7 @@
                 "/home/tian/software/vscode/projects/clink/src/metrics/groups",
                 "/home/tian/software/vscode/projects/clink/src/runtime/metrics/groups",
                 "/home/tian/software/vscode/projects/clink/src/runtime/metrics",
+                "/home/tian/software/vscode/projects/clink/src/runtime/io",
                 "/home/tian/software/vscode/projects/clink/src/runtime/metrics/scope"
             ],
             "defines": [],

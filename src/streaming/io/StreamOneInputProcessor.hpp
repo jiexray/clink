@@ -24,4 +24,8 @@ public:
         m_input->close();
         m_output->close();
     }
+
+    CompletableFuturePtr                        get_available_future() override {
+        return m_input->get_available_future();
+    }
 };

@@ -60,7 +60,7 @@ int TypeDeserializerImpl::read_int() {
     int v = SerializeUtils::deserialize_int(buf);
 
     // free buf
-    delete buf;
+    delete[] buf;
     buf = nullptr;
 
     return v;
@@ -84,7 +84,7 @@ int TypeDeserializerImpl::read_short() {
     int v = SerializeUtils::deserialize_short(buf);
 
     // free buf
-    delete buf;
+    delete[] buf;
     buf = nullptr;
 
     return v;
@@ -101,7 +101,7 @@ int TypeDeserializerImpl::read_byte() {
     int v = (int)buf[0];
 
     // free buf
-    delete buf;
+    delete[] buf;
     buf = nullptr;
 
     return v;
@@ -125,7 +125,7 @@ double TypeDeserializerImpl::read_double() {
     double v = SerializeUtils::deserialize_double(buf);
 
     // free buf
-    delete buf;
+    delete[] buf;
     buf = nullptr;
     
     return v;

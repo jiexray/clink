@@ -50,7 +50,7 @@ Buffer* BufferPool::request_buffer() {
     if (m_buffer_pool_manager != nullptr){
         m_buffer_pool_manager->register_buffer(buffer);
     }
-    SPDLOG_LOGGER_DEBUG(m_logger, "BufferPool::request_buffer(), request Buffer {} available buffers in BufferPool {}: {}",
+    SPDLOG_LOGGER_TRACE(m_logger, "BufferPool::request_buffer(), request Buffer {} available buffers in BufferPool {}: {}",
                                  buffer->get_buffer_id(), m_buffer_pool_id, available_buffers.size());
 
     return buffer;
@@ -101,7 +101,7 @@ std::shared_ptr<BufferBuilder> BufferPool::request_buffer_builder_blocking() {
 void BufferPool::recycle(std::shared_ptr<BufferBuilder> buffer_builder) {
     mtx_available_buffer.lock();
     available_buffers.push_back(buffer_builder->get_buffer());
-    SPDLOG_LOGGER_DEBUG(m_logger, "BufferPool::recycle() available buffer: {}", available_buffers.size());
+    SPDLOG_LOGGER_TRACE(m_logger, "BufferPool::recycle() available buffer: {}", available_buffers.size());
     mtx_available_buffer.unlock();
 
     available_condition_variable.notify_all();
@@ -111,7 +111,7 @@ void BufferPool::recycle(std::shared_ptr<BufferBuilder> buffer_builder) {
 void BufferPool::recycle_buffer(Buffer* buffer) {
     mtx_available_buffer.lock();
     available_buffers.push_back(buffer);
-    SPDLOG_LOGGER_DEBUG(m_logger, "BufferPool::recycle_buffer(), recycle Buffer {} available buffer in BufferPool {}: {}", 
+    SPDLOG_LOGGER_TRACE(m_logger, "BufferPool::recycle_buffer(), recycle Buffer {} available buffer in BufferPool {}: {}", 
                             buffer->get_buffer_id(), m_buffer_pool_id, available_buffers.size());
     mtx_available_buffer.unlock();
 

@@ -12,7 +12,7 @@ void BufferPoolManager::register_buffer_consumer(int buffer_id){
         throw std::runtime_error("BufferPoolManager Cannot find buffer_id " + std::to_string(buffer_id) + 
                                     ", it may not be registered");
     }
-    SPDLOG_LOGGER_DEBUG(m_logger, "Register buffer consumer to Buffer {}", std::to_string(buffer_id));
+    SPDLOG_LOGGER_TRACE(m_logger, "Register buffer consumer to Buffer {}", std::to_string(buffer_id));
     m_buffer_id_to_num_consumers[buffer_id] += 1;
 }
 
@@ -27,12 +27,12 @@ void  BufferPoolManager::unregister_buffer_consumer(int buffer_id) {
     if (cur_num_consumers == 0) {
         throw std::runtime_error("Number of register consumers is zero for buffer_id " + std::to_string(buffer_id));
     }
-    SPDLOG_LOGGER_DEBUG(m_logger, "Unregister buffer consumer from Buffer {}", std::to_string(buffer_id));
+    SPDLOG_LOGGER_TRACE(m_logger, "Unregister buffer consumer from Buffer {}", std::to_string(buffer_id));
     m_buffer_id_to_num_consumers[buffer_id] -= 1;
 
     if (m_buffer_id_to_num_slices[buffer_id] == 0 && m_buffer_id_to_num_consumers[buffer_id] == 0) {
         // recycle buffer
-        SPDLOG_LOGGER_DEBUG(m_logger, "Recycle Buffer {} back to buffer pool from unregister consumer", buffer_id);
+        SPDLOG_LOGGER_TRACE(m_logger, "Recycle Buffer {} back to buffer pool from unregister consumer", buffer_id);
         Buffer* buffer = m_buffer_id_to_buffer[buffer_id];
         m_buffer_pool->recycle_buffer(buffer);
 
@@ -52,7 +52,7 @@ void BufferPoolManager::register_buffer_slice(int buffer_id) {
         throw std::runtime_error("BufferPoolManager Cannot find buffer_id " + std::to_string(buffer_id) + 
                                     ", it may not be registered");
     }
-    SPDLOG_LOGGER_DEBUG(m_logger, "Register buffer slice to Buffer {}", std::to_string(buffer_id));
+    SPDLOG_LOGGER_TRACE(m_logger, "Register buffer slice to Buffer {}", std::to_string(buffer_id));
     m_buffer_id_to_num_slices[buffer_id] += 1;
 }
 
@@ -67,12 +67,12 @@ void BufferPoolManager::unregister_buffer_slice(int buffer_id) {
     if (cur_num_slices == 0) {
         throw std::runtime_error("Number of register slices is zero for buffer_id " + std::to_string(buffer_id));
     }
-    SPDLOG_LOGGER_DEBUG(m_logger, "Unregister buffer slice from Buffer {}", std::to_string(buffer_id));
+    SPDLOG_LOGGER_TRACE(m_logger, "Unregister buffer slice from Buffer {}", std::to_string(buffer_id));
     m_buffer_id_to_num_slices[buffer_id] -= 1;
 
     if (m_buffer_id_to_num_slices[buffer_id] == 0 && m_buffer_id_to_num_consumers[buffer_id] == 0) {
         // recycle buffer
-        SPDLOG_LOGGER_DEBUG(m_logger, "Recycle Buffer {} back to buffer pool from unregister slice", buffer_id);
+        SPDLOG_LOGGER_TRACE(m_logger, "Recycle Buffer {} back to buffer pool from unregister slice", buffer_id);
         Buffer* buffer = m_buffer_id_to_buffer[buffer_id];
         m_buffer_pool->recycle_buffer(buffer);
 
@@ -109,7 +109,7 @@ void BufferPoolManager::release_buffer(int buffer_id) {
         // the buffer is unused right now can free it
         Buffer* buffer = m_buffer_id_to_buffer[buffer_id];
 
-        SPDLOG_LOGGER_DEBUG(m_logger, "Recycle Buffer {} back to buffer pool", buffer_id);
+        SPDLOG_LOGGER_TRACE(m_logger, "Recycle Buffer {} back to buffer pool", buffer_id);
         m_buffer_pool->recycle_buffer(buffer);
 
         // unregister buffer from BufferPoolManager

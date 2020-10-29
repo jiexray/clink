@@ -46,7 +46,7 @@ public:
         std::istringstream iss(*value);
         std::string tmp_string;
         m_lines++;
-        if (m_lines % 10000 == 0) {
+        if (m_lines % 1000 == 0) {
             std::cout << "have processed " << m_lines << " lines" << std::endl;
         }
         while(iss >> tmp_string) {
@@ -324,9 +324,11 @@ public:
         task_exeuctor->start_task(105);
         task_exeuctor->start_task(106);
 
-        std::this_thread::sleep_for(std::chrono::seconds(120));
+        std::this_thread::sleep_for(std::chrono::seconds(3600));
 
-        task_exeuctor->cancel_task(102);
+        std::cout << "start to finish tasks" << std::endl;
+
+        // task_exeuctor->cancel_task(102);
         task_exeuctor->cancel_task(103);
         task_exeuctor->cancel_task(104);
         task_exeuctor->cancel_task(105);

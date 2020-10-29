@@ -85,6 +85,8 @@ void Task::start_task_thread() {
 void Task::cancel_task() {
     SPDLOG_LOGGER_INFO(m_logger, "Task {} cancel task", m_task_name_with_subtask);
     m_invokable->cancel();
+    // TODO: interrupt task
+    pthread_cancel(m_executing_thread->native_handle());
 
     m_executing_thread->join();
 }

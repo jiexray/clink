@@ -13,7 +13,7 @@ DoubleValue::DoubleValue(double v) {
 
 void DoubleValue::read(TypeDeserializer* deserializer) {
     if (m_value != nullptr) {
-        delete m_value;
+        delete[] m_value;
         m_value = nullptr;
     }
     m_value = new double[1];

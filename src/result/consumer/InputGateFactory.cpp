@@ -9,6 +9,7 @@ std::shared_ptr<InputGate> InputGateFactory::create(std::string owning_task_name
     std::shared_ptr<InputGate> input_gate = std::make_shared<InputGate>(owning_task_name, gate_idx, 
                                                                         igdd->get_consumed_subpartition_idx(),
                                                                         (int) igdd->get_input_channels_partition_ids().size());
+    input_gate->setup();
     
     create_input_channels(owning_task_name, igdd, input_gate, metrics);
     return input_gate;

@@ -70,8 +70,9 @@ class MySinkFunction: public SinkFunction<std::string> {
 
 
 class TestMailboxDefaultAction : public MailboxDefaultAction {
+    typedef std::shared_ptr<MailboxDefaultAction::Controller> ControllerPtr;
 public:
-    void run_default_action() override {
+    void run_default_action(ControllerPtr controller) override {
         std::cout << "TestMailboxDefaultAction::run_default_action()" << std::endl;
     }
 };
@@ -510,6 +511,7 @@ public:
         std::shared_ptr<MailboxProcessor> mailbox_processor = std::make_shared<MailboxProcessor>(
                                                                         std::make_shared<TestMailboxDefaultAction>(), 
                                                                         mailbox);
+        mailbox_processor->setup();
 
         int loop_time = 10;
         for (int i = 0; i < loop_time; i++) {

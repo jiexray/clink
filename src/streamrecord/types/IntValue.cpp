@@ -12,7 +12,7 @@ IntValue::IntValue(int v) {
 
 void IntValue::read(TypeDeserializer* deserializer) {
     if (m_value != nullptr) {
-        delete m_value;
+        delete[] m_value;
         m_value = nullptr;
     }
 

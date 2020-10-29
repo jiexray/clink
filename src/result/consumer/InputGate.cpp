@@ -9,6 +9,8 @@ void InputGate::notify_channel_non_empty(std::shared_ptr<InputChannel> channel) 
  * Insert channel into channel_queue_with_data if it does not exists.
  */
 void InputGate::queue_channel(std::shared_ptr<InputChannel> channel) {
+    CompletableFuturePtr to_notify = nullptr;
+
     std::unique_lock<std::mutex> channels_with_data_lock(m_input_channels_with_data_mtx);
 
     // TODO: use a bitset to accerlate the input channel searching
@@ -24,6 +26,15 @@ void InputGate::queue_channel(std::shared_ptr<InputChannel> channel) {
 
     if (available_channels == 0) {
         available_condition_variable.notify_all();
+        SPDLOG_LOGGER_TRACE(m_logger, "InputGate m_availability_helper->get_unavailable_to_reset_available()");
+        to_notify = m_availability_helper->get_unavailable_to_reset_available();
+    }
+
+    channels_with_data_lock.unlock();
+
+    if (to_notify != nullptr) {
+        SPDLOG_LOGGER_TRACE(m_logger, "to_notify->complete(true), InputGate before notify data available");
+        to_notify->complete(true);
     }
 }
 
@@ -37,6 +48,8 @@ std::shared_ptr<InputChannel> InputGate::get_channel(bool blocking) {
             std::unique_lock<std::mutex> available_helper_lock(available_helper);
             available_condition_variable.wait(available_helper_lock);
         } else {
+            SPDLOG_LOGGER_TRACE(m_logger, "InputGate m_availability_helper->reset_unavailable()");
+            m_availability_helper->reset_unavailable();
             return nullptr;
         }
         // do not need to get input channel right now, currently only have one thread to poll input channel
@@ -58,11 +71,10 @@ void InputGate::set_input_channels(std::shared_ptr<InputChannel>* input_channels
 
 void InputGate::request_partitions() {
     std::unique_lock<std::mutex> request_lock(m_request_mtx);
-    for (std::pair<int, std::shared_ptr<InputChannel>> input_channel: m_input_channels) {
+    for (std::pair<const int, std::shared_ptr<InputChannel>> input_channel: m_input_channels) {
         input_channel.second->request_subpartition(m_consumed_subpartition_idx);
     } 
 }
-
 
 /**
  * poll buffer from input gate 
@@ -84,6 +96,11 @@ std::shared_ptr<BufferOrEvent> InputGate::poll_next() {
             
             if (result != nullptr && result->get_data_available()) {
                 m_input_channels_with_data.push_back(input_channel);
+            }
+
+            if (m_input_channels_with_data.empty()) {
+                SPDLOG_LOGGER_TRACE(m_logger, "InputGate::poll_next(), after get buffer from channel set input_gate unavailable");
+                m_availability_helper->reset_unavailable();
             }
 
             if (result != nullptr) {

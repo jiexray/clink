@@ -206,7 +206,7 @@ inline std::shared_ptr<StreamEdge<T>> Configuration::get_edge(std::string key){
                                                                             edge_ptr->get_target_operator_name(), edge_partitioner);
         
         // free the buffer store the StreamEdge
-        free(edge_in_char);
+        delete[] edge_in_char;
         m_conf_data.erase(key);
         return edge;
     } else {

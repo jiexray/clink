@@ -6,9 +6,10 @@
 #include "InputStatus.hpp"
 #include "DataOutput.hpp"
 #include <memory>
+#include "AvailabilityProvider.hpp"
 
 template <class T>
-class StreamTaskInput
+class StreamTaskInput: public AvailabilityProvider
 {
 private:
 public:
