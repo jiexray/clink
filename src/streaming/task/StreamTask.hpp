@@ -146,7 +146,10 @@ inline std::shared_ptr<ResultWriter<OUT>> StreamTask<OUT>::create_result_writer(
 
     std::shared_ptr<ResultPartition> buffer_writter = this->get_environment()->get_writer(output_idx);
 
-    std::shared_ptr<ResultWriter<OUT>> output = std::make_shared<ChannelSelectorResultWriter<OUT>>(buffer_writter, task_name, output_partitioner);
+    long timeout = m_configuration->get_buffer_timeout();
+
+    std::shared_ptr<ResultWriter<OUT>> output = std::make_shared<ChannelSelectorResultWriter<OUT>>(buffer_writter, task_name, output_partitioner, timeout);
+    output->setup();
     output->set_metric_group(this->get_environment()->get_metric_group()->get_IO_metric_group());
     return output;
 }

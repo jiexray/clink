@@ -19,6 +19,9 @@ public:
     static std::string                          OPERATOR_FACTORY;
     static std::string                          OPERATOR_ID;
     static std::string                          OPERATOR_NAME;
+    static std::string                          BUFFER_TIMEOUT;
+
+    static long                                 DEFAULT_TIMEOUT;
 
     StreamConfig(std::shared_ptr<Configuration> config): m_config(config) {}
 
@@ -30,6 +33,7 @@ public:
 
     std::string                                 get_operator_id();
     std::string                                 get_operator_name();
+    long                                        get_buffer_timeout();
 };
 
 template <class OUT>
@@ -48,12 +52,14 @@ inline std::shared_ptr<StreamOperatorFactory<OUT>> StreamConfig::get_stream_oper
 }
 
 inline std::string StreamConfig::get_operator_id() {
-    // TODO: implement get operator from config
     return std::string(*(m_config->get_value<std::string>(StreamConfig::OPERATOR_ID)));
-    // return "test-operator-id";
 }
 
 inline std::string StreamConfig::get_operator_name() {
-    // TODO: implement get operator from config
     return std::string(*(m_config->get_value<std::string>(StreamConfig::OPERATOR_NAME)));
+}
+
+inline long StreamConfig::get_buffer_timeout() {
+    // TODO: get buffer timeout from Configuration;
+    return  DEFAULT_TIMEOUT;
 }

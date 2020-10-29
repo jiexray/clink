@@ -1,6 +1,6 @@
 #include "Constant.hpp"
 
-int                         Constant::BUFFER_SIZE           = 4096;
+int                         Constant::BUFFER_SIZE           = 65536;
 std::string                 Constant::CLINK_BASE            = "/home/tian/software/vscode/projects/clink/";
 spdlog::level::level_enum   Constant::SPDLOG_LEVEL          = spdlog::level::info;
 std::string                 Constant::SPDLOG_PATTERN        = "[%T.%e] [%s:%#] [%l] [thread: %t] %v";

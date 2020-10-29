@@ -17,28 +17,20 @@
 #include "TaskIOMetricGroup.hpp"
 
 template <class T>
-class ResultWriter
+class OutputFlusher;
+
+template <class T>
+class ResultWriter: public std::enable_shared_from_this<ResultWriter<T>>
 {
-private:
     typedef std::shared_ptr<Counter>            CounterPtr;
     typedef std::shared_ptr<Meter>              MeterPtr;
     typedef std::shared_ptr<TaskIOMetricGroup>  TaskIOMetricGroupPtr;
-
-    std::shared_ptr<ResultPartition>            m_target_result_partition;
-    int                                         m_number_of_channels;
-    std::string                                 m_task_name;
-    std::vector<std::shared_ptr<BufferBuilder>> m_buffer_builders;
-    std::shared_ptr<StreamRecordSerializer<T>>  m_record_serializer; 
-
-    std::shared_ptr<spdlog::logger>             m_logger;
-
-    /* Metrics indices */
-    CounterPtr                                  m_bytes_out;
-    CounterPtr                                  m_buffers_out;
-    MeterPtr                                    m_idle_time_ms_per_second;
-
 public:
     ResultWriter(std::shared_ptr<ResultPartition> result_partition, std::string task_name);
+
+    ResultWriter(std::shared_ptr<ResultPartition> result_partition, std::string task_name, long timeout);
+
+    void                                        setup();
 
     /* Put the record to the ResultPartition */
     void                                        emit(std::shared_ptr<StreamRecord<T>> record, int target_channel);
@@ -55,6 +47,7 @@ public:
 
     /* Properties */
     int                                         get_number_of_channels() {return m_number_of_channels;}
+    std::shared_ptr<spdlog::logger>             get_logger() {return m_logger;}
 
     /* Metrics */
     void                                        set_metric_group(TaskIOMetricGroupPtr metrics) {
@@ -67,16 +60,84 @@ public:
         m_bytes_out->inc(buffer_builder->finish());
         m_buffers_out->inc();
     }
+private:
+    std::shared_ptr<ResultPartition>            m_target_result_partition;
+    int                                         m_number_of_channels;
+    std::string                                 m_task_name;
+    std::vector<std::shared_ptr<BufferBuilder>> m_buffer_builders;
+    std::shared_ptr<StreamRecordSerializer<T>>  m_record_serializer; 
+    bool                                        m_always_flush;
+    long                                        m_flush_timeout;
+
+    std::shared_ptr<spdlog::logger>             m_logger;
+    OutputFlusher<T>*                           m_output_flusher;
+
+    /* Metrics indices */
+    CounterPtr                                  m_bytes_out;
+    CounterPtr                                  m_buffers_out;
+    MeterPtr                                    m_idle_time_ms_per_second;
+};
+
+template <class T>
+class OutputFlusher {
+public:
+    OutputFlusher(const std::string& name, long timeout, std::shared_ptr<ResultWriter<T>> writer) {
+        m_timeout = timeout;
+        m_writer = writer;
+    }
+
+    void terminate() {
+        m_running = false;
+    }
+
+    void run () {
+        while(m_running) {
+            SPDLOG_LOGGER_DEBUG(m_writer->get_logger(), "flush ResultWriter");
+            std::this_thread::sleep_for(std::chrono::milliseconds(m_timeout));
+
+            m_writer->flush_all();
+        }
+    }
+
+    void start() {
+        std::thread m_worker_thread = std::thread(std::bind(&OutputFlusher::run, this));
+        m_worker_thread.detach();
+    }
+private:
+    long                m_timeout;
+    volatile bool       m_running = true;
+
+    std::shared_ptr<ResultWriter<T>> m_writer;
 };
 
 template<class T>
-inline ResultWriter<T>::ResultWriter(std::shared_ptr<ResultPartition> result_partition, std::string task_name):
+inline ResultWriter<T>::ResultWriter(std::shared_ptr<ResultPartition> result_partition, std::string task_name, long timeout):
 m_target_result_partition(result_partition),
 m_task_name(task_name),
 m_number_of_channels(result_partition->get_number_of_subpartitions()),
 m_buffer_builders(m_number_of_channels, nullptr) {
     this->m_record_serializer = std::make_shared<StreamRecordSerializer<T>>();
-    m_logger = LoggerFactory::get_logger("ResultWriter");   
+    m_logger = LoggerFactory::get_logger("ResultWriter");
+
+    if (timeout == 0) {
+        m_always_flush = true;
+        m_flush_timeout = -1;
+    } else {
+        m_always_flush = false;
+        m_flush_timeout = timeout;
+    }
+}
+
+template<class T>
+inline ResultWriter<T>::ResultWriter(std::shared_ptr<ResultPartition> result_partition, std::string task_name): 
+ResultWriter(result_partition, task_name, 0) {}
+
+template<class T>
+inline void ResultWriter<T>::setup() {
+    if (!m_always_flush) {
+        m_output_flusher = new OutputFlusher<T>("OutputFlusher for " + m_task_name, m_flush_timeout, this->shared_from_this());
+        m_output_flusher->start();
+    }
 }
 
 /**
@@ -125,7 +186,9 @@ inline void ResultWriter<T>::copy_to_buffer_builder(int target_channel, std::sha
     SPDLOG_LOGGER_TRACE(m_logger, "Finish write one record, span {} Buffers", num_copied_buffers);    
 
     // TODO: setup a flusher, current always flush
-    flush(target_channel);
+    if (m_always_flush) {
+        flush(target_channel);
+    }
     SPDLOG_LOGGER_TRACE(m_logger, "Finish flush channel {}", target_channel); 
 }
 
