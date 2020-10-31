@@ -38,6 +38,15 @@ void Buffer::put(int index, const unsigned char value) {
     m_data[index] = value;
 }
 
+void Buffer::put(int index, const unsigned char* const value, int length) {
+    if (length == 0) return;
+    if (index + length > m_size) {
+        std::string error_info = "index + length [" + std::to_string(index + length) + "] is out of the range [" + std::to_string(m_size) + "]";
+        throw std::invalid_argument(error_info);
+    }
+    memcpy(m_data + index, value, length);
+}
+
 // BufferBase* Buffer::read_only_slice(int offset, int length) {
 //     if (offset >= m_size || offset + length > m_size) {
 //         std::string error_info = "Slice is illegal offset [" + std::to_string(offset) + "], length [" + std::to_string(length) +

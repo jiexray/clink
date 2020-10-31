@@ -74,6 +74,7 @@ class MySourceFunction: public SourceFunction<std::string> {
 
 class MySinkFunction: public SinkFunction<Tuple2<std::string, int>> {
     void invoke(Tuple2<std::string, int>& value) {
+        // std::cout << "tuple: " << value.to_string() << std::endl;
         return;
     }
 

@@ -45,6 +45,7 @@ public:
     /* Random Access get() and put() methods */
     int                                     get(unsigned char* buf, int index) override;
     void                                    put(int index, const unsigned char value);
+    void                                    put(int index, const unsigned char* const value, int length);
 
     /* Slice the buffer, override from BufferBase */
     int                                     get_buffer_offset() override {return 0;}
