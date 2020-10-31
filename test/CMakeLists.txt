@@ -143,4 +143,12 @@ if(CXXTEST_FOUND)
   # runtime available
   CXXTEST_ADD_TEST(unitest_runtime_available runtime_available.cpp ${CMAKE_CURRENT_SOURCE_DIR}/runtime/TestAvailable.hpp)
   target_link_libraries(unitest_runtime_available runtime)
+
+  # runtime file read throughput
+  CXXTEST_ADD_TEST(unitest_runtime_file_read_throughput runtime_file_read_throughput.cpp ${CMAKE_CURRENT_SOURCE_DIR}/runtime/TestFileReadThroughput.hpp)
+  target_link_libraries(unitest_runtime_file_read_throughput runtime)
+
+  # runtime file read tokenize throughput
+  CXXTEST_ADD_TEST(unitest_runtime_file_read_tokenize_throughput runtime_file_read_tokenize_throughput.cpp ${CMAKE_CURRENT_SOURCE_DIR}/runtime/TestFileReadTokenizeThroughput.hpp)
+  target_link_libraries(unitest_runtime_file_read_tokenize_throughput runtime)
 endif()
