@@ -43,6 +43,7 @@ public:
     double                                      read_double();
     int                                         read_byte();
     int                                         read_unsigned_byte();
+    void                                        read_unsigned_bytes(unsigned char * buf, int length);
     DeserializationResult                       read_into(std::shared_ptr<IOReadableWritable> target);
 
     void                                        evict_used_buffer(bool is_finish_read);

@@ -19,6 +19,8 @@ void StringValue::read(TypeDeserializer* deserializer) {
     }
     m_value = new char[m_len + 1];
 
+    // deserializer->read_unsigned_bytes((unsigned char*) m_value, m_len);
+
     for (int i = 0; i < m_len; i++) {
         m_value[i] = (char) deserializer->read_unsigned_byte();
     }
@@ -34,7 +36,7 @@ std::string StringValue::to_string() {
 
 std::string StringValue::get_value() {
     if (m_value == nullptr) {
-        throw new std::runtime_error("Cannot read an empty StringValue");
+        throw std::runtime_error("Cannot read an empty StringValue");
     }
     return std::string(m_value, m_len);
 }

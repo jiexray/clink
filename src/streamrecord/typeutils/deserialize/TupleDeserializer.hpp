@@ -37,6 +37,7 @@ public:
     double                                      read_double() {return m_type_deserializer->read_double();}
     int                                         read_byte() {return m_type_deserializer->read_byte();}
     int                                         read_unsigned_byte() {return m_type_deserializer->read_unsigned_byte();}
+    void                                        read_unsigned_bytes(unsigned char * buf, int length) {m_type_deserializer->read_unsigned_bytes(buf, length);}
 
     /* Properties */
     int                                         get_record_size() {return m_record_size;}

@@ -29,7 +29,7 @@ std::string DoubleValue::to_string() {
 
 double DoubleValue::get_value() {
     if (m_value == nullptr) {
-        throw new std::runtime_error("Cannot read an empty DoubleValue");
+        throw std::runtime_error("Cannot read an empty DoubleValue");
     }
     return *m_value;
 }

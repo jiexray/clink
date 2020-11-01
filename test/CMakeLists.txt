@@ -151,4 +151,8 @@ if(CXXTEST_FOUND)
   # runtime file read tokenize throughput
   CXXTEST_ADD_TEST(unitest_runtime_file_read_tokenize_throughput runtime_file_read_tokenize_throughput.cpp ${CMAKE_CURRENT_SOURCE_DIR}/runtime/TestFileReadTokenizeThroughput.hpp)
   target_link_libraries(unitest_runtime_file_read_tokenize_throughput runtime)
+
+  # runtime wordcount file read with new filereader
+  CXXTEST_ADD_TEST(unitest_runtime_wordcount_with_new_filereader runtime_wordcount_with_new_filereader.cpp ${CMAKE_CURRENT_SOURCE_DIR}/runtime/TestWordcountWithNewFileReader.hpp)
+  target_link_libraries(unitest_runtime_wordcount_with_new_filereader runtime)
 endif()

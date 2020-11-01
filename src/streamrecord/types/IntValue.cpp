@@ -30,7 +30,7 @@ std::string IntValue::to_string() {
 
 int IntValue::get_value() {
     if (m_value == nullptr) {
-        throw new std::runtime_error("Cannot read an empty IntValue");
+        throw std::runtime_error("Cannot read an empty IntValue");
     }
     return *m_value;
 }

@@ -30,11 +30,14 @@ void TaskExecutor::submit_task(std::shared_ptr<TaskDeploymentDescriptor> tdd) {
     for (int i = 0; i < tdd->get_number_of_result_partitions(); i++) {
         total_number_of_subpartitions += tdd->get_result_partitions()[i]->get_number_of_subpartitions();
     }
-    std::shared_ptr<BufferPool> buffer_pool = std::make_shared<BufferPool>(total_number_of_subpartitions * 2, Constant::BUFFER_SIZE);
+    SPDLOG_LOGGER_INFO(m_logger, "TaskExecutor {}: total subpartitions: {}", m_task_exeuctor_name, total_number_of_subpartitions);
+    std::shared_ptr<BufferPool> buffer_pool = std::make_shared<BufferPool>(
+        total_number_of_subpartitions * Constant::BUFFER_SUBPARTITION_SCALE, 
+        Constant::BUFFER_SIZE);
 
     // create TaskMetricGroup
     std::shared_ptr<TaskMetricGroup> task_metric_group = m_task_manager_metric_group->add_task_for_job(
-        job_id, 
+        job_id,     
         tdd->get_job_information()->get_job_name(), 
         tdd->get_task_information()->get_job_vertex_id(),  
         tdd->get_execution_id(),

@@ -44,6 +44,7 @@ public:
 
     /* Random Access get() and put() methods */
     int                                     get(unsigned char* buf, int index) override;
+    int                                     get(unsigned char* buf, int index, int length) override;
     void                                    put(int index, const unsigned char value);
     void                                    put(int index, const unsigned char* const value, int length);
 

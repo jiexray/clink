@@ -14,7 +14,7 @@ void TypeDeserializerImpl::set_next_buffer(std::shared_ptr<BufferBase> buffer) {
 DeserializationResult TypeDeserializerImpl::get_next_record(std::shared_ptr<IOReadableWritable> target) {
     if (m_record_size == -1) {
         if (m_position == -1) {
-            throw new std::runtime_error("cannot deserialize record, when buffers in empty.");
+            throw std::runtime_error("cannot deserialize record, when buffers in empty.");
         }
 
         if (m_remaining < 2) {
@@ -52,7 +52,7 @@ int TypeDeserializerImpl::read_int() {
     for (int i = 0; i < 4; i++) {
         int ret = m_last_buffers.front()->get(buf + i, m_position++);
         if (ret == -1) {
-            throw new std::runtime_error("read error, reach end, bug in evict used buffer()");
+            throw std::runtime_error("read error, reach end, bug in evict used buffer()");
         }
         m_remaining--;
         evict_used_buffer(false);
@@ -76,7 +76,7 @@ int TypeDeserializerImpl::read_short() {
         // SPDLOG_LOGGER_INFO(m_logger, dump_state());
         int ret = m_last_buffers.front()->get(buf + i, m_position++);
         if (ret == -1) {
-            throw new std::runtime_error("read error, reach end, bug in evict used buffer()");
+            throw std::runtime_error("read error, reach end, bug in evict used buffer()");
         }
         m_remaining--;
         evict_used_buffer(false);
@@ -94,7 +94,7 @@ int TypeDeserializerImpl::read_byte() {
     unsigned char* buf = new unsigned char[1];
     int ret = m_last_buffers.front()->get(buf, m_position++);
     if (ret == -1) {
-        throw new std::runtime_error("error, no buffer to read for read_byte()");
+        throw std::runtime_error("error, no buffer to read for read_byte()");
     }
     m_remaining--;
     evict_used_buffer(false);
@@ -111,13 +111,45 @@ int TypeDeserializerImpl::read_unsigned_byte() {
     return read_byte() & 0xff;
 }
 
+void TypeDeserializerImpl::read_unsigned_bytes(unsigned char * buf, int length) {
+    int left_bytes_in_front_buffer = m_last_buffers.front()->get_max_capacity() - m_position;
+    int left_length = length;
+
+    if (left_bytes_in_front_buffer >= left_length) {
+        m_last_buffers.front()->get(buf, m_position, length);
+        m_position += length;
+        m_remaining -= length;
+        evict_used_buffer(false);
+    } else {
+        int to_write = left_bytes_in_front_buffer;
+
+        while(left_length != 0) {
+            m_last_buffers.front()->get(buf + (length - left_length), m_position, to_write);
+            left_length -= to_write;
+            m_position += to_write;
+            m_remaining -= to_write;
+            evict_used_buffer(false);
+
+            left_bytes_in_front_buffer = m_last_buffers.front()->get_max_capacity() - m_position;
+            if (left_bytes_in_front_buffer >= left_length) {
+                to_write = left_length;
+            } else {
+                to_write = left_bytes_in_front_buffer;
+            }
+        }
+
+    }
+    
+    
+}
+
 double TypeDeserializerImpl::read_double() {
     unsigned char* buf = new unsigned char[8];
 
     for (int i = 0; i < 8; i++) {
         int ret = m_last_buffers.front()->get(buf + i, m_position++);
         if (ret == -1) {
-            throw new std::runtime_error("read error, reach end, bug in evict used buffer()");
+            throw std::runtime_error("read error, reach end, bug in evict used buffer()");
         }
         m_remaining--;
         evict_used_buffer(false);

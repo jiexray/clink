@@ -41,21 +41,6 @@ int BufferBuilder::append(const unsigned char* const source, int offset, int len
         return append(source, offset, length);
     } else {
         throw std::runtime_error("must_complete will be depercated sooner");
-        // int buffer_capacity = m_buffer->get_max_capacity();
-        // int available = buffer_capacity - m_cached_write_postition;
-        // if (available < length) {
-        //     // force to fill the unfinished buffer with fake chars
-        //     for (int i = 0; i < available; i++) {
-        //         // same to append(const char* const, int, int)
-        //         throw std::runtime_error("No zero byte padding, cause bug");
-        //         m_buffer->put(m_cached_write_postition++, (char)0);
-
-        //         (*m_write_position_marker_ptr)++;
-        //     }
-        //     return 0;
-        // } else {
-        //     return append(source, offset, length);
-        // }
     }
 }
 

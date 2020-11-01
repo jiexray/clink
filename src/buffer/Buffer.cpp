@@ -30,6 +30,15 @@ int Buffer::get(unsigned char* buf, int index) {
     return 1;
 }
 
+int Buffer::get(unsigned char* buf, int index, int length) {
+    if  (index + length > m_size) {
+        std::string error_info = "Buffer::get() index + length [" + std::to_string(index + length) + "] is out of the range [" + std::to_string(m_size) + "]";
+        throw std::invalid_argument(error_info);
+    }
+    memcpy(buf, m_data + index, length);
+    return 1;
+}
+
 void Buffer::put(int index, const unsigned char value) {
     if (index >= m_size) {
         std::string error_info = "index [" + std::to_string(index) + "] is out of the range [" + std::to_string(m_size) + "]";

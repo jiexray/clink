@@ -16,5 +16,6 @@ public:
 
     /* Random access to buffer */
     virtual int                             get(unsigned char*, int) = 0;
+    virtual int                             get(unsigned char*, int, int) = 0;
     virtual void                            release() = 0;
 };
