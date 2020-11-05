@@ -29,7 +29,11 @@ bool MailboxProcessor::process_mail() {
     while(m_mailbox_loop_running && is_default_action_unavailable()) {
         maybe_mail = m_mailbox->try_take();
         if (maybe_mail == nullptr) {
+            auto start = std::chrono::steady_clock::now();
             maybe_mail = m_mailbox->take();
+            auto end = std::chrono::steady_clock::now();
+            std::chrono::duration<double> waiting_time = end - start;
+            m_idle_time->mark_event((long)(waiting_time.count() * 1000));
         }
 
         if (maybe_mail == nullptr) {

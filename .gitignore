@@ -5,3 +5,9 @@
 resource/Data-1G-simple.txt
 resource/Data-1G.txt
 resource/wordcount_result.txt
+backup-experiment-result/file-read~sink.txt
+backup-experiment-result/file-read~tokenize~counter~sink.txt
+backup-experiment-result/file-read~tokenize~sink.txt
+backup-experiment-result/metric_report-5558.txt
+resource/Data-2G.txt
+scripts/counter_throughput.sh

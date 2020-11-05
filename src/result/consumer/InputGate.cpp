@@ -2,7 +2,7 @@
 std::shared_ptr<spdlog::logger> InputGate::m_logger = LoggerFactory::get_logger("InputGate");
 
 void InputGate::notify_channel_non_empty(std::shared_ptr<InputChannel> channel) {
-    queue_channel(channel);   
+    queue_channel(channel);  
 }
 
 /**
@@ -13,16 +13,14 @@ void InputGate::queue_channel(std::shared_ptr<InputChannel> channel) {
 
     std::unique_lock<std::mutex> channels_with_data_lock(m_input_channels_with_data_mtx);
 
-    // TODO: use a bitset to accerlate the input channel searching
-    for (std::shared_ptr<InputChannel> in_queue_channel: m_input_channels_with_data) {
-        if (channel == in_queue_channel) {
-            return;
-        }
+    if (m_enqueued_input_channels_with_data.test(channel->get_channel_idx())) {
+        return;
     }
 
     int available_channels = m_input_channels_with_data.size();
 
     m_input_channels_with_data.push_back(channel);
+    m_enqueued_input_channels_with_data.set(channel->get_channel_idx());
 
     if (available_channels == 0) {
         available_condition_variable.notify_all();
@@ -36,6 +34,31 @@ void InputGate::queue_channel(std::shared_ptr<InputChannel> channel) {
         SPDLOG_LOGGER_TRACE(m_logger, "to_notify->complete(true), InputGate before notify data available");
         to_notify->complete(true);
     }
+}
+
+void InputGate::queue_channelV2(std::shared_ptr<InputChannel> channel) {
+    CompletableFuturePtr to_notify = nullptr;
+    int available_channels = 0;
+
+    std::unique_lock<std::mutex> channels_with_data_lock(m_input_channels_with_data_mtx);
+
+    if (m_enqueued_input_channels_with_data.test(channel->get_channel_idx())) {
+        return;
+    }
+    available_channels = m_enqueued_input_channels_with_data.count();
+    m_enqueued_input_channels_with_data.set(channel->get_channel_idx());
+
+    channels_with_data_lock.unlock();
+
+    m_input_channels_with_dataV2.push(channel);
+
+    if (available_channels == 0) {
+        to_notify = m_availability_helper->get_unavailable_to_reset_available();
+        if (to_notify != nullptr) {
+            to_notify->complete(true);
+        }
+    }
+    
 }
 
 /**
@@ -57,8 +80,32 @@ std::shared_ptr<InputChannel> InputGate::get_channel(bool blocking) {
 
     std::shared_ptr<InputChannel> input_channel = m_input_channels_with_data.front();
     m_input_channels_with_data.pop_front();
+    m_enqueued_input_channels_with_data.reset(input_channel->get_channel_idx());
 
     return input_channel;
+}
+
+std::shared_ptr<InputChannel> InputGate::get_channelV2(bool blocking) {
+    assert(blocking == false);
+
+    std::shared_ptr<InputChannel> input_channel;
+    bool has_available_channel = m_input_channels_with_dataV2.try_pop(input_channel);
+
+    if (has_available_channel) {
+        std::unique_lock<std::mutex> channels_with_data_lock(m_input_channels_with_data_mtx);
+        m_enqueued_input_channels_with_data.reset(input_channel->get_channel_idx());
+        channels_with_data_lock.unlock();
+
+        return input_channel;
+    } else {
+        std::unique_lock<std::mutex> channels_with_data_lock(m_input_channels_with_data_mtx);
+        int available_channels = m_enqueued_input_channels_with_data.count();
+        channels_with_data_lock.unlock();
+        if (available_channels == 0) {
+            m_availability_helper->reset_unavailable();
+        }
+        return nullptr;
+    }
 }
 
 void InputGate::set_input_channels(std::shared_ptr<InputChannel>* input_channels, int num_input_channels) {
@@ -96,6 +143,7 @@ std::shared_ptr<BufferOrEvent> InputGate::poll_next() {
             
             if (result != nullptr && result->get_data_available()) {
                 m_input_channels_with_data.push_back(input_channel);
+                m_enqueued_input_channels_with_data.set(input_channel->get_channel_idx());
             }
 
             if (m_input_channels_with_data.empty()) {
@@ -109,4 +157,37 @@ std::shared_ptr<BufferOrEvent> InputGate::poll_next() {
             }
         }
     }
+}
+
+std::shared_ptr<BufferOrEvent> InputGate::poll_nextV2() {
+    while (true) {
+        std::shared_ptr<InputChannel> input_channel = get_channelV2(false);
+
+        if (input_channel == nullptr) {
+            return nullptr;
+        }
+        
+        std::shared_ptr<BufferAndBacklog> result = input_channel->get_next_buffer();
+        
+        if (result != nullptr && result->get_data_available()) {
+            std::unique_lock<std::mutex> channels_with_data_lock(m_input_channels_with_data_mtx);
+            m_enqueued_input_channels_with_data.set(input_channel->get_channel_idx());
+            channels_with_data_lock.unlock();
+
+            m_input_channels_with_dataV2.push(input_channel);
+        }
+
+        std::unique_lock<std::mutex> channels_with_data_lock(m_input_channels_with_data_mtx);
+        int available_channels = m_enqueued_input_channels_with_data.count();
+        channels_with_data_lock.unlock();
+        if (available_channels == 0) {
+            m_availability_helper->reset_unavailable();
+        }
+
+        if (result != nullptr) {
+            return update_metrics(
+                    std::make_shared<BufferOrEvent>(result->get_buffer(), input_channel->get_channel_idx(), !m_input_channels_with_data.empty()));
+        }
+    }
+    
 }

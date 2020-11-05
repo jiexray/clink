@@ -292,5 +292,6 @@ public:
         std::cout << "deserialize_string: " << string_value_1->to_string() << std::endl;     
         std::cout << "deserialize_string: " << string_value_2->to_string() << std::endl;  
     }
+
 };
 

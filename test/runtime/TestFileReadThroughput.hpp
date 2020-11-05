@@ -65,6 +65,7 @@ class MySourceFunction: public SourceFunction<std::string> {
     void run(std::shared_ptr<SourceContext<std::string>> ctx) {
         // ctx->collect(std::make_shared<std::string>(std::string("resource/wordcount.txt")));
         ctx->collect(std::make_shared<std::string>(std::string("resource/Data-1G.txt")));
+        // ctx->collect(std::make_shared<std::string>(std::string("resource/Data-2G.txt")));
     }
 
     char* serialize() override {return (char*)this;}
@@ -175,7 +176,7 @@ public:
         task_configuration_2->set_value<std::string>(StreamConfig::OPERATOR_NAME, std::make_shared<std::string>("file-read-op"));
         task_configuration_3->set_value<std::string>(StreamConfig::OPERATOR_NAME, std::make_shared<std::string>("tokenize-op"));
         task_configuration_4->set_value<std::string>(StreamConfig::OPERATOR_NAME, std::make_shared<std::string>("counter-op"));
-        task_configuration_5->set_value<std::string>(StreamConfig::OPERATOR_NAME, std::make_shared<std::string>("sink-op"));
+        task_configuration_5->set_value<std::string>(StreamConfig::OPERATOR_NAME, std::make_shared<std::string>("counter-op"));
 
 
         // init edge
@@ -245,7 +246,7 @@ public:
         //                                                                                         typeid(OneInputStreamTask<Tuple2<std::string, int>, Tuple2<std::string, int>>).name()); // invokable name
         
         std::shared_ptr<TaskInformation> task_information_5 = std::make_shared<TaskInformation>(5,                              // job_vertex_id
-                                                                                                "sink",               // task_name
+                                                                                                "counter",               // task_name
                                                                                                 1,                              // subtask_number
                                                                                                 task_configuration_5,             
                                                                                                 typeid(OneInputStreamTask<MyTuple>).name()); // invokable name

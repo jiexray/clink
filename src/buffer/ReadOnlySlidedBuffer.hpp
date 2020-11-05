@@ -37,5 +37,6 @@ public:
     /* Random access to data */
     int                             get(unsigned char* buf, int index) override;
     int                             get(unsigned char* buf, int index, int length) override;
+    void                            get_nocopy(unsigned char**, int index, int length) override;
     void                            release();
 };

@@ -10,11 +10,15 @@
 #include "LoggerFactory.hpp"
 #include "Counter.hpp"
 #include "AvailabilityProvider.hpp"
+#include "tbb/concurrent_queue.h"
 #include <map>
 #include <string>
 #include <deque>
 #include <mutex>
 #include <utility>
+#include <bitset>
+#include <atomic>
+#include <assert.h>
 
 class InputChannel;
 
@@ -38,6 +42,10 @@ private:
 
     /* Channels, which notifies this input gate about available data */
     std::deque<std::shared_ptr<InputChannel>>           m_input_channels_with_data;
+    tbb::concurrent_queue<std::shared_ptr<InputChannel>> m_input_channels_with_dataV2;
+    std::bitset<100>                                    m_enqueued_input_channels_with_data;
+    int                                                 m_length_input_channels_with_data;
+
     /* Mutex and condition variable for accessing m_input_channels_with_data */
     std::mutex                                          m_input_channels_with_data_mtx;
     std::mutex                                          available_helper;
@@ -45,10 +53,8 @@ private:
     std::mutex                                          m_request_mtx; // lock to guard partition requests and runtime channel updates
     /* Channel notification */
     void                                                queue_channel(std::shared_ptr<InputChannel> channel);
+    void                                                queue_channelV2(std::shared_ptr<InputChannel> channel);
     
-
-    // TODO: add a bitset for input_channels_with_data
-
     // TODO: buffer pool for network data transfer, currently only local, no use
     std::shared_ptr<BufferPool>                         m_buffer_pool;
     static std::shared_ptr<spdlog::logger>              m_logger;
@@ -75,7 +81,10 @@ public:
 
     InputGate(std::string owning_task_name, int gate_idx, int consumed_subpartition_idx, int number_of_input_channels):
     m_owning_task_name(owning_task_name), m_gate_idx(gate_idx), m_consumed_subpartition_idx(consumed_subpartition_idx), 
-    m_number_of_input_channels(number_of_input_channels) {}    
+    m_number_of_input_channels(number_of_input_channels) {
+        m_enqueued_input_channels_with_data.reset();
+        m_length_input_channels_with_data = 0;
+    }    
 
     void setup() {
         if (m_availability_helper == nullptr) {
@@ -88,10 +97,12 @@ public:
 
     /* Consume data */
     std::shared_ptr<BufferOrEvent>                      poll_next(); 
+    std::shared_ptr<BufferOrEvent>                      poll_nextV2(); 
 
     /* Notify data available */
     void                                                notify_channel_non_empty(std::shared_ptr<InputChannel> channel);
     std::shared_ptr<InputChannel>                       get_channel(bool blocking);
+    std::shared_ptr<InputChannel>                       get_channelV2(bool blocking);
 
     /* Properties */
     int                                                 get_gate_idx() {return m_gate_idx;}

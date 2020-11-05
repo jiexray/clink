@@ -4,6 +4,7 @@
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/**",
+                "/home/tian/software/tbb/oneTBB/include",
                 "/home/tian/software/vscode/projects/clink/deps/cxxtest-4.4/cxxtest",
                 "/home/tian/software/vscode/projects/clink/src/**",
                 "/home/tian/software/vscode/projects/clink/src/buffer",
@@ -47,7 +48,8 @@
             "cStandard": "gnu11",
             "cppStandard": "c++17",
             "intelliSenseMode": "gcc-x64",
-            "compileCommands": "${workspaceFolder}/build/compile_commands.json"
+            "compileCommands": "${workspaceFolder}/build/compile_commands.json",
+            "configurationProvider": "ms-vscode.cmake-tools"
         }
     ],
     "version": 4

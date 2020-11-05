@@ -42,6 +42,19 @@ bool ResultSubpartition::add(std::shared_ptr<BufferConsumer> buffer_consumer) {
     return true;
 }
 
+bool ResultSubpartition::addV2(std::shared_ptr<BufferConsumer> buffer_consumer) {
+    bool is_notify_data_available;
+
+    int cached_length_buffers = m_length_buffers.fetch_add(1);
+
+    m_buffersV2.push(buffer_consumer);
+
+    // TODO: need flush?
+    notify_data_available();
+
+    return true;
+}
+
 /**
  * Get a BufferConsumer from the m_buffers, and build the BufferConsumer.
  * Need to kick the BufferConsumer if it has already finish writing.
@@ -97,6 +110,45 @@ std::shared_ptr<BufferAndBacklog> ResultSubpartition::poll_buffer() {
     return std::make_shared<BufferAndBacklog>(buffer, m_flush_requested || get_number_of_finished_buffers() > 0, get_buffers_in_backlog());
 }
 
+std::shared_ptr<BufferAndBacklog> ResultSubpartition::poll_bufferV2() {
+    std::shared_ptr<BufferBase> buffer = nullptr;
+
+    while (true) {
+        int cached_length_buffers = m_length_buffers.load();
+
+        if (cached_length_buffers == 0) {
+            m_flush_requested = false;
+            break;
+        }
+
+        typedef tbb::concurrent_queue<std::shared_ptr<BufferConsumer>>::iterator iter;
+        iter front_buffer_consumer = m_buffersV2.unsafe_begin();
+
+        buffer = (*front_buffer_consumer)->build();
+
+        if ((*front_buffer_consumer)->is_finished()) {
+            std::shared_ptr<BufferConsumer> finished_buffer_consumer;
+            m_length_buffers -= 1;
+            bool has_popped = m_buffersV2.try_pop(finished_buffer_consumer);
+            assert(has_popped);
+        } else {
+            if (!(*front_buffer_consumer)->is_finished()) {
+                break;
+            }
+        }
+
+        if (buffer != nullptr) {
+            break;
+        }
+    }
+
+    if (buffer == nullptr) {
+        return nullptr;
+    }
+
+    return std::make_shared<BufferAndBacklog>(buffer, m_flush_requested || get_number_of_finished_buffersV2() > 0, m_length_buffers.load());
+}
+
 /**
  * Create a read view, which is a hook for the downstream ResultReader to poll the data
  * from this subpartition.
@@ -115,6 +167,14 @@ std::shared_ptr<ResultSubpartitionView> ResultSubpartition::create_read_view(std
         SPDLOG_LOGGER_DEBUG(m_logger, "notify_data_available when creating read view of result paritition in Task {}", m_parent->get_owning_task_name());
         notify_data_available();
     }
+
+    return m_read_view;
+}
+
+std::shared_ptr<ResultSubpartitionView> ResultSubpartition::create_read_viewV2(std::shared_ptr<SubpartitionAvailableListener> available_listener) {
+    m_read_view = std::make_shared<ResultSubpartitionView>(shared_from_this(), available_listener);
+
+    // TODO: notify?
 
     return m_read_view;
 }
@@ -138,6 +198,18 @@ void ResultSubpartition::flush() {
         notify_data_available();
     }
 }
+
+void ResultSubpartition::flushV2() {
+    if (m_length_buffers.load() == 0 || m_flush_requested) {
+        return;
+    }
+
+    m_flush_requested = true;
+
+    notify_data_available();
+
+}
+
 /**
  * Notify only when we added first finished buffer. Or there is two buffers.
  * Note: This function must hold the m_buffer_mtx!
@@ -165,6 +237,24 @@ int ResultSubpartition::get_number_of_finished_buffers() {
 
     // we assume the last buffer is not finished as default
     return std::max(0, (int) m_buffers.size() - 1);
+}
+
+
+int ResultSubpartition::get_number_of_finished_buffersV2() {
+    int cached_length_buffers = m_length_buffers.load();
+    if (cached_length_buffers == 0) {
+        return 0;
+    }
+
+    typedef tbb::concurrent_queue<std::shared_ptr<BufferConsumer>>::iterator iter;
+    iter front_buffer_consumer = m_buffersV2.unsafe_begin();
+
+
+    if (cached_length_buffers == 1 && (*front_buffer_consumer)->is_finished()) {
+        return 1;
+    }
+
+    return std::max(0, (int) cached_length_buffers - 1);
 }
 
 /**

@@ -14,11 +14,13 @@
 #include "SubpartitionAvailableListener.hpp"
 #include "Constant.hpp"
 #include "LoggerFactory.hpp"
+#include "tbb/concurrent_queue.h"
 #include <memory>
 #include <vector>
 #include <deque>
 #include <mutex>
 #include <algorithm>
+#include <atomic>
 
 class ResultPartition;
 class ResultSubpartitionView;
@@ -47,6 +49,8 @@ private:
     std::shared_ptr<ResultSubpartitionInfo>                 m_subpartition_info;
     std::shared_ptr<ResultPartition>                        m_parent;
     std::deque<std::shared_ptr<BufferConsumer>>             m_buffers;     // TODO: currently, buffer is only buffer not EVENT
+    tbb::concurrent_queue<std::shared_ptr<BufferConsumer>>  m_buffersV2;
+    std::atomic_int                                         m_length_buffers;
     std::mutex                                              m_buffers_mtx; // mutex to protect accesses to m_buffers 
 
     std::shared_ptr<ResultSubpartitionView>                 m_read_view;  // The read view to consume this subpartition
@@ -64,19 +68,24 @@ public:
 
     /* Add BufferConsumer */
     bool                                                    add(std::shared_ptr<BufferConsumer>);
+    bool                                                    addV2(std::shared_ptr<BufferConsumer>);
 
     /* Poll data from m_buffers to outside*/
     std::shared_ptr<BufferAndBacklog>                       poll_buffer();
+    std::shared_ptr<BufferAndBacklog>                       poll_bufferV2();
 
     /* Create view for this subpartition, return to downstream task's ResultReader */
     std::shared_ptr<ResultSubpartitionView>                 create_read_view(std::shared_ptr<SubpartitionAvailableListener>);
+    std::shared_ptr<ResultSubpartitionView>                 create_read_viewV2(std::shared_ptr<SubpartitionAvailableListener>);
 
     /* flush subparition, notify downstream ResultReader to poll data from this subpartition */
     void                                                    flush();
+    void                                                    flushV2();
 
     /* Functions get access to buffer bulider, should guard by m_buffers_mtx!*/
     bool                                                    should_notify_data_available();
     int                                                     get_number_of_finished_buffers();
+    int                                                     get_number_of_finished_buffersV2();
     int                                                     get_buffers_in_backlog();
 
     /* Properties */

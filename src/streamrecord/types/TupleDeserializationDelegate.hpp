@@ -11,8 +11,13 @@
 #include "StringValue.hpp"
 #include "DoubleValue.hpp"
 #include "TupleUtils.hpp"
+#include "DeserializationDelegate.hpp"
 
-class TupleDeserializationDelegate : public IOReadableWritable
+template <class T>
+class TupleDeserializationDelegate;
+
+template<template <class, class> class T, class T0, class T1>
+class TupleDeserializationDelegate<T<T0, T1>>: public IOReadableWritable
 {
 private:
     /* members for tupleize read */
@@ -20,30 +25,11 @@ private:
     // (const std::type_info&)*                m_value_types;
     std::shared_ptr<IOReadableWritable>*    m_real_values;
 
-    const std::type_info&                   get_field_type(int pos) {
-        if (std::dynamic_pointer_cast<IntValue>(m_real_values[pos]) != nullptr) {
-            return typeid(int);
-        } else if (std::dynamic_pointer_cast<DoubleValue>(m_real_values[pos]) != nullptr) {
-            return typeid(double);
-        } else if (std::dynamic_pointer_cast<StringValue>(m_real_values[pos]) != nullptr) {
-            return typeid(std::string);
-        } else {
-            throw std::runtime_error("Unknown type of field value");
-        }
-    }
 public:
-    TupleDeserializationDelegate(int num_of_values, std::reference_wrapper<const std::type_info> value_types[]): m_num_of_values(num_of_values){
-        m_real_values = new std::shared_ptr<IOReadableWritable>[num_of_values + 1];
-        for (int i = 0; i < num_of_values; i++) {
-            const std::type_info& field_type = value_types[i];
-            if (field_type == typeid(int)) {
-                this->m_real_values[i] = std::make_shared<IntValue>();
-            } else if (field_type == typeid(double)) {
-                this->m_real_values[i] = std::make_shared<DoubleValue>();
-            } else if (field_type == typeid(std::string)) {
-                this->m_real_values[i] = std::make_shared<StringValue>();
-            }
-        }
+    TupleDeserializationDelegate() {
+        m_real_values = new std::shared_ptr<IOReadableWritable>[2];
+        m_real_values[0] = std::make_shared<DeserializationDelegate<T0>>();
+        m_real_values[1] = std::make_shared<DeserializationDelegate<T1>>();
     }
 
     ~TupleDeserializationDelegate() {
@@ -52,14 +38,21 @@ public:
     }
 
     /* Properties */
-    int                                     get_num_of_values() {return m_num_of_values;}
-
+    int                                     get_num_of_values() override {return 2;}
 
     /* Implement functions in IOReadableWritable */
-    std::shared_ptr<Tuple>                  get_instance();
+    std::shared_ptr<T<T0, T1>>                  get_instance() {
+        return std::make_shared<T<T0, T1>>(
+            std::dynamic_pointer_cast<DeserializationDelegate<T0>>(m_real_values[0])->get_instance(),
+            std::dynamic_pointer_cast<DeserializationDelegate<T1>>(m_real_values[1])->get_instance());
+    }
 
-    void                                    read(TypeDeserializer* deserializer);
+    void                                    read(std::shared_ptr<TypeDeserializer> deserializer) {
+        throw std::runtime_error("No use");
+    }
 
-    std::shared_ptr<IOReadableWritable>     get_field(int pos);
+    std::shared_ptr<IOReadableWritable>     get_field(int pos) {
+        return m_real_values[pos];
+    }
 };
 

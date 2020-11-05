@@ -10,7 +10,7 @@ IntValue::IntValue(int v) {
     memcpy(m_value, &v, sizeof(int));
 }
 
-void IntValue::read(TypeDeserializer* deserializer) {
+void IntValue::read(std::shared_ptr<TypeDeserializer> deserializer) {
     if (m_value != nullptr) {
         delete[] m_value;
         m_value = nullptr;
@@ -33,8 +33,4 @@ int IntValue::get_value() {
         throw std::runtime_error("Cannot read an empty IntValue");
     }
     return *m_value;
-}
-
-std::shared_ptr<void>   IntValue::get_instance_void() {
-    return std::make_shared<int>(*m_value);
 }

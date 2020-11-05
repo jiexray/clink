@@ -11,8 +11,11 @@
 #include "Constant.hpp"
 #include "LoggerFactory.hpp"
 #include "MailboxDefaultAction.hpp"
+#include "Meter.hpp"
+#include "TaskMetricGroup.hpp"
 #include <iostream>
 #include <memory>
+#include <chrono>
 
 
 class MailboxProcessor : public std::enable_shared_from_this<MailboxProcessor>
@@ -26,6 +29,8 @@ private:
 
     /* A pre-created instnace of mailbox executor that executes all mails */
     std::shared_ptr<MailboxExecutor>        m_mailbox_executor;
+
+    std::shared_ptr<Meter>                  m_idle_time;
     
     bool                                    m_mailbox_loop_running;
 
@@ -67,6 +72,10 @@ public:
     m_mailbox_loop_running(true) {
         m_mailbox_executor = std::make_shared<MailboxExecutor>(mailbox);
         m_round = 0;
+    }
+
+    void                                    init_metric(std::shared_ptr<TaskMetricGroup> metric_group) {
+        m_idle_time = metric_group->get_IO_metric_group()->get_idle_time_ms_per_second();
     }
 
     /* Runs the mailbox processing loop. This is where the main work is done. */

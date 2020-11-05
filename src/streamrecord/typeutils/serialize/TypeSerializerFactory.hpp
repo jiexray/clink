@@ -5,6 +5,7 @@
 #include "TupleSerializer.hpp"
 #include "IntSerializer.hpp"
 #include "TemplateHelper.hpp"
+#include "TupleSerializerV2.hpp"
 
 template <class T> class TypeSerializerFactory; 
 
@@ -20,6 +21,7 @@ template <template <class, class> class T, class T1, class T2>
 class TypeSerializerFactory<T<T1, T2>> {
 public: 
     static std::shared_ptr<TypeSerializer<T<T1, T2>>>    of() {
-        return std::make_shared<TupleSerializer<T<T1, T2>>>();
+        // return std::make_shared<TupleSerializer<T<T1, T2>>>();
+        return std::make_shared<TupleSerializerV2<T<T1, T2>>>();
     }
 };

@@ -97,7 +97,7 @@ class MySinkFunctionString: public SinkFunction<std::string> {
 
 
 
-class TestFileReadTokenizeThroughput: public CxxTest::TestSuite{
+class TestFileReadStringThroughput: public CxxTest::TestSuite{
     typedef std::shared_ptr<Configuration> ConfigurationPtr;
 public:
     void testWordCount( void ) {
@@ -195,24 +195,24 @@ public:
         /* Create edge_2 (file-raed -> tokenize) */
         std::shared_ptr<StreamEdge<std::string>> edge_2 = std::make_shared<StreamEdge<std::string>>(node_2, node_3, std::make_shared<ForwardPartitioner<std::string>>());
         /* Create edge_3 (tokenize -> count) */
-        std::shared_ptr<StreamEdge<std::string>> edge_3 = std::make_shared<StreamEdge<std::string>>(node_3, node_4, std::make_shared<ForwardPartitioner<std::string>>());
+        // std::shared_ptr<StreamEdge<std::string>> edge_3 = std::make_shared<StreamEdge<std::string>>(node_3, node_4, std::make_shared<ForwardPartitioner<std::string>>());
         // /* Create edge_4 (count -> sink) */
         // std::shared_ptr<StreamEdge<Tuple2<std::string, int>>> edge_4 = std::make_shared<StreamEdge<Tuple2<std::string, int>>>(node_4, node_5, std::make_shared<ForwardPartitioner<Tuple2<std::string, int>>>());
 
         /* Createa edge_2 (tokenize -> sink) */
-        std::shared_ptr<StreamEdge<std::string>> edge_4 = std::make_shared<StreamEdge<std::string>>(node_4, node_5, std::make_shared<ForwardPartitioner<std::string>>());
+        std::shared_ptr<StreamEdge<std::string>> edge_4 = std::make_shared<StreamEdge<std::string>>(node_3, node_5, std::make_shared<ForwardPartitioner<std::string>>());
 
 
         task_configuration_1->set_edge<std::string>(StreamConfig::EDGE_NAME, edge_1);
         task_configuration_2->set_edge<std::string>(StreamConfig::EDGE_NAME, edge_2);
-        task_configuration_3->set_edge<std::string>(StreamConfig::EDGE_NAME, edge_3);
-        task_configuration_4->set_edge<std::string>(StreamConfig::EDGE_NAME, edge_4);
+        task_configuration_3->set_edge<std::string>(StreamConfig::EDGE_NAME, edge_4);
+        // task_configuration_4->set_edge<std::string>(StreamConfig::EDGE_NAME, edge_4);
         // sink task no out-edge
 
         // source task no input
         task_configuration_2->set_value<int>(StreamConfig::NUMBER_OF_INPUTS, std::make_shared<int>(1));
         task_configuration_3->set_value<int>(StreamConfig::NUMBER_OF_INPUTS, std::make_shared<int>(1));
-        task_configuration_4->set_value<int>(StreamConfig::NUMBER_OF_INPUTS, std::make_shared<int>(1));
+        // task_configuration_4->set_value<int>(StreamConfig::NUMBER_OF_INPUTS, std::make_shared<int>(1));
         task_configuration_5->set_value<int>(StreamConfig::NUMBER_OF_INPUTS, std::make_shared<int>(1));
 
         std::shared_ptr<TaskInformation> task_information_1 = std::make_shared<TaskInformation>(0,                              // job_vertex_id
@@ -233,11 +233,11 @@ public:
                                                                                                 task_configuration_3,             
                                                                                                 typeid(OneInputStreamTask<std::string, std::string>).name()); // invokable name
 
-        std::shared_ptr<TaskInformation> task_information_4 = std::make_shared<TaskInformation>(4,                              // job_vertex_id
-                                                                                                "counter",               // task_name
-                                                                                                1,                              // subtask_number
-                                                                                                task_configuration_4,             
-                                                                                                typeid(OneInputStreamTask<std::string, std::string>).name()); // invokable name
+        // std::shared_ptr<TaskInformation> task_information_4 = std::make_shared<TaskInformation>(4,                              // job_vertex_id
+        //                                                                                         "counter",               // task_name
+        //                                                                                         1,                              // subtask_number
+        //                                                                                         task_configuration_4,             
+        //                                                                                         typeid(OneInputStreamTask<std::string, std::string>).name()); // invokable name
         
         std::shared_ptr<TaskInformation> task_information_5 = std::make_shared<TaskInformation>(5,                              // job_vertex_id
                                                                                                 "sink",               // task_name
@@ -254,18 +254,18 @@ public:
         result_partitions_2[0] = std::make_shared<ResultPartitionDeploymentDescriptor>(1);
         std::shared_ptr<ResultPartitionDeploymentDescriptor>* result_partitions_3 = new std::shared_ptr<ResultPartitionDeploymentDescriptor>[1];
         result_partitions_3[0] = std::make_shared<ResultPartitionDeploymentDescriptor>(1);
-        std::shared_ptr<ResultPartitionDeploymentDescriptor>* result_partitions_4 = new std::shared_ptr<ResultPartitionDeploymentDescriptor>[1];
-        result_partitions_4[0] = std::make_shared<ResultPartitionDeploymentDescriptor>(1);
+        // std::shared_ptr<ResultPartitionDeploymentDescriptor>* result_partitions_4 = new std::shared_ptr<ResultPartitionDeploymentDescriptor>[1];
+        // result_partitions_4[0] = std::make_shared<ResultPartitionDeploymentDescriptor>(1);
 
 
         std::shared_ptr<InputGateDeploymentDescriptor>* input_gates_2 = new std::shared_ptr<InputGateDeploymentDescriptor>[1];
         input_gates_2[0] = std::make_shared<InputGateDeploymentDescriptor>(0, new std::string{"source (1/1)-0"}, 1);
         std::shared_ptr<InputGateDeploymentDescriptor>* input_gates_3 = new std::shared_ptr<InputGateDeploymentDescriptor>[1];
         input_gates_3[0] = std::make_shared<InputGateDeploymentDescriptor>(0, new std::string{"file-read (1/1)-0"}, 1);
-        std::shared_ptr<InputGateDeploymentDescriptor>* input_gates_4 = new std::shared_ptr<InputGateDeploymentDescriptor>[1];
-        input_gates_4[0] = std::make_shared<InputGateDeploymentDescriptor>(0, new std::string{"tokenize (1/1)-0"}, 1);
+        // std::shared_ptr<InputGateDeploymentDescriptor>* input_gates_4 = new std::shared_ptr<InputGateDeploymentDescriptor>[1];
+        // input_gates_4[0] = std::make_shared<InputGateDeploymentDescriptor>(0, new std::string{"tokenize (1/1)-0"}, 1);
         std::shared_ptr<InputGateDeploymentDescriptor>* input_gates_5 = new std::shared_ptr<InputGateDeploymentDescriptor>[1];
-        input_gates_5[0] = std::make_shared<InputGateDeploymentDescriptor>(0, new std::string{"counter (1/1)-0"}, 1);
+        input_gates_5[0] = std::make_shared<InputGateDeploymentDescriptor>(0, new std::string{"tokenize (1/1)-0"}, 1);
 
         /* Create TaskDeploymentDescriptor */
         std::shared_ptr<TaskDeploymentDescriptor> tdd_1 = std::make_shared<TaskDeploymentDescriptor>(job_information->get_job_id(),
@@ -307,18 +307,18 @@ public:
                                                                                                     input_gates_3 // input_gates
                                                                                                     );
 
-        std::shared_ptr<TaskDeploymentDescriptor> tdd_4 = std::make_shared<TaskDeploymentDescriptor>(job_information->get_job_id(),
-                                                                                                    job_information,
-                                                                                                    task_information_4,
-                                                                                                    105, // execution id
-                                                                                                    allocation_id_2, 
-                                                                                                    0,   // subtask idx
-                                                                                                    5,   // target slot number
-                                                                                                    1,   // number_of_result_partitions
-                                                                                                    1,   // number_of_input_gates
-                                                                                                    result_partitions_4, // result_partitions
-                                                                                                    input_gates_4 // input_gates
-                                                                                                    );    
+        // std::shared_ptr<TaskDeploymentDescriptor> tdd_4 = std::make_shared<TaskDeploymentDescriptor>(job_information->get_job_id(),
+        //                                                                                             job_information,
+        //                                                                                             task_information_4,
+        //                                                                                             105, // execution id
+        //                                                                                             allocation_id_2, 
+        //                                                                                             0,   // subtask idx
+        //                                                                                             5,   // target slot number
+        //                                                                                             1,   // number_of_result_partitions
+        //                                                                                             1,   // number_of_input_gates
+        //                                                                                             result_partitions_4, // result_partitions
+        //                                                                                             input_gates_4 // input_gates
+        //                                                                                             );    
 
         std::shared_ptr<TaskDeploymentDescriptor> tdd_5 = std::make_shared<TaskDeploymentDescriptor>(job_information->get_job_id(),
                                                                                                     job_information,
@@ -339,7 +339,7 @@ public:
         task_exeuctor->submit_task(tdd_1);
         task_exeuctor->submit_task(tdd_2);
         task_exeuctor->submit_task(tdd_3);
-        task_exeuctor->submit_task(tdd_4);
+        // task_exeuctor->submit_task(tdd_4);
         task_exeuctor->submit_task(tdd_5);
 
         /* start task */
@@ -349,7 +349,7 @@ public:
         task_exeuctor->start_task(102);
         task_exeuctor->start_task(103);
         task_exeuctor->start_task(104);
-        task_exeuctor->start_task(105);
+        // task_exeuctor->start_task(105);
         task_exeuctor->start_task(106);
 
         std::this_thread::sleep_for(std::chrono::seconds(3600));
@@ -359,7 +359,7 @@ public:
         // task_exeuctor->cancel_task(102);
         task_exeuctor->cancel_task(103);
         task_exeuctor->cancel_task(104);
-        task_exeuctor->cancel_task(105);
+        // task_exeuctor->cancel_task(105);
         task_exeuctor->cancel_task(106);
     }
 };

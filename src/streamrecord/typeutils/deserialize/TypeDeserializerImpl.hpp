@@ -18,7 +18,7 @@
 
 class IOReadableWritable;
 
-class TypeDeserializerImpl: public TypeDeserializer
+class TypeDeserializerImpl: public TypeDeserializer, public std::enable_shared_from_this<TypeDeserializerImpl>
 {
 private:
     std::deque<std::shared_ptr<BufferBase>>     m_last_buffers; // m_last_buffers caches all incomplete buffer, 
@@ -28,7 +28,7 @@ private:
     int                                         m_position;
     int                                         m_remaining;
     static std::shared_ptr<spdlog::logger>      m_logger;
-             
+
 public:
     TypeDeserializerImpl() {
         m_record_size = -1; // no record at the creation of deserializer.
@@ -45,6 +45,10 @@ public:
     int                                         read_unsigned_byte();
     void                                        read_unsigned_bytes(unsigned char * buf, int length);
     DeserializationResult                       read_into(std::shared_ptr<IOReadableWritable> target);
+
+    /* read with no buffer copy */
+    void                                        read_unsigned_bytes_no_copy(unsigned char** buf, int length);
+    void                                        read_commit();
 
     void                                        evict_used_buffer(bool is_finish_read);
 

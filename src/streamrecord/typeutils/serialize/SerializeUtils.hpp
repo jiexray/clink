@@ -10,9 +10,9 @@ public:
     static void                     serialize_short(unsigned char* buf, int value);
     static void                     serialize_int(unsigned char* buf, int value);
     static void                     serialize_double(unsigned char* buf, double value);
-    static int                      deserialize_short(unsigned char* buf);
-    static int                      deserialize_int(unsigned char* buf);
-    static double                   deserialize_double(unsigned char* buf);
+    static int                      deserialize_short(const unsigned char* buf);
+    static int                      deserialize_int(const unsigned char* buf);
+    static double                   deserialize_double(const unsigned char* buf);
 };
 
 inline void SerializeUtils::serialize_short(unsigned char* buf, int value) {
@@ -21,7 +21,7 @@ inline void SerializeUtils::serialize_short(unsigned char* buf, int value) {
     buf[1] = value & 0x00FF;
 }
 
-inline int SerializeUtils::deserialize_short(unsigned char* buf) {
+inline int SerializeUtils::deserialize_short(const unsigned char* buf) {
     int value = 0;
     value += buf[1];
     value += (buf[0] << 8);
@@ -32,20 +32,20 @@ inline void SerializeUtils::serialize_int(unsigned char* buf, int value) {
     memcpy(buf, &value, 4);
 }
 
-inline int SerializeUtils::deserialize_int(unsigned char* buf) {
-    int* val = new int[1];
-    memcpy(val, buf, 4);
+inline int SerializeUtils::deserialize_int(const unsigned char* buf) {
+    int val;
+    memcpy(&val, buf, 4);
 
-    return *val;
+    return val;
 }
 
 inline void SerializeUtils::serialize_double(unsigned char* buf, double value) {
     memcpy(buf, &value, sizeof(double));
 }
 
-inline double SerializeUtils::deserialize_double(unsigned char* buf) {
-    double* val = new double[1];
-    memcpy(val, buf, sizeof(double));
+inline double SerializeUtils::deserialize_double(const unsigned char* buf) {
+    double val;
+    memcpy(&val, buf, sizeof(double));
 
-    return *val;
+    return val;
 }

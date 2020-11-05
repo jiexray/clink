@@ -11,7 +11,7 @@ DoubleValue::DoubleValue(double v) {
     memcpy(m_value, &v, sizeof(double));
 }
 
-void DoubleValue::read(TypeDeserializer* deserializer) {
+void DoubleValue::read(std::shared_ptr<TypeDeserializer> deserializer) {
     if (m_value != nullptr) {
         delete[] m_value;
         m_value = nullptr;
@@ -32,8 +32,4 @@ double DoubleValue::get_value() {
         throw std::runtime_error("Cannot read an empty DoubleValue");
     }
     return *m_value;
-}
-
-std::shared_ptr<void> DoubleValue::get_instance_void(){
-    return std::make_shared<double>(*m_value);
 }

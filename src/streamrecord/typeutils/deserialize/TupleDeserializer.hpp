@@ -39,6 +39,9 @@ public:
     int                                         read_unsigned_byte() {return m_type_deserializer->read_unsigned_byte();}
     void                                        read_unsigned_bytes(unsigned char * buf, int length) {m_type_deserializer->read_unsigned_bytes(buf, length);}
 
+    void                                        read_unsigned_bytes_no_copy(unsigned char** buf, int length) {}
+    void                                        read_commit() {}
+
     /* Properties */
     int                                         get_record_size() {return m_record_size;}
     void                                        set_record_size(int record_size) {m_record_size = record_size;}

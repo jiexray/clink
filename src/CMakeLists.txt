@@ -2,6 +2,7 @@
 cmake_minimum_required (VERSION 3.13)
 
 find_package(spdlog REQUIRED)
+# find_package(tbb REQUIRED)
 find_package(Boost COMPONENTS system thread REQUIRED)
 
 # all include files
@@ -88,14 +89,14 @@ target_sources(result
     result/consumer/InputGate.cpp
     result/consumer/InputGateFactory.cpp
 )
-target_link_libraries(result streamrecord buffer spdlog::spdlog)
+target_link_libraries(result streamrecord buffer spdlog::spdlog tbb)
 
 # ------------------------
 #   build streamrecord module
 # ------------------------
 target_sources(streamrecord
   PRIVATE
-    streamrecord/types/TupleDeserializationDelegate.cpp
+    # streamrecord/types/TupleDeserializationDelegate.cpp
     streamrecord/types/IntValue.cpp
     streamrecord/types/DoubleValue.cpp
     streamrecord/types/StringValue.cpp
@@ -105,6 +106,7 @@ target_sources(streamrecord
     streamrecord/typeutils/serialize/StringSerializer.cpp
     streamrecord/typeutils/serialize/DoubleSerializer.cpp
     streamrecord/typeutils/deserialize/TupleDeserializer.cpp
+    streamrecord/typeutils/deserialize/TupleDeserializerV2.cpp
 )
 target_include_directories(streamrecord PUBLIC
   ${ALL_INCLUDE_DIRS}

@@ -13,8 +13,8 @@
 
 template <class T> class TupleSerializer;
 
-template <class T1, class T2>
-class TupleSerializer<Tuple2<T1, T2>> : public TypeSerializer<Tuple2<T1, T2>>
+template <class T0, class T1>
+class TupleSerializer<Tuple2<T0, T1>> : public TypeSerializer<Tuple2<T0, T1>>
 {
 private:
     int                                         m_arity;
@@ -22,9 +22,29 @@ private:
     bool*                                       m_is_new_record;
     std::shared_ptr<TypeSerializerBase>*        m_field_serializers;
     int                                         m_data_remaining;
+    unsigned char*                              m_length_buf;
 public:
 
-    StreamRecordAppendResult    serialize(std::shared_ptr<Tuple2<T1, T2>> record, std::shared_ptr<BufferBuilder> buffer_builder, bool is_new_record);
+    TupleSerializer() {
+        m_arity = 2;
+        m_is_finished = new bool[m_arity + 1];
+        m_is_new_record = new bool[m_arity + 1];
+        m_field_serializers = new std::shared_ptr<TypeSerializerBase>[m_arity + 1];
+
+        m_field_serializers[0] = TypeSerializerUtil::create_type_basic_type_serializer(typeid(T0));
+        m_field_serializers[1] = TypeSerializerUtil::create_type_basic_type_serializer(typeid(T1));
+
+        m_length_buf = new unsigned char[2];
+    }
+
+    ~TupleSerializer() {
+        delete[] m_is_finished;
+        delete[] m_is_new_record;
+        delete[] m_field_serializers;
+        delete[] m_length_buf;
+    }
+
+    StreamRecordAppendResult    serialize(std::shared_ptr<Tuple2<T0, T1>> record, std::shared_ptr<BufferBuilder> buffer_builder, bool is_new_record);
 };
 
 template <class T0, class T1>
@@ -33,26 +53,15 @@ inline StreamRecordAppendResult TupleSerializer<Tuple2<T0, T1>>::serialize(std::
 
     if (is_new_record) {
         m_data_remaining = value_size + 2;
-        m_arity = tuple->get_arity();
-        assert(m_arity == 2);
-
-        m_is_finished = new bool[m_arity + 1];
-        m_is_new_record = new bool[m_arity + 1];
-        m_field_serializers = new std::shared_ptr<TypeSerializerBase>[m_arity + 1];
+        assert(tuple->get_arity() == 2);
 
         for (int i = 0; i < m_arity; i++) {
             m_is_finished[i] = false;
             m_is_new_record[i] = true;
-            
-            // m_field_serializers[i] = std::make_shared<TypeSerializerDelegate>(tuple->get_field(i));
         }
-        m_field_serializers[0] = TypeSerializerUtil::create_type_basic_type_serializer(typeid(T0));
-        m_field_serializers[1] = TypeSerializerUtil::create_type_basic_type_serializer(typeid(T1));
 
-        unsigned char* length_buf = new unsigned char[2];
-        SerializeUtils::serialize_short(length_buf, value_size);
-        int data_length_write = buffer_builder->append(length_buf, 0, 2, false);
-        delete[] length_buf;
+        SerializeUtils::serialize_short(m_length_buf, value_size);
+        int data_length_write = buffer_builder->append(m_length_buf, 0, 2, false);
 
         // the length of record is not totally written, partially write
         m_data_remaining -= data_length_write;
@@ -69,7 +78,6 @@ inline StreamRecordAppendResult TupleSerializer<Tuple2<T0, T1>>::serialize(std::
             unsigned char* length_buf = new unsigned char[2];
             SerializeUtils::serialize_short(length_buf, value_size);
             int data_length_write = buffer_builder->append(length_buf, 0, 2, false);
-            delete[] length_buf;
             // the length of record is not totally written, partially write
             m_data_remaining -= data_length_write;
             assert(data_length_write == 2);
@@ -78,7 +86,6 @@ inline StreamRecordAppendResult TupleSerializer<Tuple2<T0, T1>>::serialize(std::
             SerializeUtils::serialize_short(length_buf, value_size);
             // start write from offset 1, write length 1
             int data_length_write = buffer_builder->append(length_buf, 1, 1, false);
-            delete[] length_buf;
             // the length of record is not totally written, partially write
             m_data_remaining -= data_length_write;
             assert(data_length_write == 1);
@@ -110,18 +117,6 @@ inline StreamRecordAppendResult TupleSerializer<Tuple2<T0, T1>>::serialize(std::
         if (partial_result != StreamRecordAppendResult::PARTITAL_RECORD_BUFFER_FULL) {
             // check if the field is the final field?
             if (i == m_arity - 1) {
-                // finish all serialization of an tuple, free buffer
-                delete[] m_is_finished;
-                delete[] m_is_new_record;
-                for (int i = 0; i < m_arity; i++) {
-                    m_field_serializers[i].reset();
-                }
-                delete[] m_field_serializers;
-
-                m_is_finished = nullptr;
-                m_is_new_record = nullptr;
-                m_field_serializers = nullptr;
-
                 return partial_result;
             } else {
                 m_is_finished[i] = true;

@@ -11,7 +11,8 @@ DeserializationResult TupleDeserializer::get_next_record(std::shared_ptr<IOReada
 
     if (m_record_fields == -1) {
         // a new read
-        m_record_fields = std::dynamic_pointer_cast<TupleDeserializationDelegate>(target)->get_num_of_values();
+        // m_record_fields = std::dynamic_pointer_cast<TupleDeserializationDelegate>(target)->get_num_of_values();
+        m_record_fields = target->get_num_of_values();
 
         m_record_size = read_short();
         m_remaining = m_record_size;

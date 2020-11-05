@@ -19,6 +19,7 @@
 class CountFunction: public MapFunction<Tuple2<std::string, int>, Tuple2<std::string, int>>{
 private:
     std::map<std::string, int> m_counter;
+    std::shared_ptr<Tuple2<std::string, int>> fake_tuple = std::make_shared<Tuple2<std::string, int>>(std::make_shared<std::string>("test"), std::make_shared<int>(1));
 public:
     std::shared_ptr<Tuple2<std::string, int>> map(Tuple2<std::string, int>& value){
         // if(m_counter.find(*value.f0) != m_counter.end()) {
@@ -28,7 +29,8 @@ public:
         // }
         // return std::make_shared<Tuple2<std::string, int>>(std::make_shared<std::string>(*value.f0), std::make_shared<int>(m_counter[*value.f0]));
         // return std::make_shared<std::string>("f0: " + (*value.f0) + ", f1: " + std::to_string(*value.f1));
-        return std::make_shared<Tuple2<std::string, int>>(std::make_shared<std::string>(*value.f0), std::make_shared<int>(1));
+        // return std::make_shared<Tuple2<std::string, int>>(std::make_shared<std::string>(*value.f0), std::make_shared<int>(1));
+        return fake_tuple;
     }
 
     char* serialize() override {return (char*)this;}

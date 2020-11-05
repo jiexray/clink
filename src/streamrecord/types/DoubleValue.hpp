@@ -17,8 +17,7 @@ public:
     DoubleValue();
     DoubleValue(double v);
 
-    void                    read(TypeDeserializer* deserializer) override;
-    std::shared_ptr<void>   get_instance_void() override;
+    void                    read(std::shared_ptr<TypeDeserializer> deserializer) override;
 
     /* Properties */
     std::string             to_string();

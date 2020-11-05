@@ -8,6 +8,9 @@
 #include "TupleDeserializer.hpp"
 #include "TupleDeserializationDelegate.hpp"
 #include "StreamRecordDeserializer.hpp"
+#include "TupleSerializerV2.hpp"
+#include "TupleDeserializerV2.hpp"
+#include "TupleDeserializationDelegateV2.hpp"
 
 
 void isBufferEqualToString(std::shared_ptr<BufferBase> buf, unsigned char* str, int length) {
@@ -236,17 +239,14 @@ public:
         buf_1.reset();
 
 
-        std::shared_ptr<TupleDeserializationDelegate> tuple_deserialize_delegate = std::make_shared<TupleDeserializationDelegate>(2, 
-                                                                                new std::reference_wrapper<const std::type_info>[2]{typeid(std::string), typeid(int)});
+        std::shared_ptr<TupleDeserializationDelegate<Tuple2<std::string, int>>> tuple_deserialize_delegate = std::make_shared<TupleDeserializationDelegate<Tuple2<std::string, int>>>();
 
 
         tuple_deserializer->get_next_record(tuple_deserialize_delegate);
 
-        std::shared_ptr<Tuple> gen_tuple = tuple_deserialize_delegate->get_instance();
+        std::shared_ptr<Tuple2<std::string, int>> gen_tuple = tuple_deserialize_delegate->get_instance();
 
-        std::shared_ptr<Tuple2<std::string, int>> gen_real_tuple = std::dynamic_pointer_cast<Tuple2<std::string, int>>(gen_tuple);
-
-        std::cout << "Tuple2 f0: " << *gen_real_tuple->f0 << ", f1: " << *gen_real_tuple->f1 << std::endl;
+        std::cout << "Tuple2 f0: " << *gen_tuple->f0 << ", f1: " << *gen_tuple->f1 << std::endl;
     }
 
     void testTupleDeserializeWithStreamDeserializer( void ) {
@@ -270,18 +270,52 @@ public:
         // -------------------------
         std::shared_ptr<StreamRecordDeserializer> stream_record_deserializer = std::make_shared<StreamRecordDeserializer>(RECORD_TYPE::TUPLE);
 
-        std::shared_ptr<IOReadableWritable> tuple_deserialize_delegate = std::make_shared<TupleDeserializationDelegate>(2, 
-                                                                            new std::reference_wrapper<const std::type_info>[2]{typeid(std::string), typeid(int)});
+        std::shared_ptr<TupleDeserializationDelegate<Tuple2<std::string, int>>> tuple_deserialize_delegate = std::make_shared<TupleDeserializationDelegate<Tuple2<std::string, int>>>();
 
         stream_record_deserializer->set_next_buffer(buf_1);
         buf_1.reset();
 
         stream_record_deserializer->get_next_record(tuple_deserialize_delegate);
 
-        std::shared_ptr<Tuple> gen_tuple = std::dynamic_pointer_cast<TupleDeserializationDelegate>(tuple_deserialize_delegate)->get_instance();
+        std::shared_ptr<Tuple2<std::string, int>> gen_tuple = tuple_deserialize_delegate->get_instance();
 
         std::shared_ptr<Tuple2<std::string, int>> gen_real_tuple = std::dynamic_pointer_cast<Tuple2<std::string, int>>(gen_tuple);
 
         std::cout << "Tuple2 f0: " << *gen_real_tuple->f0 << ", f1: " << *gen_real_tuple->f1 << std::endl;
+    }
+
+    void testTupleDeserializeV2( void ) {
+        std::cout << "test testTupleDeserializeV2()" << std::endl;
+        // -------------------------
+        //  Serialization part
+        // -------------------------
+        std::shared_ptr<TupleSerializerV2<Tuple2<std::string, int>>> tuple_serializer = std::make_shared<TupleSerializerV2<Tuple2<std::string, int>>>();
+        // std::shared_ptr<TupleSerializer> tuple_serializer = std::make_shared<TupleSerializer>();
+        std::shared_ptr<Tuple2<std::string, int>> tuple = std::make_shared<Tuple2<std::string, int>>(std::make_shared<std::string>("Hello world"), std::make_shared<int>(100));
+
+        std::shared_ptr<BufferPool> buffer_pool = std::make_shared<BufferPool>(10, 100);
+        std::shared_ptr<BufferBuilder> buffer_builder_1 = buffer_pool->request_buffer_builder();
+        std::shared_ptr<BufferConsumer> buffer_consumer_1 = buffer_builder_1->create_buffer_consumer();
+        tuple_serializer->serialize(tuple, buffer_builder_1, true);
+
+        std::shared_ptr<BufferBase> buf_1 = buffer_consumer_1->build();
+
+        // -------------------------
+        //  Deserialization part
+        // -------------------------
+
+        std::shared_ptr<TupleDeserializerV2> tuple_deserializer = std::make_shared<TupleDeserializerV2>();
+        tuple_deserializer->set_next_buffer(buf_1);
+        buf_1.reset();
+
+
+        std::shared_ptr<TupleDeserializationDelegateV2<Tuple2<std::string, int>>> tuple_deserialize_delegate = std::make_shared<TupleDeserializationDelegateV2<Tuple2<std::string, int>>>();
+
+
+        tuple_deserializer->get_next_record(tuple_deserialize_delegate);
+
+        std::shared_ptr<Tuple2<std::string, int>> gen_tuple = tuple_deserialize_delegate->get_instance();
+
+        std::cout << "Tuple2 f0: " << *gen_tuple->f0 << ", f1: " << *gen_tuple->f1 << std::endl;
     }
 };

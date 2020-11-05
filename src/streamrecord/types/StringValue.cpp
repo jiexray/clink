@@ -11,7 +11,7 @@ StringValue::StringValue(std::string s){
     memcpy(m_value, s.c_str(), s.size());
 }
 
-void StringValue::read(TypeDeserializer* deserializer) {
+void StringValue::read(std::shared_ptr<TypeDeserializer> deserializer) {
     m_len = deserializer->get_record_size();
     if (m_value != nullptr) {
         delete[] m_value;
@@ -19,11 +19,7 @@ void StringValue::read(TypeDeserializer* deserializer) {
     }
     m_value = new char[m_len + 1];
 
-    // deserializer->read_unsigned_bytes((unsigned char*) m_value, m_len);
-
-    for (int i = 0; i < m_len; i++) {
-        m_value[i] = (char) deserializer->read_unsigned_byte();
-    }
+    deserializer->read_unsigned_bytes((unsigned char*) m_value, m_len);
 }
 
 std::string StringValue::to_string() {
@@ -39,8 +35,4 @@ std::string StringValue::get_value() {
         throw std::runtime_error("Cannot read an empty StringValue");
     }
     return std::string(m_value, m_len);
-}
-
-std::shared_ptr<void> StringValue::get_instance_void() {
-    return std::make_shared<std::string>(std::string(m_value, m_len));
 }

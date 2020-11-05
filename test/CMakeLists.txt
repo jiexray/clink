@@ -155,4 +155,12 @@ if(CXXTEST_FOUND)
   # runtime wordcount file read with new filereader
   CXXTEST_ADD_TEST(unitest_runtime_wordcount_with_new_filereader runtime_wordcount_with_new_filereader.cpp ${CMAKE_CURRENT_SOURCE_DIR}/runtime/TestWordcountWithNewFileReader.hpp)
   target_link_libraries(unitest_runtime_wordcount_with_new_filereader runtime)
+
+  # runtime file read string throughput
+  CXXTEST_ADD_TEST(unitest_runtime_file_read_string_throughput runtime_file_read_string_throughput.cpp ${CMAKE_CURRENT_SOURCE_DIR}/runtime/TestFileReadStringThroughput.hpp)
+  target_link_libraries(unitest_runtime_file_read_string_throughput runtime)
+
+  # runtime file read throughput mid operator throughput
+  CXXTEST_ADD_TEST(unitest_runtime_file_read_mid_operator_throughput runtime_file_read_mid_operator.cpp ${CMAKE_CURRENT_SOURCE_DIR}/runtime/TestFileReadMidOperatorThroughput.hpp)
+  target_link_libraries(unitest_runtime_file_read_mid_operator_throughput runtime)
 endif()

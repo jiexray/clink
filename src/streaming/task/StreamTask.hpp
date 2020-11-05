@@ -163,6 +163,7 @@ template<class OUT>
 inline void StreamTask<OUT>::before_invoke() {
     this->m_mailbox_processor = std::make_shared<MailboxProcessor>(std::make_shared<StreamTaskDefaultMailboxAction<OUT>>(this->shared_from_this()), 
                                                                     std::make_shared<TaskMailbox>(nullptr));
+    this->m_mailbox_processor->init_metric(this->m_task_metric_group);
 
     init();
 

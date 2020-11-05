@@ -36,7 +36,7 @@ DeserializationResult TypeDeserializerImpl::get_next_record(std::shared_ptr<IORe
 }
 
 DeserializationResult TypeDeserializerImpl::read_into(std::shared_ptr<IOReadableWritable> target) {
-    target->read(this);
+    target->read(shared_from_this());
 
     // finish reading, re-initialize m_record_size
     m_record_size = -1;
@@ -112,6 +112,7 @@ int TypeDeserializerImpl::read_unsigned_byte() {
 }
 
 void TypeDeserializerImpl::read_unsigned_bytes(unsigned char * buf, int length) {
+    if (length == 0) return;
     int left_bytes_in_front_buffer = m_last_buffers.front()->get_max_capacity() - m_position;
     int left_length = length;
 
@@ -137,10 +138,7 @@ void TypeDeserializerImpl::read_unsigned_bytes(unsigned char * buf, int length) 
                 to_write = left_bytes_in_front_buffer;
             }
         }
-
     }
-    
-    
 }
 
 double TypeDeserializerImpl::read_double() {
@@ -161,6 +159,27 @@ double TypeDeserializerImpl::read_double() {
     buf = nullptr;
     
     return v;
+}
+
+void TypeDeserializerImpl::read_unsigned_bytes_no_copy(unsigned char** buf, int length) {
+    if (length == 0) return;
+    int left_bytes_in_front_buffer = m_last_buffers.front()->get_max_capacity() - m_position;
+    int left_length = length;
+
+    if (left_bytes_in_front_buffer >= left_length) {
+        // m_last_buffers.front()->get(buf, m_position, length);
+        m_last_buffers.front()->get_nocopy(buf, m_position, length);
+        m_position += length;
+        m_remaining -= length;
+        // evict_used_buffer(false);
+    } else {
+        // write by copy!
+        *buf = nullptr;
+    }
+}
+
+void TypeDeserializerImpl::read_commit() {
+    evict_used_buffer(false);
 }
 
 /**

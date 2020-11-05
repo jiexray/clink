@@ -5,6 +5,7 @@
 #include <memory>
 #include <string>
 #include "Tuple.hpp"
+#include "TemplateHelper.hpp"
 #include <sstream>
 
 template <class T0, class T1>
@@ -51,4 +52,26 @@ public:
         return oss.str();
         // return "Tuple2 {f0: " + IOUtils::to_string<T0>(f0) + ", f1: " + IOUtils::to_string<T1>(f1) + "}";
     }
+
+    int                         get_buf_size() override {
+        return 4 + get_value_buf_size(Int2Type<0>(), Type2Type<T0>()) + get_value_buf_size(Int2Type<1>(), Type2Type<T1>());
+    }
+
+    int                         get_value_buf_size(Int2Type<0>, Type2Type<std::string>) { return f0->size();}
+    int                         get_value_buf_size(Int2Type<1>, Type2Type<std::string>) { return f1->size();}
+
+    int                         get_value_buf_size(Int2Type<0>, Type2Type<int>) {return sizeof(int);}
+    int                         get_value_buf_size(Int2Type<1>, Type2Type<int>) {return sizeof(int);}
+
+    int                         get_value_buf_size(Int2Type<0>, Type2Type<double>) { return sizeof(double); }
+    int                         get_value_buf_size(Int2Type<1>, Type2Type<double>) { return sizeof(double); }
+
+    const char*                 get_value_char_ptr(Int2Type<0>, Type2Type<std::string>) { return f0->c_str();}
+    const char*                 get_value_char_ptr(Int2Type<1>, Type2Type<std::string>) { return f1->c_str();}
+
+    const char*                 get_value_char_ptr(Int2Type<0>, Type2Type<int>) {return (const char*)(f0.get());}
+    const char*                 get_value_char_ptr(Int2Type<1>, Type2Type<int>) {return (const char*)(f1.get());}
+
+    const char*                 get_value_char_ptr(Int2Type<0>, Type2Type<double>) {return (const char*)(f0.get());}
+    const char*                 get_value_char_ptr(Int2Type<1>, Type2Type<double>) {return (const char*)(f0.get());}
 };

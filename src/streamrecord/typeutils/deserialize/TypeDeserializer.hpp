@@ -28,6 +28,9 @@ public:
     virtual int                                 read_unsigned_byte() = 0;
     virtual void                                read_unsigned_bytes(unsigned char * buf, int length) = 0;
 
+    virtual void                                read_unsigned_bytes_no_copy(unsigned char** buf, int length) = 0;
+    virtual void                                read_commit() = 0;
+
     /* Properties */
     virtual int                                 get_record_size() = 0;
     virtual void                                set_record_size(int) = 0;

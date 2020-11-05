@@ -6,5 +6,5 @@ std::string StreamConfig::OPERATOR_FACTORY      = "operator_factory";
 std::string StreamConfig::OPERATOR_ID           = "operator_ID";
 std::string StreamConfig::OPERATOR_NAME         = "operator_name";
 std::string StreamConfig::BUFFER_TIMEOUT        = "buffer_timeout";
-long        StreamConfig::DEFAULT_TIMEOUT       = 100l;
+long        StreamConfig::DEFAULT_TIMEOUT       = 2000l;
 
