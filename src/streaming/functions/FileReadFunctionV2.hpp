@@ -45,7 +45,7 @@ public:
             if (vect[i] == '\n' || vect[i] == ' ') {
                 if (word.size() > 0) {
                     word_count++;
-                    if (word_count % 100000 == 0) {
+                    if (word_count % 1000000 == 0) {
                         std::cout << "have processed: " << word_count << " words" << std::endl;
                     }
                     // std::cout << word << std::endl;

@@ -11,7 +11,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 add_library(buffer "")
 add_library(result "")
-add_library(streamrecord "")
 add_library(streaming "")
 add_library(runtime "")
 add_library(core "")

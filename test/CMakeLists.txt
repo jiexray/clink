@@ -12,10 +12,6 @@ set(TEST_HEADER_DIRS ${CMAKE_SOURCE_DIR}/src/buffer
   ${CMAKE_SOURCE_DIR}/src/deployment
   ${CMAKE_SOURCE_DIR}/src/streaming/partitioner
   ${CMAKE_SOURCE_DIR}/src/streamrecord
-  ${CMAKE_SOURCE_DIR}/src/streamrecord/types
-  ${CMAKE_SOURCE_DIR}/src/streamrecord/typeutils
-  ${CMAKE_SOURCE_DIR}/src/streamrecord/typeutils/serialize
-  ${CMAKE_SOURCE_DIR}/src/streamrecord/typeutils/deserialize
   ${CMAKE_SOURCE_DIR}/src/streaming/functions
   ${CMAKE_SOURCE_DIR}/src/streaming/io
   ${CMAKE_SOURCE_DIR}/src/streaming/operators
@@ -58,55 +54,7 @@ if(CXXTEST_FOUND)
 
   # result test
   CXXTEST_ADD_TEST(unitest_result result_test.cpp ${CMAKE_CURRENT_SOURCE_DIR}/result/TestResult.hpp)
-  target_link_libraries(unitest_result result streamrecord runtime)
-
-  # streamrecord test
-  CXXTEST_ADD_TEST(unitest_streamrecord streamrecord_test.cpp ${CMAKE_CURRENT_SOURCE_DIR}/streamrecord/TestStreamRecord.hpp)
-  target_link_libraries(unitest_streamrecord streamrecord)
-
-  # streaming operator test
-  CXXTEST_ADD_TEST(unitest_streaming_operator streaming_operator_test.cpp ${CMAKE_CURRENT_SOURCE_DIR}/streaming/TestOperator.hpp)
-  target_link_libraries(unitest_streaming_operator streaming result streamrecord)
-
-  # streaming graph test
-  CXXTEST_ADD_TEST(unitest_streaming_graph streaming_graph_test.cpp ${CMAKE_CURRENT_SOURCE_DIR}/streaming/TestGraph.hpp)
-  target_link_libraries(unitest_streaming_graph streaming streamrecord result)
-
-  # runtime task test
-  CXXTEST_ADD_TEST(unitest_runtime_task runtime_task_test.cpp ${CMAKE_CURRENT_SOURCE_DIR}/runtime/TestTask.hpp)
-  target_link_libraries(unitest_runtime_task runtime streaming result streamrecord)
-
-  # runtime task-chain test
-  CXXTEST_ADD_TEST(unitest_runtime_task_chain runtime_task_chain_test.cpp ${CMAKE_CURRENT_SOURCE_DIR}/runtime/TestTaskChain.hpp)
-  target_link_libraries(unitest_runtime_task_chain runtime streaming result streamrecord)
-
-  # streaming streaming-with-buffer-release test
-  CXXTEST_ADD_TEST(unitest_streaming_with_buffer_release streaming_with_buffer_release.cpp ${CMAKE_CURRENT_SOURCE_DIR}/streaming/TestStreamingWithBufferRelease.hpp)
-  target_link_libraries(unitest_streaming_with_buffer_release streaming streamrecord result)
-
-  # streaming flat-map test
-  CXXTEST_ADD_TEST(unitest_streaming_flat_map_test streaming_flat_map_test.cpp ${CMAKE_CURRENT_SOURCE_DIR}/streaming/TestFlatMap.hpp)
-  target_link_libraries(unitest_streaming_flat_map_test streaming streamrecord result)
-
-  # streaming file-read test
-  CXXTEST_ADD_TEST(unitest_streaming_file_read_test streaming_file_read_test.cpp ${CMAKE_CURRENT_SOURCE_DIR}/streaming/TestFileRead.hpp)
-  target_link_libraries(unitest_streaming_file_read_test streaming)
-
-  # streamrecord tuple test
-  CXXTEST_ADD_TEST(unitest_streamrecord_tuple streamrecord_tuple_test.cpp ${CMAKE_CURRENT_SOURCE_DIR}/streamrecord/TestTuple.hpp)
-  target_link_libraries(unitest_streamrecord_tuple streamrecord)
-
-  # streaming stream-task-network-input-factory
-  CXXTEST_ADD_TEST(unitest_streaming_stream_task_network_input_factory streaming_stream_task_network_input_factory.cpp ${CMAKE_CURRENT_SOURCE_DIR}/streaming/TestStreamTaskNetworkInputFactory.hpp)
-  target_link_libraries(unitest_streaming_stream_task_network_input_factory streaming)
-
-  # runtime task-chain-with-tuple test
-  CXXTEST_ADD_TEST(unitest_runtime_task_chain_with_tuple runtime_task_chain_with_tuple.cpp ${CMAKE_CURRENT_SOURCE_DIR}/runtime/TestTaskChainWithTuple.hpp)
-  target_link_libraries(unitest_runtime_task_chain_with_tuple runtime streaming result streamrecord)
-
-  # runtime wordcount
-  CXXTEST_ADD_TEST(unitest_runtime_wordcount runtime_wordcount.cpp ${CMAKE_CURRENT_SOURCE_DIR}/runtime/TestWordCount.hpp)
-  target_link_libraries(unitest_runtime_wordcount runtime)
+  target_link_libraries(unitest_result result runtime)
 
   # core file-output-format
   CXXTEST_ADD_TEST(unitest_core_file_output_format core_file_output_format.cpp ${CMAKE_CURRENT_SOURCE_DIR}/core/TestFileOutputFormat.hpp)
@@ -115,10 +63,6 @@ if(CXXTEST_FOUND)
   # runtime wordcount-with-file-sink
   CXXTEST_ADD_TEST(unitest_runtime_wordcount_with_file_sink runtime_wordcount_with_file_sink.cpp ${CMAKE_CURRENT_SOURCE_DIR}/runtime/TestWordCountWriteFile.hpp)
   target_link_libraries(unitest_runtime_wordcount_with_file_sink runtime)
-
-  # streaming stream-task-factory
-  CXXTEST_ADD_TEST(unitest_streaming_stream_task_factory streaming_stream_task_factory.cpp ${CMAKE_CURRENT_SOURCE_DIR}/streaming/TestStreamTaskFactory.hpp)
-  target_link_libraries(unitest_streaming_stream_task_factory streaming runtime)
 
   # metrics meter
   CXXTEST_ADD_TEST(unitest_metrics_meter metrics_meter.cpp ${CMAKE_CURRENT_SOURCE_DIR}/metrics/TestMeter.hpp)
@@ -132,10 +76,6 @@ if(CXXTEST_FOUND)
   CXXTEST_ADD_TEST(unitest_metrics_metric_group metrics_metric_group.cpp ${CMAKE_CURRENT_SOURCE_DIR}/metrics/TestMetricGroup.hpp)
   target_link_libraries(unitest_metrics_metric_group runtime)
 
-  # runtime wordcount-with-metrics
-  CXXTEST_ADD_TEST(unitest_runtime_wordcount_with_metrics runtime_wordcount_with_metrics.cpp ${CMAKE_CURRENT_SOURCE_DIR}/runtime/TestWordCountWithMetrics.hpp)
-  target_link_libraries(unitest_runtime_wordcount_with_metrics runtime)
-
   # core configuration
   CXXTEST_ADD_TEST(unitest_core_configuration core_configuration.cpp ${CMAKE_CURRENT_SOURCE_DIR}/core/TestConfiguration.hpp)
   target_link_libraries(unitest_core_configuration core)
@@ -148,10 +88,6 @@ if(CXXTEST_FOUND)
   CXXTEST_ADD_TEST(unitest_runtime_file_read_throughput runtime_file_read_throughput.cpp ${CMAKE_CURRENT_SOURCE_DIR}/runtime/TestFileReadThroughput.hpp)
   target_link_libraries(unitest_runtime_file_read_throughput runtime)
 
-  # runtime file read tokenize throughput
-  CXXTEST_ADD_TEST(unitest_runtime_file_read_tokenize_throughput runtime_file_read_tokenize_throughput.cpp ${CMAKE_CURRENT_SOURCE_DIR}/runtime/TestFileReadTokenizeThroughput.hpp)
-  target_link_libraries(unitest_runtime_file_read_tokenize_throughput runtime)
-
   # runtime wordcount file read with new filereader
   CXXTEST_ADD_TEST(unitest_runtime_wordcount_with_new_filereader runtime_wordcount_with_new_filereader.cpp ${CMAKE_CURRENT_SOURCE_DIR}/runtime/TestWordcountWithNewFileReader.hpp)
   target_link_libraries(unitest_runtime_wordcount_with_new_filereader runtime)
@@ -163,4 +99,8 @@ if(CXXTEST_FOUND)
   # runtime file read throughput mid operator throughput
   CXXTEST_ADD_TEST(unitest_runtime_file_read_mid_operator_throughput runtime_file_read_mid_operator.cpp ${CMAKE_CURRENT_SOURCE_DIR}/runtime/TestFileReadMidOperatorThroughput.hpp)
   target_link_libraries(unitest_runtime_file_read_mid_operator_throughput runtime)
+
+  # streamrecord streamrecordV2
+  CXXTEST_ADD_TEST(unitest_streamrecord_V2 streamRecord_V2.cpp ${CMAKE_CURRENT_SOURCE_DIR}/streamrecord/TestStreamRecordV2.hpp)
+  target_link_libraries(unitest_streamrecord_V2 streamrecord)
 endif()

@@ -89,29 +89,7 @@ target_sources(result
     result/consumer/InputGate.cpp
     result/consumer/InputGateFactory.cpp
 )
-target_link_libraries(result streamrecord buffer spdlog::spdlog tbb)
-
-# ------------------------
-#   build streamrecord module
-# ------------------------
-target_sources(streamrecord
-  PRIVATE
-    # streamrecord/types/TupleDeserializationDelegate.cpp
-    streamrecord/types/IntValue.cpp
-    streamrecord/types/DoubleValue.cpp
-    streamrecord/types/StringValue.cpp
-    streamrecord/typeutils/deserialize/TypeDeserializerImpl.cpp
-    streamrecord/typeutils/serialize/TypeSerializerFactory.cpp
-    streamrecord/typeutils/serialize/IntSerializer.cpp
-    streamrecord/typeutils/serialize/StringSerializer.cpp
-    streamrecord/typeutils/serialize/DoubleSerializer.cpp
-    streamrecord/typeutils/deserialize/TupleDeserializer.cpp
-    streamrecord/typeutils/deserialize/TupleDeserializerV2.cpp
-)
-target_include_directories(streamrecord PUBLIC
-  ${ALL_INCLUDE_DIRS}
-)
-target_link_libraries(streamrecord core buffer spdlog::spdlog)
+target_link_libraries(result buffer spdlog::spdlog tbb)
 
 # ------------------------
 #   build streaming module
@@ -127,7 +105,7 @@ target_include_directories(streaming PUBLIC
   ${ALL_INCLUDE_DIRS}
 )
 
-target_link_libraries(streaming streamrecord result pthread core buffer spdlog::spdlog runtime)
+target_link_libraries(streaming result pthread core buffer spdlog::spdlog runtime)
 
 # ------------------------
 #   build runtime module
@@ -170,7 +148,7 @@ target_include_directories(runtime PUBLIC
   ${ALL_INCLUDE_DIRS}
 )
 
-target_link_libraries(runtime metrics streaming pthread result streamrecord spdlog::spdlog buffer ${Boost_LIBRARIES})
+target_link_libraries(runtime metrics streaming pthread result spdlog::spdlog buffer ${Boost_LIBRARIES})
 
 # ------------------------
 #   build metrics module

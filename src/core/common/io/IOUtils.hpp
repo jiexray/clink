@@ -4,7 +4,6 @@
 #pragma once
 #include <string>
 #include <memory>
-#include "Tuple2.hpp"
 
 class IOUtils
 {
@@ -34,9 +33,3 @@ template <>
 inline std::string IOUtils::to_string<const char*>(const char*& val) {
     return std::string(val);
 }
-
-// template <template <class, class> class T, class T0, class T1>
-// template <T<T0, T1>>
-// inline std::string IOUtils::to_string<T<T0, T1>>(std::shared_ptr<T<T0, T1>> val) {
-//     return val->to_string();
-// }

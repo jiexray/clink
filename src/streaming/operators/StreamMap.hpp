@@ -28,10 +28,6 @@ public:
         delete out_value;
     }
 
-    // void setup(std::shared_ptr<StreamTask<OUT>> containingTask, std::shared_ptr<Output<OUT>> output) override {
-    //     AbstractUdfStreamOperator<Function, OUT>::setup(containingTask, output);
-    // }
-
     /* Properties */
     std::shared_ptr<MapFunction<IN, OUT>>   get_user_function() {return std::dynamic_pointer_cast<MapFunction<IN, OUT>>(this->m_user_function);}
 };
