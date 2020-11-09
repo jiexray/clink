@@ -16,17 +16,16 @@ private:
 public:
     StreamMap(std::shared_ptr<MapFunction<IN, OUT>> mapper): AbstractUdfStreamOperator<Function, OUT>(mapper) {}
 
-    void process_element(std::shared_ptr<StreamRecord<IN>> stream_record) {
-        std::shared_ptr<IN> record_value = stream_record->get_value();
+    void process_element(StreamRecordV2<IN> *stream_record) {
         // dynamic change Function to MapFunction
         std::shared_ptr<MapFunction<IN, OUT>> map_func = std::dynamic_pointer_cast<MapFunction<IN, OUT>>(this->m_user_function);
-        // std::shared_ptr<OUT> map_result = map_func->map(*(record_value.get()));
 
-        std::shared_ptr<StreamRecord<OUT>> out_stream_record = stream_record->replace(map_func->map(*(record_value.get())));
+        OUT* out_value = map_func->map(&(stream_record->val));
         if (this->m_output == nullptr) {
             throw std::runtime_error("Output is null in StreamMap");
         }
-        this->m_output->collect(out_stream_record);
+        this->m_output->collect(out_value);
+        delete out_value;
     }
 
     // void setup(std::shared_ptr<StreamTask<OUT>> containingTask, std::shared_ptr<Output<OUT>> output) override {

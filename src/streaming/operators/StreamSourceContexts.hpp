@@ -44,13 +44,11 @@ private:
     // TODO: reuse an stream record, without instantiate a stream record every time.
 public:
     NonTimestampContext(std::shared_ptr<Output<OUT>> output): m_output(output) {}
-    void collect(std::shared_ptr<OUT> element) {
-        std::shared_ptr<StreamRecord<OUT>> new_record = std::make_shared<StreamRecord<OUT>>(element);
+    void collect(OUT* element) override {
         if (this->m_output == nullptr) {
             std::cout << "[ERROR]Output in SourceContext is null" << std::endl;
             return;
         }
-        m_output->collect(new_record);
+        m_output->collect(element);
     }
 };
-

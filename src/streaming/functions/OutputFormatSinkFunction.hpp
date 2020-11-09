@@ -33,7 +33,7 @@ public:
         this->m_format->close();
     }
 
-    void                                    invoke(IN &value) {
+    void                                    invoke(IN* value) {
         this->m_format->write_record(value);
     }
 

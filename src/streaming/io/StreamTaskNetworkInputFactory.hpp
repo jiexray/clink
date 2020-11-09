@@ -3,8 +3,8 @@
  */
 #pragma once
 #include "StreamTaskNetworkInput.hpp"
-#include "TupleDeserializationDelegateV2.hpp"
-#include "Tuple2.hpp"
+// #include "TupleDeserializationDelegateV2.hpp"
+// #include "Tuple2.hpp"
 #include "Tuple.hpp"
 #include <typeinfo>
 
@@ -25,23 +25,3 @@ public:
 
     
 };
-
-template <template <class, class> class T, class T1, class T2>
-class StreamTaskNetworkInputFactory<T<T1, T2>> {
-public:
-    static std::shared_ptr<StreamTaskNetworkInput<T<T1, T2>>> create_stream_task_network_input(std::shared_ptr<InputGate> input_gate, 
-                                                                                            int input_index){
-        // std::shared_ptr<IOReadableWritable> tuple_deserialize_delegate = std::make_shared<TupleDeserializationDelegate>(2, 
-        //                                                                     new std::reference_wrapper<const std::type_info>[2]{typeid(T1), typeid(T2)});
-        
-        // std::shared_ptr<IOReadableWritable> tuple_deserialize_delegate = std::make_shared<TupleDeserializationDelegate<T<T1, T2>>>();
-        std::shared_ptr<IOReadableWritable> tuple_deserialize_delegate = std::make_shared<TupleDeserializationDelegateV2<T<T1, T2>>>();
-
-        return std::make_shared<StreamTaskNetworkInput<Tuple2<T1, T2>>>(input_gate, input_index, tuple_deserialize_delegate, RECORD_TYPE::TUPLE);
-    } 
-
-    static std::shared_ptr<StreamTaskNetworkInput<T<T1, T2>>> create_stream_task_network_input(std::shared_ptr<InputGate> input_gate) {
-        return create_stream_task_network_input(input_gate, 0);
-    }
-};
-

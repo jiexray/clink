@@ -4,8 +4,8 @@
 #pragma once
 #include "ResultPartition.hpp"
 #include "BufferBuilder.hpp"
-#include "StreamRecord.hpp"
-#include "StreamRecordSerializer.hpp"
+#include "StreamRecordV2.hpp"
+#include "StreamRecordV2Serializer.hpp"
 #include "ChannelSelector.hpp"
 #include "LoggerFactory.hpp"
 #include <memory>
@@ -33,9 +33,9 @@ public:
     void                                        setup();
 
     /* Put the record to the ResultPartition */
-    void                                        emit(std::shared_ptr<StreamRecord<T>> record, int target_channel);
-    virtual void                                emit(std::shared_ptr<StreamRecord<T>> record) {}
-    void                                        copy_to_buffer_builder(int target_channel, std::shared_ptr<StreamRecord<T>> record);
+    void                                        emit(StreamRecordV2<T>* record, int target_channel);
+    virtual void                                emit(StreamRecordV2<T>* record) {}
+    void                                        copy_to_buffer_builder(int target_channel, StreamRecordV2<T>* record);
 
     /* Request BufferBuilder from BufferPool, add BufferConsumer to subpartition */
     std::shared_ptr<BufferBuilder>              get_buffer_builder(int target_channel);
@@ -65,7 +65,8 @@ private:
     int                                         m_number_of_channels;
     std::string                                 m_task_name;
     std::vector<std::shared_ptr<BufferBuilder>> m_buffer_builders;
-    std::shared_ptr<StreamRecordSerializer<T>>  m_record_serializer; 
+    std::shared_ptr<StreamRecordV2Serializer<StreamRecordV2<T>>>
+                                                m_record_serializer; 
     bool                                        m_always_flush;
     long                                        m_flush_timeout;
 
@@ -92,7 +93,6 @@ public:
 
     void run () {
         while(m_running) {
-            SPDLOG_LOGGER_DEBUG(m_writer->get_logger(), "flush ResultWriter");
             std::this_thread::sleep_for(std::chrono::milliseconds(m_timeout));
 
             m_writer->flush_all();
@@ -116,7 +116,7 @@ m_target_result_partition(result_partition),
 m_task_name(task_name),
 m_number_of_channels(result_partition->get_number_of_subpartitions()),
 m_buffer_builders(m_number_of_channels, nullptr) {
-    this->m_record_serializer = std::make_shared<StreamRecordSerializer<T>>();
+    this->m_record_serializer = std::make_shared<StreamRecordV2Serializer<StreamRecordV2<T>>>();
     m_logger = LoggerFactory::get_logger("ResultWriter");
 
     if (timeout == 0) {
@@ -144,13 +144,13 @@ inline void ResultWriter<T>::setup() {
  * Copy the record to the buffer_builder.
  */
 template <class T>
-inline void ResultWriter<T>::copy_to_buffer_builder(int target_channel, std::shared_ptr<StreamRecord<T>> record) {
+inline void ResultWriter<T>::copy_to_buffer_builder(int target_channel, StreamRecordV2<T>* record) {
     int num_copied_buffers = 0;
     std::shared_ptr<BufferBuilder> buffer_builder = get_buffer_builder(target_channel);
     SPDLOG_LOGGER_TRACE(m_logger, "ResultWriter<T>::copy_to_buffer_builder() after get builder with Buffer {}, current write position {}, buffer_size {}", 
                                         buffer_builder->get_buffer()->get_buffer_id(), buffer_builder->get_write_position(), buffer_builder->get_buffer()->get_max_capacity());
     // StreamRecordAppendResult result = record->serialize_record_to_buffer_builder(buffer_builder);
-    StreamRecordAppendResult result = this->m_record_serializer->serialize(record, buffer_builder, true);
+    StreamRecordAppendResult result = this->m_record_serializer->serialize(*record, buffer_builder, true);
     SPDLOG_LOGGER_TRACE(m_logger, "ResultWriter<T>::copy_to_buffer_builder() after first serialize, result {}, current write position {}", 
                                         result, buffer_builder->get_write_position());
 
@@ -178,9 +178,9 @@ inline void ResultWriter<T>::copy_to_buffer_builder(int target_channel, std::sha
                                 m_target_result_partition->get_buffer_pool_capacity());
         if (result == NONE_RECORD) {
             // length is still not written
-            result = this->m_record_serializer->serialize(record, buffer_builder, true);
+            result = this->m_record_serializer->serialize(*record, buffer_builder, true);
         } else {
-            result = this->m_record_serializer->serialize(record, buffer_builder, false);
+            result = this->m_record_serializer->serialize(*record, buffer_builder, false);
         }
     }
     SPDLOG_LOGGER_TRACE(m_logger, "Finish write one record, span {} Buffers", num_copied_buffers);    
@@ -196,7 +196,7 @@ inline void ResultWriter<T>::copy_to_buffer_builder(int target_channel, std::sha
  * Copy the record to the BufferBuilder of the target_channel.
  */
 template <class T>
-inline void ResultWriter<T>::emit(std::shared_ptr<StreamRecord<T>> record, int target_channel) {
+inline void ResultWriter<T>::emit(StreamRecordV2<T>* record, int target_channel) {
     copy_to_buffer_builder(target_channel, record);
 }
 

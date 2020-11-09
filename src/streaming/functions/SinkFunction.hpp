@@ -8,7 +8,7 @@ template <class IN>
 class SinkFunction : public Function
 {
 public:
-    virtual void                                        invoke(IN &value) = 0;
+    virtual void                                        invoke(IN *value) = 0;
     virtual void                                        close() {}
     virtual void                                        open() {}
     virtual char*                                       serialize() = 0;

@@ -11,7 +11,7 @@ template <class T, class O>
 class FlatMapFunction : public Function
 {
 public:
-    virtual void                                    flat_map(std::shared_ptr<T> value, 
+    virtual void                                    flat_map(T* value, 
                                                             std::shared_ptr<Collector<O>> collector) = 0;
     virtual char*                                   serialize() {return nullptr;}
     virtual std::shared_ptr<FlatMapFunction<T, O>>  deserialize() {return nullptr;}

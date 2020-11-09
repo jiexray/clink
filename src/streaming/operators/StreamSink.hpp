@@ -15,9 +15,8 @@ class StreamSink final: public AbstractUdfStreamOperator<Function, NullType>, pu
 public:
     StreamSink(std::shared_ptr<SinkFunction<IN>> sink_function): AbstractUdfStreamOperator<Function, NullType>(sink_function){}
 
-    void process_element(std::shared_ptr<StreamRecord<IN>> record) {
-        // std::cout << "[DEBUG] StreamSink::process_element()" << std::endl;
-        (std::dynamic_pointer_cast<SinkFunction<IN>>(this->m_user_function))->invoke(*(record->get_value()));
+    void process_element(StreamRecordV2<IN>* record) {
+        (std::dynamic_pointer_cast<SinkFunction<IN>>(this->m_user_function))->invoke(&(record->val));
     }
 
     /* Properties */

@@ -4,33 +4,34 @@
 #pragma once
 #include "FlatMapFunction.hpp"
 #include "Constant.hpp"
+#include "StringBuf.hpp"
 #include <memory>
 #include <fstream>
-
+#include <iostream>
 
 // FileReadFunction is a flatMapFunction, input ONE file_path, output multiple file lines
-class FileReadFunction final : public FlatMapFunction<std::string, std::string> {
+class FileReadFunction final : public FlatMapFunction<StringBuf<1024>, StringBuf<1024>> {
 public:
-    void                                    flat_map(std::shared_ptr<std::string> val, 
-                                                     std::shared_ptr<Collector<std::string>> out) override{
+    void                                    flat_map(StringBuf<1024>* val, 
+                                                     std::shared_ptr<Collector<StringBuf<1024>>> out) override{
         // Get the file stream
-        std::ifstream stream(Constant::CLINK_BASE + *val);
+        std::ifstream stream(Constant::CLINK_BASE + std::string(val->c_str));
 
         if(stream.fail()) {
-            throw std::runtime_error("Cannot find file in Path: " + *val);
+            throw std::runtime_error("Cannot find file in Path: " + std::string(val->c_str));
         }
         
         // Iteratively read the file lines, and output each line to collector
         std::string line;
         while (std::getline(stream, line)) {
-            // std::cout << "read line: " << line << std::endl;
-            out->collect(std::make_shared<std::string>(line));
+            StringBuf<1024> new_line(line.c_str());
+            out->collect(&new_line);
         }
-        std::cout << "finish reading file: " << *val << std::endl;
+        std::cout << "finish reading file: " << std::string(val->c_str) << std::endl;
     }
 
     char*                                   serialize() override {return (char*)this;}
 
-    std::shared_ptr<FlatMapFunction<std::string, std::string>>  
+    std::shared_ptr<FlatMapFunction<StringBuf<1024>, StringBuf<1024>>>  
                                             deserialize() override {return std::make_shared<FileReadFunction>();}
 };

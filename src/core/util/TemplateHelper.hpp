@@ -32,3 +32,16 @@ public:
            is_shared_ptr    = IsSharedPtr<T>::value};
 };
 
+
+namespace TemplateHelperUtil{
+    template<bool b, typename T, typename U>
+    struct select
+    {
+        typedef T type;
+    };
+    template<typename T, typename U>
+    struct select<false, T, U>
+    {
+        typedef U type;
+    };
+};

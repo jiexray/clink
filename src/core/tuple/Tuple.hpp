@@ -12,8 +12,6 @@ class Tuple
 {
 public:
     virtual int                     get_arity() = 0;
-    virtual const std::type_info&   get_field(int pos) = 0;
-    virtual std::shared_ptr<void>   get_value(int pos) = 0;
 
     virtual int                     get_buf_size() = 0;
 

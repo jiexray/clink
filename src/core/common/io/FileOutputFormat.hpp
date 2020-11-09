@@ -22,7 +22,7 @@ public:
     /* Properties */
     std::string             get_output_file_path() {return m_output_file_path;}
 
-    void                                open(int task_number, int num_tasks) override {
+    void                    open(int task_number, int num_tasks) override {
         if (task_number < 0 || num_tasks < 1) {
             throw std::invalid_argument("Invalid task_number or num_task");
         }

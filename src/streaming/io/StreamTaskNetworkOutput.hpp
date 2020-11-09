@@ -30,9 +30,7 @@ public:
 
     void set_num_records_in(CounterPtr counter) override {m_num_records_in = counter;}
 
-    void emit_record(std::shared_ptr<StreamRecord<IN>> stream_record) {
-        // std::cout << "TODO: deliver the stream_record to operator" << std::endl;
-        // std::cout << "value: " << *(stream_record->get_value().get()) << std::endl;
+    void emit_record(StreamRecordV2<IN>* stream_record) {
         this->m_num_records_in->inc();
         this->m_operator->process_element(stream_record);
     }

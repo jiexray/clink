@@ -4,13 +4,19 @@
 #pragma once
 #include "Function.hpp"
 #include <memory>
+#include <type_traits>
+#include "TemplateHelper.hpp"
 
 template <class T, class O>
 class MapFunction: public Function
 {
 public:
     ~MapFunction() {}
-    virtual std::shared_ptr<O>                  map(T& value) = 0;
+
+    /**
+      Take care of the return value, it must be freed!
+     */
+    virtual O*                                  map(T* value) = 0;
     virtual char*                               serialize() {return nullptr;}
     virtual std::shared_ptr<MapFunction<T, O>>  deserialize() {return nullptr;}
 };

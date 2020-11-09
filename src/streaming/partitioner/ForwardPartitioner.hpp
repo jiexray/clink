@@ -12,7 +12,7 @@ private:
     
 public:
     // TODO: rewrite copy construction
-    int             select_channel(std::shared_ptr<StreamRecord<T>> record) override {return 0;}
+    int             select_channel(StreamRecordV2<T>* record) override {return 0;}
 
     std::string     to_string() override {return "FORWARD";}
 };

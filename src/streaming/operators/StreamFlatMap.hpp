@@ -14,8 +14,8 @@ private:
 public:
     StreamFlatMap(std::shared_ptr<FlatMapFunction<IN, OUT>> flat_mapper): AbstractUdfStreamOperator<Function, OUT>(flat_mapper) {}
 
-    void                                        process_element(std::shared_ptr<StreamRecord<IN>> element) {
-        (std::dynamic_pointer_cast<FlatMapFunction<IN, OUT>>(this->m_user_function))->flat_map(element->get_value(), this->m_output);
+    void                                        process_element(StreamRecordV2<IN>* element) {
+        (std::dynamic_pointer_cast<FlatMapFunction<IN, OUT>>(this->m_user_function))->flat_map(&(element->val), this->m_output);
     }
 
     std::shared_ptr<FlatMapFunction<IN, OUT>>   get_user_function() {return std::dynamic_pointer_cast<FlatMapFunction<IN, OUT>>(this->m_user_function);}

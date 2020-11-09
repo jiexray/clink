@@ -16,6 +16,11 @@ public:
 };
 
 template <>
+inline std::string IOUtils::to_string<double>(double& val) {
+    return std::to_string(val);
+}
+
+template <>
 inline std::string IOUtils::to_string<std::string>(std::string& val) {
     return std::string(val); 
 }
@@ -26,8 +31,8 @@ inline std::string IOUtils::to_string<int>(int& val) {
 }
 
 template <>
-inline std::string IOUtils::to_string<double>(double& val) {
-    return std::to_string(val);
+inline std::string IOUtils::to_string<const char*>(const char*& val) {
+    return std::string(val);
 }
 
 // template <template <class, class> class T, class T0, class T1>

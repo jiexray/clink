@@ -4,7 +4,8 @@
  */
 
 #pragma once
-#include "../../streamrecord/StreamRecord.hpp"
+// #include "../../streamrecord/StreamRecord.hpp"
+#include "StreamRecordV2.hpp"
 #include "Collector.hpp"
 #include <memory>
 
@@ -12,8 +13,11 @@ template <class T>
 class Output : public Collector<T>
 {
 public:
-    void            collect(std::shared_ptr<T> val) override {
-        collect(std::make_shared<StreamRecord<T>>(val));
+    void collect(T* val) override {
+        StreamRecordV2<T>* new_record = new StreamRecordV2<T>(*val);
+        collect(new_record);
+        delete new_record;
     }
-    virtual void    collect(std::shared_ptr<StreamRecord<T>> record) = 0;
+
+    virtual void    collect(StreamRecordV2<T>* record) = 0;
 };

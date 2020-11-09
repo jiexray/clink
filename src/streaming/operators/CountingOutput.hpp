@@ -19,7 +19,7 @@ private:
 public:
     CountingOutput(OutputPtr output, CounterPtr counter): m_output(output), m_num_records_out(counter) {}
 
-    void                                    collect(std::shared_ptr<StreamRecord<OUT>> record) {
+    void                                    collect(StreamRecordV2<OUT>* record) {
         m_num_records_out->inc();
         m_output->collect(record);
     }

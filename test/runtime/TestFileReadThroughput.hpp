@@ -8,86 +8,96 @@
 #include "Task.hpp"
 #include "TaskExecutor.hpp"
 #include "LoggerFactory.hpp"
-#include "Tuple2.hpp"
+// #include "Tuple2.hpp"
+#include "Tuple2V2.hpp"
 #include "FlatMapFunction.hpp"
 #include "MapFunction.hpp"
-// #include "FileReadFunction.hpp"
 #include "FileReadFunctionV2.hpp"
 #include "OutputFormatSinkFunction.hpp"
 #include "TaskExecutorRunner.hpp"
+#include "StringBuf.hpp"
 
 // concat the first char and the last char
-class CountFunction: public MapFunction<Tuple2<std::string, int>, Tuple2<std::string, int>>{
+class CountFunction: public MapFunction<Tuple2V2<const char*, int, 128, sizeof(int)>, Tuple2V2<const char*, int, 128, sizeof(int)>>{
 private:
     std::map<std::string, int> m_counter;
 public:
-    std::shared_ptr<Tuple2<std::string, int>> map(Tuple2<std::string, int>& value){
-        if(m_counter.find(*value.f0) != m_counter.end()) {
-            m_counter[*value.f0] += (*value.f1);
+    Tuple2V2<const char*, int, 128, sizeof(int)>* map(Tuple2V2<const char*, int, 128, sizeof(int)>* value) override {
+        std::string word(value->f0);
+        if(m_counter.find(word) != m_counter.end()) {
+            m_counter[word] += (value->f1);
         } else {
-            m_counter[*value.f0] = *value.f1;
+            m_counter[word] = value->f1;
         }
         // std::cout << "word {" << *value.f0 << ", " << m_counter[*value.f0] << "}" << std::endl;
-        return std::make_shared<Tuple2<std::string, int>>(std::make_shared<std::string>(*value.f0), std::make_shared<int>(m_counter[*value.f0]));
+        // return std::make_shared<MyTuple>(std::make_shared<std::string>(*value.f0), std::make_shared<int>(m_counter[*value.f0]));
         // std::cout << "word {" << *value.f0 << ", " << m_counter[*value.f0] << "}" << std::endl;
         // return std::make_shared<std::string>("f0: " + (*value.f0) + ", f1: " + std::to_string(*value.f1));
+
+        Tuple2V2<const char*, int, 128, sizeof(int)>* new_record = new Tuple2V2<const char*, int, 128, sizeof(int)>(value->f0, &value->f1);
+        return new_record;
     }
 
     char* serialize() override {return (char*)this;}
 
-    std::shared_ptr<MapFunction<Tuple2<std::string, int>, Tuple2<std::string, int>>> deserialize() override { return std::make_shared<CountFunction>();}
+    std::shared_ptr<MapFunction<Tuple2V2<const char*, int, 128, sizeof(int)>, Tuple2V2<const char*, int, 128, sizeof(int)>>> 
+          deserialize() override { return std::make_shared<CountFunction>();}
 };
 
 // map one line to multiple single word with (word, 1)
-class TokenizeFunction: public FlatMapFunction<std::string, Tuple2<std::string, int>>{
+class TokenizeFunction: public FlatMapFunction<StringBuf<32>, Tuple2V2<const char*, int, 128, sizeof(int)>>{
 private:
     int m_lines = 0;
 public:
-    void flat_map(std::shared_ptr<std::string> value, std::shared_ptr<Collector<Tuple2<std::string, int>>> collector) {
-        std::istringstream iss(*value);
+    void flat_map(StringBuf<32>* value, std::shared_ptr<Collector<Tuple2V2<const char*, int, 128, sizeof(int)>>> collector) override {
+        std::string line(value->c_str);
+        std::istringstream iss(line);
         std::string tmp_string;
         m_lines++;
         if (m_lines % 1000 == 0) {
             std::cout << "have processed " << m_lines << " lines" << std::endl;
         }
         while(iss >> tmp_string) {
-            collector->collect(std::make_shared<Tuple2<std::string, int>>(
-                                                                std::make_shared<std::string>(tmp_string),
-                                                                std::make_shared<int>(1)));
+            int cnt = 1;
+            Tuple2V2<const char*, int, 128, sizeof(int)>* new_record = new Tuple2V2<const char*, int, 128, sizeof(int)>(tmp_string.c_str(), &cnt);
+            collector->collect(new_record);
         }
     }
     char* serialize() override {return (char*)this;}
 
-    std::shared_ptr<FlatMapFunction<std::string, Tuple2<std::string, int>>> deserialize() override { return std::make_shared<TokenizeFunction>();}
+    std::shared_ptr<FlatMapFunction<StringBuf<32>, Tuple2V2<const char*, int, 128, sizeof(int)>>> 
+          deserialize() override { return std::make_shared<TokenizeFunction>();}
 };
 
-class MySourceFunction: public SourceFunction<std::string> {
-    void run(std::shared_ptr<SourceContext<std::string>> ctx) {
+class MySourceFunction: public SourceFunction<StringBuf<32>> {
+    void run(std::shared_ptr<SourceContext<StringBuf<32>>> ctx) override{
         // ctx->collect(std::make_shared<std::string>(std::string("resource/wordcount.txt")));
-        ctx->collect(std::make_shared<std::string>(std::string("resource/Data-1G.txt")));
-        // ctx->collect(std::make_shared<std::string>(std::string("resource/Data-2G.txt")));
+        // const char file_name[32] = "resource/wordcount.txt";
+        StringBuf<32> file_name("resource/Data-1G.txt");
+        // const char* file_name = "resource/Data-2G.txt";
+        ctx->collect(&file_name);
     }
 
     char* serialize() override {return (char*)this;}
 
-    std::shared_ptr<SourceFunction<std::string>> deserialize() override { return std::make_shared<MySourceFunction>();}
+    std::shared_ptr<SourceFunction<StringBuf<32>>> deserialize() override { return std::make_shared<MySourceFunction>();}
 };
 
-class MySinkFunction: public SinkFunction<Tuple2<std::string, int>> {
-    void invoke(Tuple2<std::string, int>& value) {
-        // std::cout << "tuple: " << value.to_string() << std::endl;
+class MySinkFunction: public SinkFunction<Tuple2V2<const char*, int, 128, sizeof(int)>> {
+    void invoke(Tuple2V2<const char*, int, 128, sizeof(int)>* value) override{
+        // std::cout << "tuple: " << value->to_string() << std::endl;
         return;
     }
 
     char* serialize() override {return (char*)this;}
 
-    std::shared_ptr<SinkFunction<Tuple2<std::string, int>>> deserialize(char* des_ptr) override { return std::make_shared<MySinkFunction>();}
+    std::shared_ptr<SinkFunction<Tuple2V2<const char*, int, 128, sizeof(int)>>> deserialize(char* des_ptr) override { return std::make_shared<MySinkFunction>();}
 };
 
-class MySinkFunctionString: public SinkFunction<std::string> {
+class MySinkFunctionString: public SinkFunction<StringBuf<32>> {
     int m_lines = 0;
 
-    void invoke(std::string& value) {
+    void invoke(StringBuf<32>* value) override {
         m_lines++;
         if (m_lines % 1000 == 0) {
             std::cout << "have processed " << m_lines << " lines" << std::endl;
@@ -97,9 +107,8 @@ class MySinkFunctionString: public SinkFunction<std::string> {
 
     char* serialize() override {return (char*)this;}
 
-    std::shared_ptr<SinkFunction<std::string>> deserialize(char* des_ptr) override { return std::make_shared<MySinkFunctionString>();}
+    std::shared_ptr<SinkFunction<StringBuf<32>>> deserialize(char* des_ptr) override { return std::make_shared<MySinkFunctionString>();}
 };
-
 
 
 
@@ -111,13 +120,14 @@ public:
         //---------------------------------------------------
         // Initialize StreamTaskFactory
         //---------------------------------------------------
-        typedef Tuple2<std::string, int> MyTuple;
-        StreamTaskFactory<>::instance()->register_stream_task(typeid(SourceStreamTask<std::string>).name(), StreamTaskFactoryCreator::create_source_stream_task<std::string>);
-        StreamTaskFactory<>::instance()->register_stream_task(typeid(OneInputStreamTask<std::string, std::string>).name(), StreamTaskFactoryCreator::create_one_input_stream_task<std::string, std::string>);
-        StreamTaskFactory<>::instance()->register_stream_task(typeid(OneInputStreamTask<std::string, Tuple2<std::string, int>>).name(), StreamTaskFactoryCreator::create_one_input_stream_task<std::string, MyTuple>);
-        StreamTaskFactory<>::instance()->register_stream_task(typeid(OneInputStreamTask<Tuple2<std::string, int>, Tuple2<std::string, int>>).name(), StreamTaskFactoryCreator::create_one_input_stream_task<MyTuple, MyTuple>);
-        StreamTaskFactory<>::instance()->register_stream_task(typeid(OneInputStreamTask<Tuple2<std::string, int>>).name(), StreamTaskFactoryCreator::create_one_input_stream_task<MyTuple>);
-        StreamTaskFactory<>::instance()->register_stream_task(typeid(OneInputStreamTask<std::string>).name(), StreamTaskFactoryCreator::create_one_input_stream_task<std::string>);
+        typedef Tuple2V2<const char*, int, 128, sizeof(int)> MyTuple;
+        StreamTaskFactory<>::instance()->register_stream_task(typeid(SourceStreamTask<StringBuf<32>>).name(), StreamTaskFactoryCreator::create_source_stream_task<StringBuf<32>>);
+        // StreamTaskFactory<>::instance()->register_stream_task(typeid(OneInputStreamTask<const char*, const char*>).name(), StreamTaskFactoryCreator::create_one_input_stream_task<const char*, const char*>);
+        StreamTaskFactory<>::instance()->register_stream_task(typeid(OneInputStreamTask<StringBuf<32>, MyTuple>).name(), StreamTaskFactoryCreator::create_one_input_stream_task<StringBuf<32>, MyTuple>);
+        // StreamTaskFactory<>::instance()->register_stream_task(typeid(OneInputStreamTask<const char*, MyTuple>).name(), StreamTaskFactoryCreator::create_one_input_stream_task<const char*, MyTuple>);
+        StreamTaskFactory<>::instance()->register_stream_task(typeid(OneInputStreamTask<MyTuple, MyTuple>).name(), StreamTaskFactoryCreator::create_one_input_stream_task<MyTuple, MyTuple>);
+        StreamTaskFactory<>::instance()->register_stream_task(typeid(OneInputStreamTask<MyTuple>).name(), StreamTaskFactoryCreator::create_one_input_stream_task<MyTuple>);
+        StreamTaskFactory<>::instance()->register_stream_task(typeid(OneInputStreamTask<StringBuf<32>>).name(), StreamTaskFactoryCreator::create_one_input_stream_task<StringBuf<32>>);
 
         // create TaskExecutor
         ConfigurationPtr task_executor_configuration = nullptr;
@@ -144,26 +154,26 @@ public:
         std::shared_ptr<Configuration> task_configuration_5 = std::make_shared<Configuration>();
 
         /* init operator factory */
-        std::shared_ptr<StreamSource<std::string>> stream_source = std::make_shared<StreamSource<std::string>>(std::make_shared<MySourceFunction>());
-        std::shared_ptr<StreamOperatorFactory<std::string>> operator_factory_1 = SimpleStreamOperatorFactory<std::string>::of(stream_source);
-        std::shared_ptr<StreamOperator<MyTuple>> stream_read_file = std::make_shared<StreamFlatMap<std::string, MyTuple>>(std::make_shared<FileReadFunctionV2>());
+        std::shared_ptr<StreamSource<StringBuf<32>>> stream_source = std::make_shared<StreamSource<StringBuf<32>>>(std::make_shared<MySourceFunction>());
+        std::shared_ptr<StreamOperatorFactory<StringBuf<32>>> operator_factory_1 = SimpleStreamOperatorFactory<StringBuf<32>>::of(stream_source);
+        std::shared_ptr<StreamOperator<MyTuple>> stream_read_file = std::make_shared<StreamFlatMap<StringBuf<32>, MyTuple>>(std::make_shared<FileReadFunctionV2>());
         std::shared_ptr<StreamOperatorFactory<MyTuple>> operator_factory_2 = SimpleStreamOperatorFactory<MyTuple>::of(stream_read_file); 
-        std::shared_ptr<StreamOperator<Tuple2<std::string, int>>> stream_string_tokenize = std::make_shared<StreamFlatMap<std::string, Tuple2<std::string, int>>>(std::make_shared<TokenizeFunction>());
-        std::shared_ptr<StreamOperatorFactory<Tuple2<std::string, int>>> operator_factory_3 = SimpleStreamOperatorFactory<Tuple2<std::string, int>>::of(stream_string_tokenize); 
-        std::shared_ptr<StreamOperator<Tuple2<std::string, int>>> stream_counter = 
-                                            std::make_shared<StreamMap<Tuple2<std::string, int>, Tuple2<std::string, int>>>(std::make_shared<CountFunction>());
-        std::shared_ptr<StreamOperatorFactory<Tuple2<std::string, int>>> operator_factory_4 = SimpleStreamOperatorFactory<Tuple2<std::string, int>>::of(stream_counter);
+        std::shared_ptr<StreamOperator<MyTuple>> stream_string_tokenize = std::make_shared<StreamFlatMap<StringBuf<32>, MyTuple>>(std::make_shared<TokenizeFunction>());
+        std::shared_ptr<StreamOperatorFactory<MyTuple>> operator_factory_3 = SimpleStreamOperatorFactory<MyTuple>::of(stream_string_tokenize); 
+        std::shared_ptr<StreamOperator<MyTuple>> stream_counter = 
+                                            std::make_shared<StreamMap<MyTuple, MyTuple>>(std::make_shared<CountFunction>());
+        std::shared_ptr<StreamOperatorFactory<MyTuple>> operator_factory_4 = SimpleStreamOperatorFactory<MyTuple>::of(stream_counter);
 
-        std::shared_ptr<TextOutputFormat<Tuple2<std::string, int>>> format = 
-                        std::make_shared<TextOutputFormat<Tuple2<std::string, int>>>(Constant::CLINK_BASE + "/resource/wordcount_result.txt"); 
+        std::shared_ptr<TextOutputFormat<MyTuple>> format = 
+                        std::make_shared<TextOutputFormat<MyTuple>>(Constant::CLINK_BASE + "/resource/wordcount_result.txt"); 
         std::shared_ptr<StreamOperator<>> stream_sink = 
                                             std::make_shared<StreamSink<MyTuple>>(std::make_shared<MySinkFunction>());
         std::shared_ptr<StreamOperatorFactory<>> operator_factory_5 = SimpleStreamOperatorFactory<>::of(stream_sink);
 
-        task_configuration_1->set_operator_factory<std::string, std::string>(StreamConfig::OPERATOR_FACTORY, operator_factory_1);
-        task_configuration_2->set_operator_factory<std::string, MyTuple>(StreamConfig::OPERATOR_FACTORY, operator_factory_2);
-        task_configuration_3->set_operator_factory<std::string, Tuple2<std::string, int>>(StreamConfig::OPERATOR_FACTORY, operator_factory_3);
-        task_configuration_4->set_operator_factory<Tuple2<std::string, int>, Tuple2<std::string, int>>(StreamConfig::OPERATOR_FACTORY, operator_factory_4);
+        task_configuration_1->set_operator_factory<StringBuf<32>, StringBuf<32>>(StreamConfig::OPERATOR_FACTORY, operator_factory_1);
+        task_configuration_2->set_operator_factory<StringBuf<32>, MyTuple>(StreamConfig::OPERATOR_FACTORY, operator_factory_2);
+        task_configuration_3->set_operator_factory<StringBuf<32>, MyTuple>(StreamConfig::OPERATOR_FACTORY, operator_factory_3);
+        task_configuration_4->set_operator_factory<MyTuple, MyTuple>(StreamConfig::OPERATOR_FACTORY, operator_factory_4);
         task_configuration_5->set_operator_factory<MyTuple>(StreamConfig::OPERATOR_FACTORY, operator_factory_5);
 
         task_configuration_1->set_value<std::string>(StreamConfig::OPERATOR_ID, std::make_shared<std::string>("op-1"));
@@ -185,7 +195,7 @@ public:
         std::string node_name_3("string-tokenize");
         std::string node_name_4("counter");
         std::string node_name_5("sink");
-        // std::shared_ptr<StreamNode<Tuple2<std::string, int>>> node_1 = std::make_shared<StreamNode<Tuple2<std::string, int>>>(0, operator_factory_1, node_name_1);
+        // std::shared_ptr<StreamNode<MyTuple>> node_1 = std::make_shared<StreamNode<MyTuple>>(0, operator_factory_1, node_name_1);
         // std::shared_ptr<StreamNode<std::string>> node_2 = std::make_shared<StreamNode<std::string>>(1, operator_factory_2, node_name_2);
         // std::shared_ptr<StreamNode<std::string>> node_3 = std::make_shared<StreamNode<std::string>>(2, operator_factory_3, node_name_3);
 
@@ -197,22 +207,22 @@ public:
 
 
         /* Create edge_1 (source -> file-read) */
-        std::shared_ptr<StreamEdge<std::string>> edge_1 = std::make_shared<StreamEdge<std::string>>(node_1, node_2, std::make_shared<ForwardPartitioner<std::string>>());
+        std::shared_ptr<StreamEdge<StringBuf<32>>> edge_1 = std::make_shared<StreamEdge<StringBuf<32>>>(node_1, node_2, std::make_shared<ForwardPartitioner<StringBuf<32>>>());
         /* Create edge_2 (file-raed -> tokenize) */
         // std::shared_ptr<StreamEdge<std::string>> edge_2 = std::make_shared<StreamEdge<std::string>>(node_2, node_3, std::make_shared<ForwardPartitioner<std::string>>());
         // /* Create edge_3 (tokenize -> count) */
-        // std::shared_ptr<StreamEdge<Tuple2<std::string, int>>> edge_3 = std::make_shared<StreamEdge<Tuple2<std::string, int>>>(node_3, node_4, std::make_shared<ForwardPartitioner<Tuple2<std::string, int>>>());
+        // std::shared_ptr<StreamEdge<MyTuple>> edge_3 = std::make_shared<StreamEdge<MyTuple>>(node_3, node_4, std::make_shared<ForwardPartitioner<MyTuple>>());
         // /* Create edge_4 (count -> sink) */
-        // std::shared_ptr<StreamEdge<Tuple2<std::string, int>>> edge_4 = std::make_shared<StreamEdge<Tuple2<std::string, int>>>(node_4, node_5, std::make_shared<ForwardPartitioner<Tuple2<std::string, int>>>());
+        // std::shared_ptr<StreamEdge<MyTuple>> edge_4 = std::make_shared<StreamEdge<MyTuple>>(node_4, node_5, std::make_shared<ForwardPartitioner<MyTuple>>());
 
         /* Createa edge_2 (file_read -> sink) */
         std::shared_ptr<StreamEdge<MyTuple>> edge_2 = std::make_shared<StreamEdge<MyTuple>>(node_2, node_5, std::make_shared<ForwardPartitioner<MyTuple>>());
 
 
-        task_configuration_1->set_edge<std::string>(StreamConfig::EDGE_NAME, edge_1);
+        task_configuration_1->set_edge<StringBuf<32>>(StreamConfig::EDGE_NAME, edge_1);
         task_configuration_2->set_edge<MyTuple>(StreamConfig::EDGE_NAME, edge_2);
-        // task_configuration_3->set_edge<Tuple2<std::string, int>>(StreamConfig::EDGE_NAME, edge_3);
-        // task_configuration_4->set_edge<Tuple2<std::string, int>>(StreamConfig::EDGE_NAME, edge_4);
+        // task_configuration_3->set_edge<MyTuple>(StreamConfig::EDGE_NAME, edge_3);
+        // task_configuration_4->set_edge<MyTuple>(StreamConfig::EDGE_NAME, edge_4);
         // sink task no out-edge
 
         // source task no input
@@ -225,25 +235,25 @@ public:
                                                                                                 "source",             // task_name
                                                                                                 1,                              // subtask_number
                                                                                                 task_configuration_1,             
-                                                                                                typeid(SourceStreamTask<std::string>).name()); // invokable name
+                                                                                                typeid(SourceStreamTask<StringBuf<32>>).name()); // invokable name
 
         std::shared_ptr<TaskInformation> task_information_2 = std::make_shared<TaskInformation>(1,                              // job_vertex_id
                                                                                                 "file-read",                // task_name
                                                                                                 1,                              // subtask_number
                                                                                                 task_configuration_2,             
-                                                                                                typeid(OneInputStreamTask<std::string, MyTuple>).name()); // invokable name
+                                                                                                typeid(OneInputStreamTask<StringBuf<32>, MyTuple>).name()); // invokable name
         
         // std::shared_ptr<TaskInformation> task_information_3 = std::make_shared<TaskInformation>(3,                              // job_vertex_id
         //                                                                                         "tokenize",               // task_name
         //                                                                                         1,                              // subtask_number
         //                                                                                         task_configuration_3,             
-        //                                                                                         typeid(OneInputStreamTask<std::string, Tuple2<std::string, int>>).name()); // invokable name
+        //                                                                                         typeid(OneInputStreamTask<std::string, MyTuple>).name()); // invokable name
 
         // std::shared_ptr<TaskInformation> task_information_4 = std::make_shared<TaskInformation>(4,                              // job_vertex_id
         //                                                                                         "counter",               // task_name
         //                                                                                         1,                              // subtask_number
         //                                                                                         task_configuration_4,             
-        //                                                                                         typeid(OneInputStreamTask<Tuple2<std::string, int>, Tuple2<std::string, int>>).name()); // invokable name
+        //                                                                                         typeid(OneInputStreamTask<MyTuple, MyTuple>).name()); // invokable name
         
         std::shared_ptr<TaskInformation> task_information_5 = std::make_shared<TaskInformation>(5,                              // job_vertex_id
                                                                                                 "counter",               // task_name

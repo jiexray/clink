@@ -21,7 +21,7 @@ template <class OUT>
 class SourceContext
 {
 public:
-    virtual void collect(std::shared_ptr<OUT> element) = 0;
+    virtual void collect(OUT* element) = 0;
 };
 
 

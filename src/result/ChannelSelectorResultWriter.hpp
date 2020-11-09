@@ -27,7 +27,7 @@ public:
     }
 
     /* Implement emit record with channel selector */
-    void                                            emit(std::shared_ptr<StreamRecord<T>> record) {
+    void                                            emit(StreamRecordV2<T>* record) {
         ResultWriter<T>::emit(record, this->m_channel_selector->select_channel(record));
     }
 };

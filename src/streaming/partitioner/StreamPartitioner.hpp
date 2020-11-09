@@ -3,7 +3,6 @@
  */
 #pragma once
 #include "ChannelSelector.hpp"
-#include "StreamRecord.hpp"
 #include <string>
 
 template <class T>

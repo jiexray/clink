@@ -14,15 +14,17 @@
 #include <vector>
 #include <cstring>
 #include <cstdlib>
-#include "Tuple2.hpp"
+// #include "Tuple2.hpp"
+#include "Tuple2V2.hpp"
+#include "StringBuf.hpp"
 
 // FileReadFunction is a flatMapFunction, input ONE file_path, output multiple file lines
-class FileReadFunctionV2 final : public FlatMapFunction<std::string, Tuple2<std::string, int>> {
+class FileReadFunctionV2 final : public FlatMapFunction<StringBuf<32>, Tuple2V2<const char*, int, 128, sizeof(int)>> {
 public:
-    void                                    flat_map(std::shared_ptr<std::string> val, 
-                                                     std::shared_ptr<Collector<Tuple2<std::string, int>>> out) override{
+    void                                    flat_map(StringBuf<32>* val, 
+                                                     std::shared_ptr<Collector<Tuple2V2<const char*, int, 128, sizeof(int)>>> out) override {
 
-        std::string file_name(Constant::CLINK_BASE + *val);
+        std::string file_name(Constant::CLINK_BASE + std::string(val->c_str));
         boost::interprocess::file_mapping mapping(file_name.c_str(), boost::interprocess::read_only);
         boost::interprocess::mapped_region mapped_rgn(mapping, boost::interprocess::read_only);
         char const* const mmaped_data = static_cast<char*>(mapped_rgn.get_address());
@@ -47,10 +49,10 @@ public:
                         std::cout << "have processed: " << word_count << " words" << std::endl;
                     }
                     // std::cout << word << std::endl;
-                    out->collect(std::make_shared<Tuple2<std::string, int>>(
-                        std::make_shared<std::string>(word),
-                        std::make_shared<int>(1)
-                    ));
+                    int cnt = 1;
+                    Tuple2V2<const char*, int, 128, sizeof(int)>* new_record = new Tuple2V2<const char*, int, 128, sizeof(int)>(word.c_str(), &cnt);
+                    out->collect(new_record);
+                    delete new_record;
                 }
                 word = "";
             } else {
@@ -62,6 +64,6 @@ public:
 
     char*                                   serialize() override {return (char*)this;}
 
-    std::shared_ptr<FlatMapFunction<std::string, Tuple2<std::string, int>>>  
+    std::shared_ptr<FlatMapFunction<StringBuf<32>, Tuple2V2<const char*, int, 128, sizeof(int)>>>  
                                             deserialize() override {return std::make_shared<FileReadFunctionV2>();}
 };
