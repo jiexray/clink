@@ -10,6 +10,7 @@
 #include "InputGate.hpp"
 #include "InputChannel.hpp"
 #include "InputChannelMetrics.hpp"
+#include "LoggerFactory.hpp"
 
 
 class InputGateFactory
@@ -26,6 +27,7 @@ private:
                                                                      int input_channel_idx, 
                                                                      std::string partition_id,
                                                                      InputChannelMetricsPtr metrics);
+    static std::shared_ptr<spdlog::logger>      m_logger;
 public:
     InputGateFactory(std::shared_ptr<ResultPartitionManager> partition_manager):
     m_partition_manager(partition_manager) {}

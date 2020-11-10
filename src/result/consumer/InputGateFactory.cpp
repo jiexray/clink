@@ -22,7 +22,7 @@ void InputGateFactory::create_input_channels(
         InputChannelMetricsPtr metrics) {
     std::vector<std::string> partition_ids = igdd->get_input_channels_partition_ids(); 
     int num_input_channels = (int) partition_ids.size();
-
+    
     std::shared_ptr<InputChannel>* input_channels = new std::shared_ptr<InputChannel>[num_input_channels];
 
     for (int i = 0; i < num_input_channels; i++) {

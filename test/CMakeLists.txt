@@ -103,4 +103,12 @@ if(CXXTEST_FOUND)
   # streamrecord streamrecordV2
   CXXTEST_ADD_TEST(unitest_streamrecord_V2 streamRecord_V2.cpp ${CMAKE_CURRENT_SOURCE_DIR}/streamrecord/TestStreamRecordV2.hpp)
   target_link_libraries(unitest_streamrecord_V2 streamrecord)
+
+  # runtime wordcount multiple counters
+  CXXTEST_ADD_TEST(unitest_runtime_wordcount_multiple_counters wordcount_multiple_counters.cpp ${CMAKE_CURRENT_SOURCE_DIR}/runtime/TestWordcountMultipleCounters.hpp)
+  target_link_libraries(unitest_runtime_wordcount_multiple_counters runtime)
+
+  # runtime file read multiple sinks
+  CXXTEST_ADD_TEST(unitest_runtime_file_read_multiple_sinks file_read_multiple_sinks.cpp ${CMAKE_CURRENT_SOURCE_DIR}/runtime/TestFileReadMultipleSinks.hpp)
+  target_link_libraries(unitest_runtime_file_read_multiple_sinks runtime)
 endif()

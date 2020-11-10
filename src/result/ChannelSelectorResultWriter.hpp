@@ -23,7 +23,7 @@ public:
      */
     ChannelSelectorResultWriter(std::shared_ptr<ResultPartition> result_partition, std::string task_name, std::shared_ptr<ChannelSelector<T>> channel_selector)
     : ResultWriter<T>(result_partition, task_name), m_channel_selector(channel_selector){
-        this->m_channel_selector->setup(this->get_number_of_channels());
+        throw std::runtime_error("ChannelSelectorResultWriter need flush timeout, this API is depercated!");
     }
 
     /* Implement emit record with channel selector */

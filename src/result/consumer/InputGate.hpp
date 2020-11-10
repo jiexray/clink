@@ -38,7 +38,7 @@ private:
     int                                                 m_number_of_input_channels;
     int                                                 m_consumed_subpartition_idx;
     /* A map from partition_idx to InputChannel */
-    std::map<int, std::shared_ptr<InputChannel>>        m_input_channels;
+    std::map<std::string, std::shared_ptr<InputChannel>>        m_input_channels;
 
     /* Channels, which notifies this input gate about available data */
     std::deque<std::shared_ptr<InputChannel>>           m_input_channels_with_data;
@@ -106,7 +106,8 @@ public:
 
     /* Properties */
     int                                                 get_gate_idx() {return m_gate_idx;}
-    std::map<int, std::shared_ptr<InputChannel>>&       get_input_channels() {return m_input_channels;}
+    std::map<std::string, std::shared_ptr<InputChannel>>&       
+                                                        get_input_channels() {return m_input_channels;}
     int                                                 get_number_of_input_channels() {return m_number_of_input_channels;}
     void                                                set_bytes_in_counter(CounterPtr bytes_in) {m_bytes_in = bytes_in;}
 

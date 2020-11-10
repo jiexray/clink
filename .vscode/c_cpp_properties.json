@@ -13,10 +13,6 @@
                 "/home/tian/software/vscode/projects/clink/src/deployment",
                 "/home/tian/software/vscode/projects/clink/src/streaming/partitioner",
                 "/home/tian/software/vscode/projects/clink/src/streamrecord",
-                "/home/tian/software/vscode/projects/clink/src/streamrecord/types",
-                "/home/tian/software/vscode/projects/clink/src/streamrecord/typeutils",
-                "/home/tian/software/vscode/projects/clink/src/streamrecord/typeutils/serialize",
-                "/home/tian/software/vscode/projects/clink/src/streamrecord/typeutils/deserialize",
                 "/home/tian/software/vscode/projects/clink/src/streaming/functions",
                 "/home/tian/software/vscode/projects/clink/src/streaming/io",
                 "/home/tian/software/vscode/projects/clink/src/streaming/operators",
@@ -47,7 +43,7 @@
             "compilerPath": "/usr/bin/gcc",
             "cStandard": "gnu11",
             "cppStandard": "c++17",
-            "intelliSenseMode": "gcc-x64",
+            "intelliSenseMode": "gcc-x64"
         }
     ],
     "version": 4

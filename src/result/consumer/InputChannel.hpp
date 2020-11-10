@@ -16,7 +16,6 @@ class InputChannel: public SubpartitionAvailableListener, public std::enable_sha
 {
 private:
     std::shared_ptr<InputChannelInfo>           m_channel_info;
-    int                                         m_partition_idx;
     std::string                                 m_partition_id;
     std::shared_ptr<InputGate>                  m_input_gate;
     std::shared_ptr<ResultPartitionManager>     m_partition_manager;
@@ -31,9 +30,6 @@ protected:
 
 
 public:
-    InputChannel(std::shared_ptr<InputGate> input_gate, int channel_idx, int partition_idx, 
-                std::shared_ptr<ResultPartitionManager> partition_manager);
-
     InputChannel(std::shared_ptr<InputGate> input_gate, int channel_idx, std::string partition_id,
                 std::shared_ptr<ResultPartitionManager> partition_manager): 
                 InputChannel(input_gate, channel_idx, partition_id, partition_manager, nullptr, nullptr) {}
@@ -49,6 +45,6 @@ public:
     /* Properties */
     std::shared_ptr<ResultSubpartitionView>     get_subpartition_view() {return m_subpartition_view;}
     int                                         get_channel_idx() {return m_channel_info->get_input_channel_idx();}
-    int                                         get_partition_idx() {return m_partition_idx;}
+    std::string                                 get_partition_id() {return m_partition_id;}
 };
 

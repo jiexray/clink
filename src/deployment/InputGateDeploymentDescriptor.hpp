@@ -26,9 +26,7 @@ public:
     InputGateDeploymentDescriptor(int consumed_subpartition_idx, int* partition_idxs, int num_partition_idxs):
     m_partition_idx_of_input_channels(partition_idxs, partition_idxs + num_partition_idxs),
     m_consumed_subpartition_idx(consumed_subpartition_idx) {
-        for (int i = 0; i < num_partition_idxs; i++) {
-            m_partition_id_of_input_channels.push_back("test-" + std::to_string(partition_idxs[i]));
-        }
+        throw std::runtime_error("IGDD need string type partition ids, this API is depercated");
     }
 
     InputGateDeploymentDescriptor(int consumed_subpartition_idx, std::string* partition_ids, int num_partition_ids):

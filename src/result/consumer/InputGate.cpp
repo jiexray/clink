@@ -110,15 +110,22 @@ std::shared_ptr<InputChannel> InputGate::get_channelV2(bool blocking) {
 
 void InputGate::set_input_channels(std::shared_ptr<InputChannel>* input_channels, int num_input_channels) {
     std::unique_lock<std::mutex> request_lock(m_request_mtx);
+    assert(num_input_channels == m_number_of_input_channels);
     for (int i = 0; i < num_input_channels; i++) {
-        m_input_channels.insert(std::make_pair(input_channels[i]->get_partition_idx(), input_channels[i]));
+        m_input_channels.insert(std::make_pair(input_channels[i]->get_partition_id(), input_channels[i]));
     }
 }
 
 
 void InputGate::request_partitions() {
     std::unique_lock<std::mutex> request_lock(m_request_mtx);
-    for (std::pair<const int, std::shared_ptr<InputChannel>> input_channel: m_input_channels) {
+    int i = 1;
+    for (std::pair<std::string, std::shared_ptr<InputChannel>> input_channel: m_input_channels) {
+        SPDLOG_LOGGER_INFO(m_logger, "InputGate {} request partitions {}/{}, subpartition_idx: {}", 
+            m_owning_task_name, 
+            i++,
+            m_number_of_input_channels, 
+            m_consumed_subpartition_idx);
         input_channel.second->request_subpartition(m_consumed_subpartition_idx);
     } 
 }

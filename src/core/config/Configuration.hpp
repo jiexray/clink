@@ -11,6 +11,7 @@
 
 #include "StreamEdge.hpp"
 #include "ForwardPartitioner.hpp"
+#include "RebalancePartitioner.hpp"
 #include "SimpleUdfStreamOperatorFactory.hpp"
 #include "StreamMap.hpp"
 #include "StreamSource.hpp"
@@ -108,8 +109,8 @@ inline std::shared_ptr<std::string> Configuration::get_value<std::string>(const 
     std::shared_ptr<std::string> value = std::make_shared<std::string>(value_in_char);
 
     // remove key
-    delete[] value_in_char;
-    m_conf_data.erase(key);
+    // delete[] value_in_char;
+    // m_conf_data.erase(key);
 
     return value;
 }
@@ -142,8 +143,8 @@ inline std::shared_ptr<int> Configuration::get_value<int>(const std::string& key
     std::shared_ptr<int>    value               = std::make_shared<int>(*((int*)value_in_char));
 
     // remove key
-    delete[] value_in_char;
-    m_conf_data.erase(key);
+    // delete[] value_in_char;
+    // m_conf_data.erase(key);
 
     return value; 
 }
@@ -176,6 +177,12 @@ inline void Configuration::set_edge(std::string key, std::shared_ptr<StreamEdge<
                 std::dynamic_pointer_cast<ForwardPartitioner<T>>(edge_partitioner).get(), 
                 sizeof(ForwardPartitioner<T>));
         m_conf_data.insert(std::make_pair(key + "_partitioner", edge_partitioner_in_char));
+    } else if (std::dynamic_pointer_cast<RebalancePartitioner<T>>(edge_partitioner) != nullptr) {
+        char* edge_partitioner_in_char = new char[sizeof(RebalancePartitioner<T>) + 1];
+        memcpy(edge_partitioner_in_char, 
+                std::dynamic_pointer_cast<RebalancePartitioner<T>>(edge_partitioner).get(), 
+                sizeof(RebalancePartitioner<T>));
+        m_conf_data.insert(std::make_pair(key + "_partitioner", edge_partitioner_in_char));
     } else {
         throw std::runtime_error("unknown partitioner type");
     }
@@ -197,6 +204,11 @@ inline std::shared_ptr<StreamEdge<T>> Configuration::get_edge(std::string key){
             // std::cout << "get_edge() edge " << edge_ptr->get_edge_id() << " use partitioner FORWARD" << std::endl;
             edge_partitioner = std::make_shared<ForwardPartitioner<T>>();
             edge_partitioner->setup(edge_partitioner_ptr->get_number_of_channels());
+        } else if (partition_type_str == "REBALANCE") {
+            edge_partitioner = std::make_shared<RebalancePartitioner<T>>();
+            edge_partitioner->setup(edge_partitioner_ptr->get_number_of_channels());
+        } else {
+            throw std::runtime_error("Unknown type of partition, ONLY forward, rebalance support");
         }
 
         // reconstruct the StreamEdge
@@ -206,8 +218,8 @@ inline std::shared_ptr<StreamEdge<T>> Configuration::get_edge(std::string key){
                                                                             edge_ptr->get_target_operator_name(), edge_partitioner);
         
         // free the buffer store the StreamEdge
-        delete[] edge_in_char;
-        m_conf_data.erase(key);
+        // delete[] edge_in_char;
+        // m_conf_data.erase(key);
         return edge;
     } else {
         return nullptr;

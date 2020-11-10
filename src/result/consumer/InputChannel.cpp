@@ -1,17 +1,6 @@
 #include "InputChannel.hpp"
 std::shared_ptr<spdlog::logger> InputChannel::m_logger = LoggerFactory::get_logger("InputChannel");
 
-/* For test */
-InputChannel::InputChannel(std::shared_ptr<InputGate> input_gate, int channel_idx, int partition_idx, 
-                std::shared_ptr<ResultPartitionManager> partition_manager):
-m_input_gate(input_gate),
-m_partition_manager(partition_manager),
-m_partition_idx(partition_idx){
-    this->m_partition_id = "test-" + partition_idx;
-    m_channel_info = std::make_shared<InputChannelInfo>(input_gate->get_gate_idx(), channel_idx);
-}
-
-
 InputChannel::InputChannel(std::shared_ptr<InputGate> input_gate, int channel_idx, std::string partition_id,
                 std::shared_ptr<ResultPartitionManager> partition_manager,
                 CounterPtr bytes_in, CounterPtr buffers_in):
