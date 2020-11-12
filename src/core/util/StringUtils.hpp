@@ -50,6 +50,23 @@ public:
     }
 };
 
+template <class T>
+std::string to_string(T value);
+
+template<>
+std::string to_string<std::string>(std::string value) {
+    return value;
+}
+
+template <>
+std::string to_string<int>(int value) {
+    return std::to_string(value);
+}
+
+template <>
+std::string to_string<double>(double value) {
+    return std::to_string(value);
+}
 }
 
 

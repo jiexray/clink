@@ -22,6 +22,7 @@ set(TEST_HEADER_DIRS ${CMAKE_SOURCE_DIR}/src/buffer
   ${CMAKE_SOURCE_DIR}/src/streaming/graph
   ${CMAKE_SOURCE_DIR}/src/runtime
   ${CMAKE_SOURCE_DIR}/src/runtime/io
+  ${CMAKE_SOURCE_DIR}/src/runtime/state
   ${CMAKE_SOURCE_DIR}/src/core/config
   ${CMAKE_SOURCE_DIR}/src/core/common
   ${CMAKE_SOURCE_DIR}/src/core/common/io
@@ -111,4 +112,8 @@ if(CXXTEST_FOUND)
   # runtime file read multiple sinks
   CXXTEST_ADD_TEST(unitest_runtime_file_read_multiple_sinks file_read_multiple_sinks.cpp ${CMAKE_CURRENT_SOURCE_DIR}/runtime/TestFileReadMultipleSinks.hpp)
   target_link_libraries(unitest_runtime_file_read_multiple_sinks runtime)
+
+  # runtime state
+  CXXTEST_ADD_TEST(unitest_runtime_state runtime_state.cpp ${CMAKE_CURRENT_SOURCE_DIR}/runtime/TestState.hpp)
+  target_link_libraries(unitest_runtime_state runtime)
 endif()

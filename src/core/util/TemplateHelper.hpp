@@ -44,4 +44,10 @@ namespace TemplateHelperUtil{
     {
         typedef U type;
     };
+
+    template <typename K>
+    struct ParamOptimize {
+        typedef typename select<std::is_fundamental<K>::value || std::is_pointer<K>::value || std::is_reference<K>::value, K, K&>::type type;
+        typedef typename select<std::is_fundamental<K>::value || std::is_pointer<K>::value || std::is_reference<K>::value, K, K const&>::type const_type;
+    };
 };
