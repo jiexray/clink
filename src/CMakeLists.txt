@@ -26,6 +26,7 @@ set(ALL_INCLUDE_DIRS
   ${CMAKE_SOURCE_DIR}/src/streaming/task/config
   ${CMAKE_SOURCE_DIR}/src/streaming/task/mailbox
   ${CMAKE_SOURCE_DIR}/src/streaming/graph
+  ${CMAKE_SOURCE_DIR}/src/runtime/query
   ${CMAKE_SOURCE_DIR}/src/runtime
   ${CMAKE_SOURCE_DIR}/src/runtime/io
   ${CMAKE_SOURCE_DIR}/src/core/config
@@ -35,6 +36,9 @@ set(ALL_INCLUDE_DIRS
   ${CMAKE_SOURCE_DIR}/src/core/tuple
   ${CMAKE_SOURCE_DIR}/src/runtime/executiongraph
   ${CMAKE_SOURCE_DIR}/src/runtime/shuffle
+  ${CMAKE_SOURCE_DIR}/src/runtime/state
+  ${CMAKE_SOURCE_DIR}/src/runtime/state/internal
+  ${CMAKE_SOURCE_DIR}/src/runtime/state/heap
   ${CMAKE_SOURCE_DIR}/src/runtime/shuffle/metrics
   ${CMAKE_SOURCE_DIR}/src/runtime/taskexecutor
   ${CMAKE_SOURCE_DIR}/src/metrics

@@ -4,8 +4,10 @@
 #include "NestedStateMap.hpp"
 #include "NestedMapsStateTable.hpp"
 #include "InternalKeyContextImpl.hpp"
+#include "HeapMapState.hpp"
 #include <iostream>
 #include <string>
+#include <map>
 
 struct MyState{
     int f0;
@@ -52,6 +54,32 @@ public:
         TS_ASSERT_EQUALS(state_1, 102);
     }
 
-    
+    void testHeapState() {
+        std::cout << "test testHeapState()" << std::endl;
+        InternalKeyContext<int>* key_context = new InternalKeyContextImpl<int>(KeyGroupRange(0, 10), 3);
+        NestedMapsStateTable<int, std::string, std::map<int, int>> state_table(key_context);
+
+        HeapMapState<int, std::string, int, int> heap_map_state(&state_table, std::map<int, int>());
+
+        heap_map_state.set_current_namespace("ns-1");
+
+        heap_map_state.put(10, 1);
+        heap_map_state.put(12, 1);
+        
+        int state = heap_map_state.get(10);
+        TS_ASSERT_EQUALS(state, 1);
+
+        heap_map_state.put(12, 12);
+        state = heap_map_state.get(12);
+        TS_ASSERT_EQUALS(state, 12);
+
+        heap_map_state.put_all(std::map<int, int>{{10, 100}, {12, 120}, {14, 140}});
+        state = heap_map_state.get(10);
+        TS_ASSERT_EQUALS(state, 100);
+        state = heap_map_state.get(12);
+        TS_ASSERT_EQUALS(state, 120);
+        state = heap_map_state.get(14);
+        TS_ASSERT_EQUALS(state, 140);
+    }
 };
 

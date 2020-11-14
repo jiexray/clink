@@ -77,7 +77,7 @@ public:
       #return the states of the mapping with the specified key/namespace composite key, or null
       if no mapping of the specified key is found.
      */
-    ConstParamS get(ConstParamN ns) {
+    ParamS get(ConstParamN ns) {
         return get(m_key_context->get_current_key(), m_key_context->get_current_key_group_index(), ns);
     }
 
@@ -150,7 +150,7 @@ public:
     //  Internal interfaces
     // ------------------------------------------------------------------
 private:
-    ConstParamS get(ConstParamK key, int key_group_index, ConstParamN ns) {
+    ParamS get(ConstParamK key, int key_group_index, ConstParamN ns)  {
         StateMap<K, N, S>* state_map = get_map_for_key_group(key_group_index);
 
         if (state_map == nullptr) {
