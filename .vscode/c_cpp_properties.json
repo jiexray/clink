@@ -14,6 +14,7 @@
                 "/home/tian/software/vscode/projects/clink/src/streaming/partitioner",
                 "/home/tian/software/vscode/projects/clink/src/streamrecord",
                 "/home/tian/software/vscode/projects/clink/src/streaming/functions",
+                "/home/tian/software/vscode/projects/clink/src/streaming/functions/windowing",
                 "/home/tian/software/vscode/projects/clink/src/streaming/io",
                 "/home/tian/software/vscode/projects/clink/src/streaming/operators",
                 "/home/tian/software/vscode/projects/clink/src/streaming/partitioner",

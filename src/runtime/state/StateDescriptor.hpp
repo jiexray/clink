@@ -2,6 +2,16 @@
 #include <string>
 #include "TemplateHelper.hpp"
 
+enum StateDescriptorType {
+    UNKNOWN,
+    VALUE,
+    LIST,
+    REDUCING,
+    FOLDING,
+    AGGREGATING,
+    MAP
+};
+
 /**
   Base class for state descriptor. A StateDescriptor is used for creating partitioned
   State in stateful operations.
@@ -13,29 +23,27 @@ template <class S, class T>
 class StateDescriptor
 {
 protected:
-    typedef typename std::remove_pointer<T>::type* Tp;
     /** Name that uniquely identifies state created from this StateDescriptor. */
-    std::string         m_name;
-    Tp                  m_default_value;
+    typedef typename TemplateHelperUtil::ParamOptimize<T>::type ParamT;
+    typedef typename TemplateHelperUtil::ParamOptimize<T>::const_type ConstParamT;
 
-    StateDescriptor(const std::string& name, Tp default_value): m_name(name), m_default_value(default_value) {}
+    std::string         m_name;
+    T                   m_default_value;
+
+    StateDescriptor(const std::string& name, ConstParamT default_value): m_name(name), m_default_value(default_value) {}
 
     
 public:
-    ~StateDescriptor() {
-        delete m_default_value;
+
+    /* Properties */
+    std::string get_name() const{
+        return m_name;
     }
 
-    enum Type {
-        UNKNOWN,
-        VALUE,
-        LIST,
-        REDUCING,
-        FOLDING,
-        AGGREGATING,
-        MAP
-    };
+    ConstParamT get_default_value() const {
+        return m_default_value;
+    }
 
-    virtual Type        get_type() = 0;
+    virtual StateDescriptorType        get_type() = 0;
 };
 

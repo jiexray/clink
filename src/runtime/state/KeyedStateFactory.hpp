@@ -1,5 +1,6 @@
 #pragma once
 #include "TemplateHelper.hpp"
+#include "StateDescriptor.hpp"
 
 /**
   This factory produces concrete internal state objects.
@@ -17,7 +18,7 @@ public:
       Creates and returns a new InternalKvState
       @param state_desc The StateDescriptor that contains the name of the state.      
      */
-    virtual typename TemplateHelperUtil::ParamOptimize<IS>::type
-    create_internal_state() = 0;
+    // TODO: optimize the return type
+    virtual IS* create_internal_state(const StateDescriptor<S, SV>& state_desc) = 0;
 };
 

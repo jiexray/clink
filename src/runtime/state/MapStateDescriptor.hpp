@@ -13,10 +13,10 @@ template<class UK, class UV>
 class MapStateDescriptor: public StateDescriptor<MapState<UK, UV>, std::map<UK, UV>>
 {
 public:
-    MapStateDescriptor(const std::string& name): StateDescriptor<MapState<UK, UV>, std::map<UK, UV>>(name, nullptr){}
+    MapStateDescriptor(const std::string& name): StateDescriptor<MapState<UK, UV>, std::map<UK, UV>>(name, std::map<UK, UV>()){}
 
-    Type get_type() override {
-        return Type::MAP;
+    StateDescriptorType get_type() override {
+        return StateDescriptorType::MAP;
     }
 };
 

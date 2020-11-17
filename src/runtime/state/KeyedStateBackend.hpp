@@ -8,8 +8,8 @@
 */
 template <class K>
 class KeySelectionListener {
-    typedef typename TemplateHelpUtil::ParamOptimize<K>::type ParamK;
-    typedef typename TemplateHelpUtil::ParamOptimize<K>::const_type ConstParamK;
+    typedef typename TemplateHelperUtil::ParamOptimize<K>::type ParamK;
+    typedef typename TemplateHelperUtil::ParamOptimize<K>::const_type ConstParamK;
 public:
     virtual void key_selected(ConstParamK new_key) = 0;
 };
@@ -28,16 +28,16 @@ template <class K, class N, class SV, class S, class IS>
 class KeyedStateBackend: public KeyedStateFactory<N, SV, S, IS>
 {
 private:
-    typedef typename TemplateHelpUtil::ParamOptimize<K>::type ParamK;
-    typedef typename TemplateHelpUtil::ParamOptimize<N>::type ParamN;
-    typedef typename TemplateHelpUtil::ParamOptimize<SV>::type ParamSV;
-    typedef typename TemplateHelpUtil::ParamOptimize<S>::type ParamS;
-    typedef typename TemplateHelpUtil::ParamOptimize<IS>::type ParamIS;
-    typedef typename TemplateHelpUtil::ParamOptimize<K>::const_type ConstParamK;
-    typedef typename TemplateHelpUtil::ParamOptimize<N>::const_type ConstParamN;
-    typedef typename TemplateHelpUtil::ParamOptimize<SV>::const_type ConstParamSV;
-    typedef typename TemplateHelpUtil::ParamOptimize<S>::const_type ConstParamS;
-    typedef typename TemplateHelpUtil::ParamOptimize<IS>::const_type ConstParamIS;
+    typedef typename TemplateHelperUtil::ParamOptimize<K>::type ParamK;
+    typedef typename TemplateHelperUtil::ParamOptimize<N>::type ParamN;
+    typedef typename TemplateHelperUtil::ParamOptimize<SV>::type ParamSV;
+    typedef typename TemplateHelperUtil::ParamOptimize<S>::type ParamS;
+    typedef typename TemplateHelperUtil::ParamOptimize<IS>::type ParamIS;
+    typedef typename TemplateHelperUtil::ParamOptimize<K>::const_type ConstParamK;
+    typedef typename TemplateHelperUtil::ParamOptimize<N>::const_type ConstParamN;
+    typedef typename TemplateHelperUtil::ParamOptimize<SV>::const_type ConstParamSV;
+    typedef typename TemplateHelperUtil::ParamOptimize<S>::const_type ConstParamS;
+    typedef typename TemplateHelperUtil::ParamOptimize<IS>::const_type ConstParamIS;
 public:
     virtual void set_current_key(ConstParamK new_key) = 0;
     virtual ConstParamK get_current_key() = 0;
@@ -50,6 +50,7 @@ public:
       @return A new key/value state backed by this backend.
      */
     virtual ParamS get_or_create_keyed_state(const StateDescriptor<S, SV>& state_descriptor) = 0;
+    virtual ParamIS get_or_create_internal_keyed_state(const StateDescriptor<S, SV>& state_descriptor) = 0;
 
     /**
       Creates or retrieves a partitioned state backed by this state backend.

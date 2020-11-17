@@ -5,9 +5,13 @@
 #include "NestedMapsStateTable.hpp"
 #include "InternalKeyContextImpl.hpp"
 #include "HeapMapState.hpp"
+#include "KeyGroupRangeAssignment.hpp"
+#include "HeapKeyedStatedBackend.hpp"
+#include "MapStateDescriptor.hpp"
 #include <iostream>
 #include <string>
 #include <map>
+#include <typeinfo>
 
 struct MyState{
     int f0;
@@ -80,6 +84,93 @@ public:
         TS_ASSERT_EQUALS(state, 120);
         state = heap_map_state.get(14);
         TS_ASSERT_EQUALS(state, 140);
+    }
+
+    void testKeyGroupAssignment( void ) {
+        std::cout << "test testKeyGroupAssignment()" << std::endl;
+        int key_group_1 = KeyGroupRangeAssignment::assign_to_key_group<int>(123, 10);
+        std::cout << "key_group_1 : " << key_group_1 << std::endl;
+        int key_group_2 = KeyGroupRangeAssignment::assign_to_key_group<int>(122, 10);
+        std::cout << "key_group_2 : " << key_group_2 << std::endl;
+        TS_ASSERT_EQUALS(key_group_1 == key_group_2, false);
+
+        int key_group_3 = KeyGroupRangeAssignment::assign_to_key_group<std::string>("hello world", 10);
+        std::cout << "key_group_3 : " << key_group_3 << std::endl;
+    }
+
+    void testHeapStateBackend( void ) {
+        std::cout << "test testHeapStateBackend()" << std::endl;
+
+        KvStateRegistry<int, std::string, std::map<int, int>> kv_state_registry;
+        int job_id = 0;
+        int job_vertex_id = 0;
+
+        TaskKvStateRegistry<int, std::string, std::map<int, int>> task_kv_state_registry(&kv_state_registry, job_id, job_vertex_id);
+        ExecutionConfig execution_config;
+        InternalKeyContext<int>* key_context = new InternalKeyContextImpl<int>(KeyGroupRange(0, 10), 3);
+
+        HeapKeyedStatedBackend<int, std::string, std::map<int, int>, MapState<int, int>, InternalMapState<int, std::string, int, int>> heap_stated_backend(
+                &task_kv_state_registry, 
+                &execution_config,
+                key_context,
+                std::map<std::string, StateTable<int, std::string, std::map<int, int>>*>());
+    
+
+        heap_stated_backend.register_state_creator(
+            // std::string(typeid(HeapMapState<int, std::string, int, int>).name()),
+            std::string(typeid(StateDescriptor<MapState<int, int>, std::map<int, int>>).name()) ,
+            HeapMapState<int, std::string, int, int>::create<InternalMapState<int, std::string, int, int>>);
+
+        MapStateDescriptor<int, int> map_state_desc("map-state");
+        InternalMapState<int, std::string, int, int>* map_state = heap_stated_backend.create_internal_state(map_state_desc);
+        map_state->set_current_namespace("ns-1");
+        (dynamic_cast<HeapMapState<int, std::string, int, int>*>(map_state))->set_current_namespace("ns-1");
+
+        map_state->put(1, 1);
+        map_state->put(2, 2);
+
+        int state = map_state->get(1);
+        TS_ASSERT_EQUALS(state, 1);
+        state = map_state->get(2);
+        TS_ASSERT_EQUALS(state, 2);
+
+        map_state->put(1, 10);
+        state = map_state->get(1);
+        TS_ASSERT_EQUALS(state, 10);
+        map_state->set_current_namespace("ns_2");
+        TS_ASSERT_EQUALS(map_state->contains(1), false);
+
+        MapStateDescriptor<int, int> map_state_desc_2("map-state2");
+        MapState<int, int>& map_state_2 = heap_stated_backend.get_or_create_keyed_state(map_state_desc_2);
+        InternalMapState<int, std::string, int, int>& internal_map_state_2 = heap_stated_backend.get_or_create_internal_keyed_state(map_state_desc_2);
+        internal_map_state_2.set_current_namespace("ns-1");
+        // ((HeapMapState<int, std::string, int, int>*)(&map_state_2))->set_current_namespace("ns-1");
+
+        // (dynamic_cast<InternalMapState<int, std::string, int, int>*>(&map_state_2))->put(1, 1);
+        // (dynamic_cast<InternalMapState<int, std::string, int, int>*>(&map_state_2))->put(1, 1);
+        // state = (dynamic_cast<InternalMapState<int, std::string, int, int>*>(&map_state_2))->get(1);
+        // TS_ASSERT_EQUALS(state, 1);
+
+        map_state_2.put(1, 1);
+        map_state_2.put(2, 2);
+
+        state = map_state_2.get(1);
+        TS_ASSERT_EQUALS(state, 1);
+        state = map_state_2.get(2);
+        TS_ASSERT_EQUALS(state, 2);
+
+        map_state_2.put(1, 10);
+        state = map_state_2.get(1);
+        TS_ASSERT_EQUALS(state, 10);
+
+        bool is_contain = map_state_2.contains(1);
+        TS_ASSERT_EQUALS(is_contain, true);
+        internal_map_state_2.set_current_namespace("ns-2");
+        is_contain = map_state_2.contains(1);
+        TS_ASSERT_EQUALS(is_contain, false);
+        internal_map_state_2.set_current_namespace("ns-1");
+        is_contain = map_state_2.contains(1);
+        TS_ASSERT_EQUALS(is_contain, true);
     }
 };
 

@@ -49,5 +49,16 @@ namespace TemplateHelperUtil{
     struct ParamOptimize {
         typedef typename select<std::is_fundamental<K>::value || std::is_pointer<K>::value || std::is_reference<K>::value, K, K&>::type type;
         typedef typename select<std::is_fundamental<K>::value || std::is_pointer<K>::value || std::is_reference<K>::value, K, K const&>::type const_type;
+        typedef typename select<std::is_fundamental<K>::value || std::is_pointer<K>::value || std::is_reference<K>::value, K, K*>::type ret_ptr_type;
+    };
+
+
+    template <class Base, class Derived>
+    struct CheckInherit {
+        static void assert_inherit() {
+            if (!std::is_base_of<Base, Derived>::value) {
+                throw std::runtime_error("Base class " + std::string(typeid(Base).name()) + " is not base class of derived class " + std::string(typeid(Derived).name()));
+            }
+        }
     };
 };

@@ -13,6 +13,7 @@ set(TEST_HEADER_DIRS ${CMAKE_SOURCE_DIR}/src/buffer
   ${CMAKE_SOURCE_DIR}/src/streaming/partitioner
   ${CMAKE_SOURCE_DIR}/src/streamrecord
   ${CMAKE_SOURCE_DIR}/src/streaming/functions
+  ${CMAKE_SOURCE_DIR}/src/streaming/functions/windowing
   ${CMAKE_SOURCE_DIR}/src/streaming/io
   ${CMAKE_SOURCE_DIR}/src/streaming/operators
   ${CMAKE_SOURCE_DIR}/src/streaming/partitioner

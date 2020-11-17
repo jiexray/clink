@@ -13,6 +13,7 @@ private:
     int         m_start_key_group;
     int         m_end_key_group;
 
+public:
     /**
       Empty KeyGroup Constructor.
      */
@@ -20,7 +21,7 @@ private:
         m_end_key_group = 0;
         m_end_key_group = -1;
     }
-public:
+    
     KeyGroupRange(int start_key_group, int end_key_group) {
         assert(start_key_group <= end_key_group);
         assert(start_key_group >= 0);
@@ -32,6 +33,22 @@ public:
     KeyGroupRange(const KeyGroupRange& range) {
         m_start_key_group = range.m_start_key_group;
         m_end_key_group = range.m_end_key_group;
+    }
+
+    KeyGroupRange& operator= (const KeyGroupRange& other) {
+        if (this != &other) {
+            m_start_key_group = other.m_start_key_group;
+            m_end_key_group = other.m_end_key_group;
+        }
+        return *this;
+    }
+
+    KeyGroupRange& operator= (KeyGroupRange&& other) {
+        if (this != &other) {
+            m_start_key_group = other.m_start_key_group;
+            m_end_key_group = other.m_end_key_group;
+        }
+        return *this;
     }
 
     /**

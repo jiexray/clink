@@ -21,7 +21,7 @@
   @param <S>: type of state
  */
 template<class K, class N, class S>
-class InternalKvState: virtual public State
+class InternalKvState
 {
 private:
     typedef typename TemplateHelperUtil::ParamOptimize<K>::type ParamK;
@@ -37,5 +37,10 @@ public:
       @param ns The namespace.
      */
     virtual void set_current_namespace(ConstParamN ns) = 0;
+
+    /**
+      Removes the value mapped under the current key.
+     */
+    virtual void clear() = 0;
 };
 

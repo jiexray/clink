@@ -19,6 +19,7 @@ set(ALL_INCLUDE_DIRS
   ${CMAKE_SOURCE_DIR}/src/streamrecord/typeutils/serialize
   ${CMAKE_SOURCE_DIR}/src/streamrecord/typeutils/deserialize
   ${CMAKE_SOURCE_DIR}/src/streaming/functions
+  ${CMAKE_SOURCE_DIR}/src/streaming/functions/windowing
   ${CMAKE_SOURCE_DIR}/src/streaming/io
   ${CMAKE_SOURCE_DIR}/src/streaming/operators
   ${CMAKE_SOURCE_DIR}/src/streaming/partitioner

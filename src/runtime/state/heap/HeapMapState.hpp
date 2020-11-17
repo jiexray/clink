@@ -2,6 +2,7 @@
 #include "AbstractHeapState.hpp"
 #include "InternalMapState.hpp"
 #include "StringUtils.hpp"
+#include "StateDescriptor.hpp"
 
 /**
   Heap-backed partitioned MapState that is snappshotted into files.
@@ -24,6 +25,10 @@ private:
     typedef typename TemplateHelperUtil::ParamOptimize<UK>::const_type ConstParamUK;
     typedef typename TemplateHelperUtil::ParamOptimize<UV>::const_type ConstParamUV;
 public:
+    HeapMapState() {
+        throw std::runtime_error("Not implement HeapMapState()");
+    }
+
     HeapMapState(
             StateTable<K, N, std::map<UK, UV>>* state_table,
             const std::map<UK, UV>& default_value):
@@ -94,5 +99,14 @@ public:
         std::map<UK, UV>& user_map = this->m_state_table->get(this->m_current_namespace);
 
         return user_map.empty();
+    }
+
+    void set_current_namespace(ConstParamN ns) override {
+        this->m_current_namespace = ns;
+    }
+
+    template<class IS>
+    static IS* create(const StateDescriptor<MapState<int, int>, std::map<UK, UV>>& state_desc, StateTable<K, N, std::map<UK, UV>>* state_table) {
+        return (IS*)new HeapMapState(state_table, state_desc.get_default_value());
     }
 };
