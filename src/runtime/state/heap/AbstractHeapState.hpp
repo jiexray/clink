@@ -24,20 +24,20 @@ private:
 
 protected:
     /** Map containing the actual key/value pairs */
-    StateTable<K, N, SV>*       m_state_table;
+    StateTable<K, N, SV>&       m_state_table;
 
     /** The current namespace, which the access methods will refer to. */
     N                           m_current_namespace;
 
 public:
     AbstractHeapState(
-        StateTable<K, N, SV>* state_table,
+        StateTable<K, N, SV>& state_table,
         ConstParamSV default_value):
         m_state_table(state_table),
         m_default_value(default_value){}
 
     void clear() override {
-        m_state_table->remove(m_current_namespace);
+        m_state_table.remove(m_current_namespace);
     }
 
     void set_current_namespace(ConstParamN ns) override {

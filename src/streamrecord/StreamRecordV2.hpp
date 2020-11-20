@@ -31,8 +31,8 @@ struct StreamRecordV2 {
     T val;
 
     StreamRecordV2(){}
-    StreamRecordV2(const T* v): StreamRecordV2(*v, 0){}
-    StreamRecordV2(T v):StreamRecordV2(v, 0){}
+    StreamRecordV2(const T* v): StreamRecordV2(*v, -1){}
+    StreamRecordV2(T v):StreamRecordV2(v, -1){}
     StreamRecordV2(T v, long t): val(v), timestamp(t){}
 };
 
@@ -42,8 +42,8 @@ struct StreamRecordV2<const char[32], 32> {
     char val[32];
 
     StreamRecordV2(){}
-    StreamRecordV2(const char** val): StreamRecordV2(*val, 0){}
-    StreamRecordV2(const char* str): StreamRecordV2(str, 0){}
+    StreamRecordV2(const char** val): StreamRecordV2(*val, -1){}
+    StreamRecordV2(const char* str): StreamRecordV2(str, -1){}
     StreamRecordV2(const char* str, long t): timestamp(t) {
         if (strlen(str) >= 32) {
             throw std::runtime_error("Buffer in StreamRecord is insufficient, str: " + std::string(str) + ", len: "
@@ -60,8 +60,8 @@ struct StreamRecordV2<const char*, SIZE> {
     char val[SIZE];
 
     StreamRecordV2(){}
-    StreamRecordV2(const char** val): StreamRecordV2(*val, 0){}
-    StreamRecordV2(const char* str): StreamRecordV2(str, 0){}
+    StreamRecordV2(const char** val): StreamRecordV2(*val, -1){}
+    StreamRecordV2(const char* str): StreamRecordV2(str, -1){}
     StreamRecordV2(const char* str, long t): timestamp(t) {
         if (strlen(str) >= SIZE) {
             throw std::runtime_error("Buffer in StreamRecord is insufficient, str: " + std::string(str) + ", len: "

@@ -31,7 +31,7 @@ private:
     typedef typename TemplateHelperUtil::ParamOptimize<S>::const_type ConstParamS;
     typedef typename TemplateHelperUtil::ParamOptimize<IS>::const_type ConstParamIS;
 
-    typedef typename std::function<IS*(const StateDescriptor<S, SV>&, StateTable<K, N, SV>*)> StateCreator;
+    typedef typename std::function<IS*(const StateDescriptor<S, SV> &, StateTable<K, N, SV>&)> StateCreator;
 
     std::shared_ptr<spdlog::logger> m_logger = LoggerFactory::get_logger("HeapKeyedStatedBackend");
 
@@ -82,7 +82,7 @@ public:
 
         StateTable<K, N, SV>* state_table = try_register_state_table(state_desc);
 
-        return state_creator(state_desc, state_table);
+        return state_creator(state_desc, *state_table);
     }
 
 };

@@ -8,6 +8,9 @@
 #include "KeyGroupRangeAssignment.hpp"
 #include "HeapKeyedStatedBackend.hpp"
 #include "MapStateDescriptor.hpp"
+#include "KeyedMapStateStore.hpp"
+#include "HeapListState.hpp"
+#include "ListStateDescriptor.hpp"
 #include <iostream>
 #include <string>
 #include <map>
@@ -63,7 +66,7 @@ public:
         InternalKeyContext<int>* key_context = new InternalKeyContextImpl<int>(KeyGroupRange(0, 10), 3);
         NestedMapsStateTable<int, std::string, std::map<int, int>> state_table(key_context);
 
-        HeapMapState<int, std::string, int, int> heap_map_state(&state_table, std::map<int, int>());
+        HeapMapState<int, std::string, int, int> heap_map_state(state_table, std::map<int, int>());
 
         heap_map_state.set_current_namespace("ns-1");
 
@@ -171,6 +174,24 @@ public:
         internal_map_state_2.set_current_namespace("ns-1");
         is_contain = map_state_2.contains(1);
         TS_ASSERT_EQUALS(is_contain, true);
+    }
+
+    void testKeyedMapStateStore( void ) {
+        std::cout << "test testKeyedMapStateStore()" << std::endl;
+        KeyedMapStateStore* state_store = new TestMapKeyedMapStateStore<int, int>();
+        MapStateDescriptor<int, int> map_state_desc_2("map-state2");
+        MapState<int, int>* map_state = nullptr;
+        state_store->get_map_state(map_state_desc_2, map_state);
+    }
+
+    void testHeapMapState( void ) {
+        std::cout << "test testHeapMapState()" << std::endl;
+        InternalKeyContext<int>* key_context = new InternalKeyContextImpl<int>(KeyGroupRange(0, 10), 3);
+        NestedMapsStateTable<int, std::string, std::vector<int>> state_table(key_context);
+
+        HeapListState<int, std::string, int> heap_list_state(state_table, std::vector<int>());
+
+        heap_list_state.set_current_namespace("ns-1");
     }
 };
 

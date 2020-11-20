@@ -22,10 +22,17 @@ set(ALL_INCLUDE_DIRS
   ${CMAKE_SOURCE_DIR}/src/streaming/functions/windowing
   ${CMAKE_SOURCE_DIR}/src/streaming/io
   ${CMAKE_SOURCE_DIR}/src/streaming/operators
+  ${CMAKE_SOURCE_DIR}/src/streaming/operators/windowing
+  ${CMAKE_SOURCE_DIR}/src/streaming/operators/windowing/functions
   ${CMAKE_SOURCE_DIR}/src/streaming/partitioner
   ${CMAKE_SOURCE_DIR}/src/streaming/task
   ${CMAKE_SOURCE_DIR}/src/streaming/task/config
   ${CMAKE_SOURCE_DIR}/src/streaming/task/mailbox
+  ${CMAKE_SOURCE_DIR}/src/streaming/windowing
+  ${CMAKE_SOURCE_DIR}/src/streaming/windowing/windows
+  ${CMAKE_SOURCE_DIR}/src/streaming/windowing/assigners
+  ${CMAKE_SOURCE_DIR}/src/streaming/windowing/triggers
+  ${CMAKE_SOURCE_DIR}/src/streaming/windowing/evictors
   ${CMAKE_SOURCE_DIR}/src/streaming/graph
   ${CMAKE_SOURCE_DIR}/src/runtime/query
   ${CMAKE_SOURCE_DIR}/src/runtime
@@ -33,6 +40,7 @@ set(ALL_INCLUDE_DIRS
   ${CMAKE_SOURCE_DIR}/src/core/config
   ${CMAKE_SOURCE_DIR}/src/core/common
   ${CMAKE_SOURCE_DIR}/src/core/common/io
+  ${CMAKE_SOURCE_DIR}/src/core/common/state
   ${CMAKE_SOURCE_DIR}/src/core/util
   ${CMAKE_SOURCE_DIR}/src/core/tuple
   ${CMAKE_SOURCE_DIR}/src/runtime/executiongraph

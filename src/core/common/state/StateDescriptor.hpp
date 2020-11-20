@@ -12,6 +12,11 @@ enum StateDescriptorType {
     MAP
 };
 
+class StateDescriptorBase {
+public:
+    virtual ~StateDescriptorBase() = default;
+};
+
 /**
   Base class for state descriptor. A StateDescriptor is used for creating partitioned
   State in stateful operations.
@@ -20,7 +25,7 @@ enum StateDescriptorType {
   @param <T> The type of the value of the state object described by this StateDescriptor.
  */
 template <class S, class T>
-class StateDescriptor
+class StateDescriptor: public StateDescriptorBase
 {
 protected:
     /** Name that uniquely identifies state created from this StateDescriptor. */

@@ -16,11 +16,18 @@ set(TEST_HEADER_DIRS ${CMAKE_SOURCE_DIR}/src/buffer
   ${CMAKE_SOURCE_DIR}/src/streaming/functions/windowing
   ${CMAKE_SOURCE_DIR}/src/streaming/io
   ${CMAKE_SOURCE_DIR}/src/streaming/operators
+  ${CMAKE_SOURCE_DIR}/src/streaming/operators/windowing
+  ${CMAKE_SOURCE_DIR}/src/streaming/operators/windowing/functions
   ${CMAKE_SOURCE_DIR}/src/streaming/partitioner
   ${CMAKE_SOURCE_DIR}/src/streaming/task
   ${CMAKE_SOURCE_DIR}/src/streaming/task/config
   ${CMAKE_SOURCE_DIR}/src/streaming/task/mailbox
   ${CMAKE_SOURCE_DIR}/src/streaming/graph
+  ${CMAKE_SOURCE_DIR}/src/streaming/windowing
+  ${CMAKE_SOURCE_DIR}/src/streaming/windowing/windows
+  ${CMAKE_SOURCE_DIR}/src/streaming/windowing/assigners
+  ${CMAKE_SOURCE_DIR}/src/streaming/windowing/triggers
+  ${CMAKE_SOURCE_DIR}/src/streaming/windowing/evictors
   ${CMAKE_SOURCE_DIR}/src/runtime
   ${CMAKE_SOURCE_DIR}/src/runtime/io
   ${CMAKE_SOURCE_DIR}/src/runtime/query
@@ -30,6 +37,7 @@ set(TEST_HEADER_DIRS ${CMAKE_SOURCE_DIR}/src/buffer
   ${CMAKE_SOURCE_DIR}/src/core/config
   ${CMAKE_SOURCE_DIR}/src/core/common
   ${CMAKE_SOURCE_DIR}/src/core/common/io
+  ${CMAKE_SOURCE_DIR}/src/core/common/state
   ${CMAKE_SOURCE_DIR}/src/core/util
   ${CMAKE_SOURCE_DIR}/src/runtime/executiongraph
   ${CMAKE_SOURCE_DIR}/src/runtime/shuffle
