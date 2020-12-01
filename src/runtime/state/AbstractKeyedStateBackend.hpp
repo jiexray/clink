@@ -9,6 +9,7 @@
 #include <vector>
 #include <map>
 #include <unordered_map>
+#include <iostream>
 
 /**
   Base implementation of KeyStateBackend.
@@ -51,11 +52,11 @@ protected:
     KeyGroupRange m_key_group_range;
 
     /** KvStateRegistry helper for this task*/
-    TaskKvStateRegistry<K, N, SV>* m_kv_state_registry;
+    TaskKvStateRegistry<K, N, SV>& m_kv_state_registry;
 
-    ExecutionConfig* m_execution_config;
+    ExecutionConfig& m_execution_config;
 
-    InternalKeyContext<K>* m_key_context;
+    InternalKeyContext<K>& m_key_context;
 
     void notify_key_selected(ConstParamK new_key) {
         for (int i = 0; i < m_key_selection_listeners.size(); i++) {
@@ -64,26 +65,45 @@ protected:
     }
 public:
     AbstractKeyedStateBackend(
-            TaskKvStateRegistry<K, N, SV>* kv_state_registry, 
-            ExecutionConfig* execution_config, 
-            InternalKeyContext<K>* key_context):
+            TaskKvStateRegistry<K, N, SV>& kv_state_registry, 
+            ExecutionConfig& execution_config, 
+            InternalKeyContext<K>& key_context):
             m_kv_state_registry(kv_state_registry),
             m_execution_config(execution_config),
             m_key_context(key_context){
-        m_number_of_key_groups = key_context->get_number_of_key_groups();
+        m_number_of_key_groups = key_context.get_number_of_key_groups();
 
         TemplateHelperUtil::CheckInherit<State, S>::assert_inherit();
         TemplateHelperUtil::CheckInherit<InternalKvState<K, N, SV>, IS>::assert_inherit();
     }
 
-    void set_current_key(ConstParamK new_key) override{
-        notify_key_selected(new_key);
-        this->m_key_context->set_current_key(new_key);
-        this->m_key_context->set_current_key_group_index(KeyGroupRangeAssignment::assign_to_key_group<K>(new_key, m_number_of_key_groups));
+    ~AbstractKeyedStateBackend() {
+        for (int i = 0; i < this->m_key_selection_listeners.size(); i++) {
+            delete this->m_key_selection_listeners[i];
+        }
+        this->m_key_selection_listeners.clear();
+
+        while(!this->m_key_value_states_by_name.empty()) {
+            auto it = this->m_key_value_states_by_name.begin();
+            
+            if (it->second != nullptr) {
+                IS* internal_state_ptr = dynamic_cast<IS*>(this->m_key_value_states_by_name[it->first]);
+                delete internal_state_ptr;
+                this->m_key_value_states_by_name[it->first] = nullptr;
+            }
+            this->m_key_value_states_by_name.erase(it);
+        }
+        this->m_key_value_states_by_name.clear();
     }
 
-    ConstParamK get_current_key() override {
-        return this->m_key_context->get_current_key();
+    void set_current_key(ConstParamK new_key) override{
+        notify_key_selected(new_key);
+        this->m_key_context.set_current_key(new_key);
+        this->m_key_context.set_current_key_group_index(KeyGroupRangeAssignment::assign_to_key_group<K>(new_key, m_number_of_key_groups));
+    }
+
+    ConstParamK get_current_key() const override {
+        return this->m_key_context.get_current_key();
     }
 
     void register_key_selection_listener(KeySelectionListener<K>* listener) override {
@@ -109,8 +129,9 @@ public:
         } else {
             kv_state = m_key_value_states_by_name[state_descriptor.get_name()];
         }
+        IS* internal_kv_state = dynamic_cast<IS*>(kv_state);
         
-        return *((S*)kv_state);
+        return *((S*)internal_kv_state);
     }
 
     ParamIS get_or_create_internal_keyed_state(const StateDescriptor<S, SV>& state_descriptor) override {
@@ -148,5 +169,10 @@ public:
         m_last_state->set_current_namespace(ns);
 
         return state;
+    }
+
+    /* Properties */
+    const KeyGroupRange& get_key_group_range() {
+        return this->m_key_group_range;
     }
 };

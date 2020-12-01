@@ -40,7 +40,7 @@ private:
     typedef typename TemplateHelperUtil::ParamOptimize<IS>::const_type ConstParamIS;
 public:
     virtual void set_current_key(ConstParamK new_key) = 0;
-    virtual ConstParamK get_current_key() = 0;
+    virtual ConstParamK get_current_key() const = 0;
 
     /**
       Creates or retrieves a keyed state backed by this state backend.

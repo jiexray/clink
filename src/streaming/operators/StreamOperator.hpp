@@ -3,6 +3,7 @@
  */
 #pragma once
 #include "TemplateHelper.hpp"
+#include "KeyContext.hpp"
 
 
 template <class OUT = NullType>

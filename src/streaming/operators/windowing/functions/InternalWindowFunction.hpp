@@ -1,19 +1,26 @@
 #pragma once
 #include "KeyedMapStateStore.hpp"
+#include "KeyedListStateStore.hpp"
 #include <memory>
 #include "Collector.hpp"
+#include "TemplateHelper.hpp"
 
 /**
   A context for InternalWindowFunction
  */
-class InternalWindowContext {
+class InternalWindowFunctionContext {
+public:
     virtual long current_process_time() = 0;
 
     virtual long current_watermark() = 0;
 
-    virtual KeyedMapStateStore& window_state() = 0;
+    virtual KeyedMapStateStore& window_map_state() = 0;
 
-    virtual KeyedMapStateStore& global_state() = 0;
+    virtual KeyedListStateStore& window_list_state() = 0;
+
+    virtual KeyedMapStateStore& global_map_state() = 0;
+
+    virtual KeyedListStateStore& global_list_state() = 0;
 };
 
 /**
@@ -23,9 +30,17 @@ class InternalWindowContext {
   @param <OUT> The type of the output value.
   @param <KEY> The type of the key.
  */
-template <class IN, class OUT, class KEY, class W>
+template <class IN, class OUT, class K, class W>
 class InternalWindowFunction {
+private:
+    typedef typename TemplateHelperUtil::ParamOptimize<K>::type ParamK;
+    typedef typename TemplateHelperUtil::ParamOptimize<K>::const_type ConstParamK;
 public:
-    virtual void process(KEY& key, W& window, InternalWindowContext& context, IN* input, std::shared_ptr<Collector<OUT>> out) = 0;
+    virtual void process(
+            ConstParamK key, 
+            const W& window, 
+            InternalWindowFunctionContext& context, 
+            const IN& input, 
+            std::shared_ptr<Collector<OUT>> out) = 0;
 };
 

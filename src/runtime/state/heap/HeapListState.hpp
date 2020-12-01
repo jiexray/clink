@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <iostream>
 #include "InternalListState.hpp"
 #include "AbstractHeapAppendingState.hpp"
 
@@ -22,11 +23,14 @@ public:
         const std::vector<V>& default_value):
         AbstractHeapState<K, N, std::vector<V>>(state_table, default_value) {}
 
+    ~HeapListState() {
+    }
+
     // ---------------------------------------------------------------
     //  state access
     // ---------------------------------------------------------------
 
-    ParamSV get_internal() override {
+    ConstParamSV get_internal() override {
         return this->m_state_table.get(this->m_current_namespace);
     }
 
@@ -34,7 +38,7 @@ public:
         this->m_state_table.put(this->m_current_namespace, value_to_store);
     }
 
-    std::vector<V>& get() override {
+    ConstParamSV get() override {
         return this->get_internal();
     }
 
@@ -53,6 +57,13 @@ public:
         }
 
         this->m_state_table.put(this->m_current_namespace, values);
+    }
+
+    bool contains_list() override {
+        if (!this->m_state_table.contains_key(this->m_current_namespace)) {
+            return false;
+        }
+        return true;
     }
 
     void add_all(const std::vector<V>& values) override {

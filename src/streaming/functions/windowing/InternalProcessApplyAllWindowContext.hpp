@@ -20,12 +20,20 @@ public:
         return m_window;
     }
 
-    KeyedStateMapStore& window_state() {
-        return m_context.window_state();
+    KeyedMapStateStore& window_map_state() override {
+        return m_context.window_map_state();
     }
 
-    KeyedMapStateStore& global_state() {
-        return m_context.global_state();
+    KeyedListStateStore& window_list_state() override {
+        return m_context.window_list_state();
+    }
+
+    KeyedMapStateStore& global_map_state() override {
+        return m_context.global_map_state();
+    }
+
+    KeyedListStateStore& global_list_state() override {
+        return m_context.global_list_state();
     }
 
     /** Properties */

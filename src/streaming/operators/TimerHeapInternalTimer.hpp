@@ -10,30 +10,37 @@ template <class K, class N>
 class TimerHeapInternalTimer: public InternalTimer<K, N>
 {
 private:
-    K& m_key;
-    N& m_namespace;
+    typedef typename TemplateHelperUtil::ParamOptimize<K>::type ParamK;
+    typedef typename TemplateHelperUtil::ParamOptimize<N>::type ParamN;
+    typedef typename TemplateHelperUtil::ParamOptimize<K>::const_type ConstParamK;
+    typedef typename TemplateHelperUtil::ParamOptimize<N>::const_type ConstParamN;
+
+    ConstParamK m_key;
+    ConstParamN m_namespace;
+    // N m_namespace;
     long m_timestamp;
 public:
-    TimerHeapInternalTimer(long timestamp, K& key, N& ns): 
+    TimerHeapInternalTimer(long timestamp, ConstParamK key, ConstParamN ns): 
             m_timestamp(timestamp),
             m_key(key),
             m_namespace(ns) {} 
     
-    TimerHeapInternalTimer(const TimerHeapInternalTimer& other) {
-        m_key = other.m_key;
-        m_namespace = other.m_namespace;
-        m_timestamp = other.m_timestamp;
-    }
+    TimerHeapInternalTimer(const TimerHeapInternalTimer& other):
+    m_key(other.m_key),
+    m_namespace(other.m_namespace),
+    m_timestamp(other.m_timestamp) {}
 
-    long get_timestamp() override  {
+    // ~TimerHeapInternalTimer() {}
+
+    long get_timestamp() const override  {
         return m_timestamp;
     }
 
-    K& get_key() override {
+    ConstParamK get_key() const override {
         return m_key;
     }
 
-    N& get_namespace() override {
+    ConstParamN get_namespace() const override {
         return m_namespace;
     }
 
@@ -49,28 +56,30 @@ public:
 
     TimerHeapInternalTimer& operator=(const TimerHeapInternalTimer& other) {
         if (this != &other) {
-           this->m_key = other.m_key;
-           this->m_namespace = other.m_namespace;
+        //    this->m_key = other.m_key;
+        //    this->m_namespace = other.m_namespace;
            this->m_timestamp = other.m_timestamp;
+        //    this->m_namespace = other.m_namespace;
         }  
         return *this;
     }
 
     TimerHeapInternalTimer& operator=(TimerHeapInternalTimer&& other) {
         if (this != &other) {
-           this->m_key = other.m_key;
-           this->m_namespace = other.m_namespace;
+        //    this->m_key = other.m_key;
+        //    this->m_namespace = other.m_namespace;
            this->m_timestamp = other.m_timestamp;
+        //    this->m_namespace = other.m_namespace;
         }  
         return *this;
     }
 
-    bool operator< (const TimerHeapInternalTimer& other) {
+    bool operator< (const TimerHeapInternalTimer& other) const {
         if (this == &other) {
             return false;
         }
 
-        return this->m_timestamp < other.m_timestamp;
+        return this->m_timestamp > other.m_timestamp;
     }
 
     std::string to_string() {

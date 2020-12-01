@@ -1,3 +1,3 @@
 #include "View.hpp"
 
-int View::UPDATE_INTERVAL_SECONDS = 1;
+int View::UPDATE_INTERVAL_SECONDS = 1000; // ms

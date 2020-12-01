@@ -6,15 +6,23 @@
 #include "InternalKeyContextImpl.hpp"
 #include "HeapMapState.hpp"
 #include "KeyGroupRangeAssignment.hpp"
-#include "HeapKeyedStatedBackend.hpp"
+#include "HeapKeyedStateBackend.hpp"
 #include "MapStateDescriptor.hpp"
 #include "KeyedMapStateStore.hpp"
 #include "HeapListState.hpp"
 #include "ListStateDescriptor.hpp"
+#include "TimeUtil.hpp"
+#include "InternalTimerServiceImpl.hpp"
+#include "KeyContext.hpp"
+#include "ProcessingTimeServiceImpl.hpp"
+#include "SystemProcessingTimeService.hpp"
+#include "Triggerable.hpp"
 #include <iostream>
 #include <string>
 #include <map>
 #include <typeinfo>
+#include <chrono>
+#include <thread>
 
 struct MyState{
     int f0;
@@ -50,7 +58,7 @@ public:
     void testStateTable() {
         std::cout << "test testStateTable()" << std::endl;
         InternalKeyContext<int>* key_context = new InternalKeyContextImpl<int>(KeyGroupRange(0, 10), 3);
-        NestedMapsStateTable<int, std::string, int> state_table(key_context);
+        NestedMapsStateTable<int, std::string, int> state_table(*key_context);
 
         key_context->set_current_key(101);
 
@@ -64,7 +72,7 @@ public:
     void testHeapState() {
         std::cout << "test testHeapState()" << std::endl;
         InternalKeyContext<int>* key_context = new InternalKeyContextImpl<int>(KeyGroupRange(0, 10), 3);
-        NestedMapsStateTable<int, std::string, std::map<int, int>> state_table(key_context);
+        NestedMapsStateTable<int, std::string, std::map<int, int>> state_table(*key_context);
 
         HeapMapState<int, std::string, int, int> heap_map_state(state_table, std::map<int, int>());
 
@@ -76,17 +84,16 @@ public:
         int state = heap_map_state.get(10);
         TS_ASSERT_EQUALS(state, 1);
 
+        heap_map_state.set_current_namespace("ns-2");
+        heap_map_state.put(10, 10);
         heap_map_state.put(12, 12);
-        state = heap_map_state.get(12);
-        TS_ASSERT_EQUALS(state, 12);
 
-        heap_map_state.put_all(std::map<int, int>{{10, 100}, {12, 120}, {14, 140}});
         state = heap_map_state.get(10);
-        TS_ASSERT_EQUALS(state, 100);
-        state = heap_map_state.get(12);
-        TS_ASSERT_EQUALS(state, 120);
-        state = heap_map_state.get(14);
-        TS_ASSERT_EQUALS(state, 140);
+        TS_ASSERT_EQUALS(state, 10);
+
+        heap_map_state.set_current_namespace("ns-1");
+        state = heap_map_state.get(10);
+        TS_ASSERT_EQUALS(state, 1);
     }
 
     void testKeyGroupAssignment( void ) {
@@ -108,14 +115,14 @@ public:
         int job_id = 0;
         int job_vertex_id = 0;
 
-        TaskKvStateRegistry<int, std::string, std::map<int, int>> task_kv_state_registry(&kv_state_registry, job_id, job_vertex_id);
+        TaskKvStateRegistry<int, std::string, std::map<int, int>> task_kv_state_registry(kv_state_registry, job_id, job_vertex_id);
         ExecutionConfig execution_config;
         InternalKeyContext<int>* key_context = new InternalKeyContextImpl<int>(KeyGroupRange(0, 10), 3);
 
-        HeapKeyedStatedBackend<int, std::string, std::map<int, int>, MapState<int, int>, InternalMapState<int, std::string, int, int>> heap_stated_backend(
-                &task_kv_state_registry, 
-                &execution_config,
-                key_context,
+        HeapKeyedStateBackend<int, std::string, std::map<int, int>, MapState<int, int>, InternalMapState<int, std::string, int, int>> heap_stated_backend(
+                task_kv_state_registry, 
+                execution_config,
+                *key_context,
                 std::map<std::string, StateTable<int, std::string, std::map<int, int>>*>());
     
 
@@ -126,8 +133,9 @@ public:
 
         MapStateDescriptor<int, int> map_state_desc("map-state");
         InternalMapState<int, std::string, int, int>* map_state = heap_stated_backend.create_internal_state(map_state_desc);
+        // HeapMapState<int, std::string, int, int>* map_state = dynamic_cast<HeapMapState<int, std::string, int, int>*>(heap_stated_backend.create_internal_state(map_state_desc));
+        TS_ASSERT_EQUALS(map_state == nullptr, false);
         map_state->set_current_namespace("ns-1");
-        (dynamic_cast<HeapMapState<int, std::string, int, int>*>(map_state))->set_current_namespace("ns-1");
 
         map_state->put(1, 1);
         map_state->put(2, 2);
@@ -145,6 +153,9 @@ public:
 
         MapStateDescriptor<int, int> map_state_desc_2("map-state2");
         MapState<int, int>& map_state_2 = heap_stated_backend.get_or_create_keyed_state(map_state_desc_2);
+        // HeapMapState<int, std::string, int, int>& map_state_2 = *(dynamic_cast<HeapMapState<int, std::string, int, int>*>(&heap_stated_backend.get_or_create_keyed_state(map_state_desc_2)));
+        // HeapMapState<int, std::string, int, int>& map_state_2 = (HeapMapState<int, std::string, int, int>&)heap_stated_backend.get_or_create_keyed_state(map_state_desc_2);
+        TS_ASSERT_EQUALS(&map_state_2 == nullptr, false);
         InternalMapState<int, std::string, int, int>& internal_map_state_2 = heap_stated_backend.get_or_create_internal_keyed_state(map_state_desc_2);
         internal_map_state_2.set_current_namespace("ns-1");
         // ((HeapMapState<int, std::string, int, int>*)(&map_state_2))->set_current_namespace("ns-1");
@@ -162,18 +173,18 @@ public:
         state = map_state_2.get(2);
         TS_ASSERT_EQUALS(state, 2);
 
-        map_state_2.put(1, 10);
-        state = map_state_2.get(1);
-        TS_ASSERT_EQUALS(state, 10);
-
         bool is_contain = map_state_2.contains(1);
         TS_ASSERT_EQUALS(is_contain, true);
         internal_map_state_2.set_current_namespace("ns-2");
         is_contain = map_state_2.contains(1);
         TS_ASSERT_EQUALS(is_contain, false);
+        map_state_2.put(1, 10);
+        state = map_state_2.get(1);
+        TS_ASSERT_EQUALS(state, 10);
+
         internal_map_state_2.set_current_namespace("ns-1");
-        is_contain = map_state_2.contains(1);
-        TS_ASSERT_EQUALS(is_contain, true);
+        state = map_state_2.get(1);
+        TS_ASSERT_EQUALS(state, 1);
     }
 
     void testKeyedMapStateStore( void ) {
@@ -187,11 +198,128 @@ public:
     void testHeapMapState( void ) {
         std::cout << "test testHeapMapState()" << std::endl;
         InternalKeyContext<int>* key_context = new InternalKeyContextImpl<int>(KeyGroupRange(0, 10), 3);
-        NestedMapsStateTable<int, std::string, std::vector<int>> state_table(key_context);
+        NestedMapsStateTable<int, std::string, std::vector<int>> state_table(*key_context);
 
         HeapListState<int, std::string, int> heap_list_state(state_table, std::vector<int>());
 
         heap_list_state.set_current_namespace("ns-1");
+
+        heap_list_state.add(10);
+        heap_list_state.add(11);
+        const std::vector<int>& cur_vec = heap_list_state.get();
+        TS_ASSERT_EQUALS(cur_vec.size(), 2);
+        TS_ASSERT_EQUALS(cur_vec[0], 10);
+        TS_ASSERT_EQUALS(cur_vec[1], 11);
+
+        heap_list_state.add_all(std::vector<int>{12, 13, 14});
+        TS_ASSERT_EQUALS(cur_vec.size(), 5);
+        TS_ASSERT_EQUALS(cur_vec[2], 12);
+        TS_ASSERT_EQUALS(cur_vec[3], 13);
+        TS_ASSERT_EQUALS(cur_vec[4], 14);
+
+        heap_list_state.update(std::vector<int>{101, 102});
+        const std::vector<int>& cur_vec_2 = heap_list_state.get();
+        TS_ASSERT_EQUALS(cur_vec_2.size(), 2);
+        TS_ASSERT_EQUALS(cur_vec_2[0], 101);
+        TS_ASSERT_EQUALS(cur_vec_2[1], 102);
+    }
+
+    void testHeapStateBackendWithListState( void ){
+        std::cout << "test testHeapStateBackendWithListState()" << std::endl;
+
+        KvStateRegistry<int, std::string, std::vector<int>> kv_state_registry;
+        int job_id = 0;
+        int job_vertex_id = 0;
+
+        TaskKvStateRegistry<int, std::string, std::vector<int>> task_kv_state_registry(kv_state_registry, job_id, job_vertex_id);
+        ExecutionConfig execution_config;
+        InternalKeyContext<int>* key_context = new InternalKeyContextImpl<int>(KeyGroupRange(0, 10), 3);
+
+        HeapKeyedStateBackend<int, std::string, std::vector<int>, ListState<int>, InternalListState<int, std::string, int>> heap_stated_backend(
+                task_kv_state_registry, 
+                execution_config,
+                *key_context,
+                std::map<std::string, StateTable<int, std::string, std::vector<int>>*>());
+    
+        heap_stated_backend.set_current_key(101);
+
+        heap_stated_backend.register_state_creator(
+            // std::string(typeid(HeapMapState<int, std::string, int, int>).name()),
+            std::string(typeid(StateDescriptor<ListState<int>, std::vector<int>>).name()),
+            HeapListState<int, std::string, int>::create<InternalListState<int, std::string, int>>);
+
+        ListStateDescriptor<int> list_state_desc("list-state");
+        InternalListState<int, std::string, int>* list_state = heap_stated_backend.create_internal_state(list_state_desc);
+        list_state->set_current_namespace("ns-1");
+
+        list_state->add(1);
+        list_state->add(2);
+
+        const std::vector<int>& cur_vec = list_state->get();
+        TS_ASSERT_EQUALS(cur_vec.size(), 2);
+        TS_ASSERT_EQUALS(cur_vec[0], 1);
+        TS_ASSERT_EQUALS(cur_vec[1], 2);
+
+        list_state->set_current_namespace("ns-2");
+        TS_ASSERT_EQUALS(list_state->contains_list(), false);
+        list_state->add(3);
+        list_state->add(4);
+
+        const std::vector<int>& cur_vec_2 = list_state->get();
+        TS_ASSERT_EQUALS(cur_vec_2.size(), 2);
+        TS_ASSERT_EQUALS(cur_vec_2[0], 3);
+        TS_ASSERT_EQUALS(cur_vec_2[1], 4);
+
+        list_state->set_current_namespace("ns-1");
+        const std::vector<int>& cur_vec_3 = list_state->get();
+        TS_ASSERT_EQUALS(cur_vec_3.size(), 2);
+        TS_ASSERT_EQUALS(cur_vec_3[0], 1);
+        TS_ASSERT_EQUALS(cur_vec_3[1], 2);
+    }
+
+    void testStateDtor() {
+        std::cout << "test testStateDtor()" << std::endl;
+        InternalKeyContext<int>* key_context = new InternalKeyContextImpl<int>(KeyGroupRange(0, 10), 3);
+        NestedMapsStateTable<int, std::string, std::map<int, int>> state_table(*key_context);
+
+        std::cout << "Create HeapMapState" << std::endl;
+        HeapMapState<int, std::string, int, int>* heap_map_state = new HeapMapState<int, std::string, int, int>(state_table, std::map<int, int>());
+        delete heap_map_state;
+
+        std::cout << "Create InternalMapState" << std::endl;
+        InternalMapState<int, std::string, int, int>* internal_map_state = new HeapMapState<int, std::string, int, int>(state_table, std::map<int, int>());
+        delete internal_map_state;
+
+        std::cout << "Create MapState" << std::endl;
+        MapState<int, int>* map_state = new HeapMapState<int, std::string, int, int>(state_table, std::map<int, int>());
+        delete map_state;
+    }
+
+    void testCurrentTimestamp() {
+        std::cout << "test testCurrentTimestamp()" << std::endl;
+        std::cout << "current timestamp: " << TimeUtil::current_timestamp() << std::endl;
+    }
+
+
+    void testInternalTimerService( void ) {
+        std::cout << "test testInternalTimerService()" << std::endl;
+
+        TestKeyContext<int> key_context(10);
+        SystemProcessingTimeService system_time_service;
+        ProcessingTimeServiceImpl time_service(system_time_service);
+
+        TestTriggerable<int, std::string> triggerable;
+        InternalTimerServiceImpl<int, std::string> timer_service(
+            KeyGroupRange(0, 10),
+            key_context,
+            time_service,
+            triggerable);
+
+        std::cout << "current timestamp: " << timer_service.current_processing_time() << std::endl;
+        timer_service.register_processing_time_timer("ns-1", timer_service.current_processing_time() + 500l);
+        timer_service.register_processing_time_timer("ns-2", timer_service.current_processing_time() + 500l);
+
+        std::this_thread::sleep_for(std::chrono::seconds(2));
     }
 };
 

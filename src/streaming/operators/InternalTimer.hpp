@@ -1,4 +1,5 @@
 #pragma once
+#include "TemplateHelper.hpp"
 
 /**
   Internal interface for in-flight timers.
@@ -9,10 +10,18 @@
 template <class K, class N>
 class InternalTimer
 {
+private:
+    typedef typename TemplateHelperUtil::ParamOptimize<K>::type ParamK;
+    typedef typename TemplateHelperUtil::ParamOptimize<N>::type ParamN;
+    typedef typename TemplateHelperUtil::ParamOptimize<K>::const_type ConstParamK;
+    typedef typename TemplateHelperUtil::ParamOptimize<N>::const_type ConstParamN;
+
 public:
-    virtual long get_timestamp() = 0;
+    virtual long get_timestamp() const = 0;
 
-    virtual K& get_key() = 0;
+    virtual ConstParamK get_key() const = 0;
 
-    virtual N& get_namespace() = 0;
+    virtual ConstParamN get_namespace() const = 0;
+
+    virtual ~InternalTimer() = default;
 };

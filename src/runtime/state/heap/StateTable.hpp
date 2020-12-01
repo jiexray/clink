@@ -21,23 +21,22 @@ private:
     typedef typename TemplateHelperUtil::ParamOptimize<N>::const_type ConstParamN;
     typedef typename TemplateHelperUtil::ParamOptimize<S>::const_type ConstParamS;
 protected:
-    InternalKeyContext<K>*          m_key_context;
+    InternalKeyContext<K>&          m_key_context;
     int                             m_key_group_offset;
     StateMap<K, N, S>**             m_key_grouped_state_maps;
     int                             m_key_grouped_state_maps_length;
 
 public:
-    StateTable(InternalKeyContext<K>* key_context): m_key_context(key_context) {
-        m_key_group_offset = key_context->get_key_group_range().get_start_key_group();
+    StateTable(InternalKeyContext<K>& key_context): m_key_context(key_context) {
+        m_key_group_offset = m_key_context.get_key_group_range().get_start_key_group();
 
-        m_key_grouped_state_maps_length = key_context->get_key_group_range().get_number_of_key_groups();
+        m_key_grouped_state_maps_length = m_key_context.get_key_group_range().get_number_of_key_groups();
         this->m_key_grouped_state_maps = new StateMap<K, N, S>*[m_key_grouped_state_maps_length];
     }
 
     virtual StateMap<K, N, S>* create_state_map() = 0;
 
     ~StateTable() {
-        delete m_key_context;
         for (int i = 0; i < m_key_grouped_state_maps_length; i++) {
             delete m_key_grouped_state_maps[i];
         }
@@ -74,11 +73,13 @@ public:
       Returns the state of the mapping for the composite of active key and given namespace.
 
       @param ns the namespace. Not null.
-      #return the states of the mapping with the specified key/namespace composite key, or null
+      @return the states of the mapping with the specified key/namespace composite key, or null
       if no mapping of the specified key is found.
+
+      Note: this function can only be used by State. User cannot use it.
      */
     ParamS get(ConstParamN ns) {
-        return get(m_key_context->get_current_key(), m_key_context->get_current_key_group_index(), ns);
+        return get(m_key_context.get_current_key(), m_key_context.get_current_key_group_index(), ns);
     }
 
     /**
@@ -89,7 +90,7 @@ public:
       false otherwise.
      */
     bool contains_key(ConstParamN ns) {
-        return contains_key(m_key_context->get_current_key(), m_key_context->get_current_key_group_index(), ns);
+        return contains_key(m_key_context.get_current_key(), m_key_context.get_current_key_group_index(), ns);
     }
 
     /**
@@ -99,7 +100,7 @@ public:
       @param state  the state. Can be null.
      */
     void put(ConstParamN ns, ConstParamS state) {
-        put(m_key_context->get_current_key(), m_key_context->get_current_key_group_index(), ns, state);
+        put(m_key_context.get_current_key(), m_key_context.get_current_key_group_index(), ns, state);
     }
 
     void put(ConstParamK key, int key_group, ConstParamN ns, ConstParamS state) {
@@ -115,7 +116,7 @@ public:
       @param ns the namespace of the mapping to remove. Not null.
      */
     void remove(ConstParamN ns) {
-        remove(m_key_context->get_current_key(), m_key_context->get_current_key_group_index(), ns);
+        remove(m_key_context.get_current_key(), m_key_context.get_current_key_group_index(), ns);
     }
 
     /**
@@ -127,7 +128,7 @@ public:
       calling this method.
      */
     ConstParamS remove_and_get_old(ConstParamN ns) {
-        return remove_and_get_old(m_key_context->get_current_key(), m_key_context->get_current_key_group_index(), ns);
+        return remove_and_get_old(m_key_context.get_current_key(), m_key_context.get_current_key_group_index(), ns);
     }
 
     // ------------------------------------------------------------------

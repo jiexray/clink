@@ -44,13 +44,14 @@ private:
 
     /* Periodical scheduler */
     PeriodicSchedulerPtr                            m_scheduler;
-    boost::thread                                   m_executor;
+    // boost::thread                                   m_executor;
 public:
     // MetricRegistry(MetricRegistryConfigurationPtr config, const std::vector<ReporterSetupPtr>& reporter_configurations);
     MetricRegistry(MetricRegistryConfigurationPtr config, const std::vector<ReporterSetupPtr>& reporter_configurations) {
         // start io_service for view updater
         m_scheduler = std::make_shared<PeriodicScheduler>();
-        m_executor = boost::thread(boost::bind(&PeriodicScheduler::run, m_scheduler));
+        m_scheduler->run();
+        // m_executor = boost::thread(boost::bind(&PeriodicScheduler::run, m_scheduler));
 
         if (!reporter_configurations.empty()) {
             int reporter_idx = 0;
@@ -61,7 +62,7 @@ public:
                 // Add reporter to the Timer
                 int period = reporter_setup->get_interval_setting();
                 if (std::dynamic_pointer_cast<LoggerReporter>(reporter_instance) != nullptr) {
-                    m_scheduler->add_task("reporter-timer", boost::bind(&Scheduled::report, std::dynamic_pointer_cast<LoggerReporter>(reporter_instance)), period);
+                    m_scheduler->add_periodic_task("reporter-timer", boost::bind(&Scheduled::report, std::dynamic_pointer_cast<LoggerReporter>(reporter_instance)), period);
                 } else {
                     throw std::invalid_argument("Reporter is not a Scheduled instance");
                 }
@@ -143,7 +144,7 @@ public:
 
             // stop io_service, finish its executor
             m_scheduler->stop();
-            m_executor.join();
+            // m_executor.join();
         }
     }
 };

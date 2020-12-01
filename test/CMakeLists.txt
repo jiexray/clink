@@ -132,4 +132,12 @@ if(CXXTEST_FOUND)
   # core abstract id
   CXXTEST_ADD_TEST(unitest_core_abstract_id core_abstract_id.cpp ${CMAKE_CURRENT_SOURCE_DIR}/core/TestAbstractID.hpp)
   target_link_libraries(unitest_core_abstract_id core)
+
+  # streaming window operator
+  CXXTEST_ADD_TEST(unitest_streaming_window_operator streaming_window_operator.cpp ${CMAKE_CURRENT_SOURCE_DIR}/streaming/TestWindowOperator.hpp)
+  target_link_libraries(unitest_streaming_window_operator streaming)
+
+  # core scheduler
+  CXXTEST_ADD_TEST(unitest_core_scheduler core_scheduler.cpp ${CMAKE_CURRENT_SOURCE_DIR}/core/TestScheduler.hpp)
+  target_link_libraries(unitest_core_scheduler core)
 endif()

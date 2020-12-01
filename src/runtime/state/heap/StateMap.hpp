@@ -37,6 +37,8 @@ public:
       @param ns: the ns. Not null.
       @return the state of the mapping with the specified key/ns composite key, or null
       if no mapping for the specified key is found.
+
+      Note: this function can only be used by State. User cannot use it.
      */
     virtual ParamS      get(ConstParamK key, ConstParamN ns) = 0;
 

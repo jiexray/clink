@@ -25,7 +25,7 @@ private:
         m_key_group_range(key_group_range), m_registration_name(registration_name), m_kv_state_id(kv_state_id) {}
     };
 
-    KvStateRegistry<K, N, V>*       m_registry;
+    KvStateRegistry<K, N, V>&       m_registry;
 
     int                             m_job_id;
     int                             m_job_vertex_id;
@@ -33,7 +33,7 @@ private:
     std::vector<KvStateInfo*>       m_registered_kv_states;
 public:
 
-    TaskKvStateRegistry(KvStateRegistry<K, N, V>* registry, int job_id, int job_vertex_id):
+    TaskKvStateRegistry(KvStateRegistry<K, N, V>& registry, int job_id, int job_vertex_id):
     m_registry(registry), m_job_id(job_id), m_job_vertex_id(job_vertex_id) {}
 
     /**
@@ -44,7 +44,7 @@ public:
       @param kv_state           The KvState
      */
     void register_kv_state(KeyGroupRange key_group_range, std::string registration_name, InternalKvState<K, N, V>* kv_state) {
-        KvStateID kv_state_id = m_registry->register_kv_state(m_job_id, m_job_vertex_id, key_group_range, registration_name, kv_state);
+        KvStateID kv_state_id = m_registry.register_kv_state(m_job_id, m_job_vertex_id, key_group_range, registration_name, kv_state);
         m_registered_kv_states.push_back(new KvStateInfo(key_group_range, registration_name, kv_state_id));
     }
 
@@ -54,7 +54,7 @@ public:
     void unregister_all() {
         while(!m_registered_kv_states.empty()) {
             KvStateInfo* kv_state = m_registered_kv_states.back();
-            m_registry->unregisterKvState(
+            m_registry.unregisterKvState(
                 m_job_id, 
                 m_job_vertex_id, 
                 kv_state->m_key_group_range, 

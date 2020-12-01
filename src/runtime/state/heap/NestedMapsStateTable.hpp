@@ -13,7 +13,7 @@ template <class K, class N, class S>
 class NestedMapsStateTable: public StateTable<K, N, S>
 {
 public:
-    NestedMapsStateTable(InternalKeyContext<K>* key_context): StateTable<K, N, S>(key_context) {
+    NestedMapsStateTable(InternalKeyContext<K>& key_context): StateTable<K, N, S>(key_context) {
         for (int i = 0; i < this->m_key_grouped_state_maps_length; i++) {
             this->m_key_grouped_state_maps[i] = create_state_map();
         }

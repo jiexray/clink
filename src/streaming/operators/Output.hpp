@@ -7,6 +7,7 @@
 // #include "../../streamrecord/StreamRecord.hpp"
 #include "StreamRecordV2.hpp"
 #include "Collector.hpp"
+#include "Watermark.hpp"
 #include <memory>
 
 template <class T>
@@ -20,4 +21,6 @@ public:
     }
 
     virtual void    collect(StreamRecordV2<T>* record) = 0;
+
+    virtual void    emit_watermark(StreamRecordV2<T>* mark) = 0;
 };

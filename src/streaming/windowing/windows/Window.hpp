@@ -7,6 +7,6 @@
 
 class Window {
 public:
-    virtual long max_timestamp() = 0;
+    virtual long max_timestamp() const = 0;
 };
 

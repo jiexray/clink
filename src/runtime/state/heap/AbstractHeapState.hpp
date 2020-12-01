@@ -27,6 +27,7 @@ protected:
     StateTable<K, N, SV>&       m_state_table;
 
     /** The current namespace, which the access methods will refer to. */
+    // TODO: copy construct namespace, maybe it can be optimized.
     N                           m_current_namespace;
 
 public:

@@ -10,7 +10,7 @@
   @param <UV> Type of the values in the state.
  */
 template <class UK, class UV>
-class MapState: virtual public State
+class MapState: public State
 {
 private: 
     typedef typename TemplateHelperUtil::ParamOptimize<UK>::type ParamUK;
@@ -18,6 +18,7 @@ private:
     typedef typename TemplateHelperUtil::ParamOptimize<UK>::const_type ConstParamUK;
     typedef typename TemplateHelperUtil::ParamOptimize<UV>::const_type ConstParamUV;
 public:
+
     /**
       Returns the current value associated with the given key.
 

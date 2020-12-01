@@ -1,5 +1,6 @@
 #pragma once
 #include "Window.hpp"
+#include "Trigger.hpp"
 #include <vector>
 #include <string>
 
@@ -30,7 +31,7 @@ public:
     /**
       Return the default trigger associated with this WindowAssigner.
      */
-    virtual WindowAssigner<T, W>* get_default_trigger() = 0;
+    virtual Trigger<T, W>* get_default_trigger() = 0;
 
     /**
       Returns true if elements are assigned to windows based on event time,

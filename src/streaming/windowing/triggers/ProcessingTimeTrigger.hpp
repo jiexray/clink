@@ -7,7 +7,8 @@
   A Trigger that fires once the current system time passes the end of the window
   to which a pane belongs.
  */
-class ProcessingTimeTrigger: public Trigger<NullType, TimeWindow>
+template <class T>
+class ProcessingTimeTrigger: public Trigger<T, TimeWindow>
 {
 private:
     
@@ -16,16 +17,16 @@ public:
 
     }
 
-    TriggerResult on_element(NullType* element, long timestamp, TimeWindow& window, TriggerContext& ctx) override {
+    TriggerResult on_element(T* element, long timestamp, const TimeWindow& window, TriggerContext& ctx) override {
         ctx.register_processing_time_timer(window.max_timestamp());
         return TriggerResult::CONTINUE;
     }
 
-    TriggerResult on_processing_time(long time, TimeWindow& window, TriggerContext& ctx) override {
+    TriggerResult on_processing_time(long time, const TimeWindow& window, TriggerContext& ctx) override {
         return TriggerResult::FIRE;
     }
 
-    TriggerResult on_event_time(long time, TimeWindow& window, TriggerResult& ctx) override {
+    TriggerResult on_event_time(long time, const TimeWindow& window, TriggerContext& ctx) override {
         return TriggerResult::CONTINUE;
     }
 

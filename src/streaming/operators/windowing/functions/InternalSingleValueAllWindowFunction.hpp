@@ -22,7 +22,7 @@ public:
     void process(
             char& key, 
             W& window, 
-            InternalWindowContext& context, 
+            InternalWindowFunctionContext& context, 
             IN* input, 
             std::shared_ptr<Collector<OUT>> out) {
         this->m_wrapped_function.apply(window, std::vector<IN*>{input}, out);

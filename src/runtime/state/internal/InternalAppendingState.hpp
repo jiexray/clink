@@ -22,7 +22,7 @@ public:
     /**
      Get internally stored value.
      */
-    virtual ParamSV get_internal() = 0;
+    virtual ConstParamSV get_internal() = 0;
 
     /**
       Update internally stored value.

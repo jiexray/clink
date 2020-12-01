@@ -17,7 +17,7 @@
   @param <IS> the type of internal state
  */
 template <class K, class N, class SV, class S, class IS>
-class HeapKeyedStatedBackend: public AbstractKeyedStateBackend<K, N, SV, S, IS>
+class HeapKeyedStateBackend: public AbstractKeyedStateBackend<K, N, SV, S, IS>
 {
 private:
     typedef typename TemplateHelperUtil::ParamOptimize<K>::type ParamK;
@@ -33,7 +33,7 @@ private:
 
     typedef typename std::function<IS*(const StateDescriptor<S, SV> &, StateTable<K, N, SV>&)> StateCreator;
 
-    std::shared_ptr<spdlog::logger> m_logger = LoggerFactory::get_logger("HeapKeyedStatedBackend");
+    std::shared_ptr<spdlog::logger> m_logger = LoggerFactory::get_logger("HeapKeyedStateBackend");
 
     std::map<std::string, StateCreator> STATE_FACTORIES;
 
@@ -54,15 +54,15 @@ private:
     }
 
 public:
-    HeapKeyedStatedBackend(
-            TaskKvStateRegistry<K, N, SV>* kv_state_registry, 
-            ExecutionConfig* execution_config, 
-            InternalKeyContext<K>* key_context,
+    HeapKeyedStateBackend(
+            TaskKvStateRegistry<K, N, SV>& kv_state_registry, 
+            ExecutionConfig& execution_config, 
+            InternalKeyContext<K>& key_context,
             const std::map<std::string, StateTable<K, N, SV>*>& registered_kv_states):
             AbstractKeyedStateBackend<K, N, SV, S, IS>(kv_state_registry, execution_config, key_context),
             m_registered_kv_states(registered_kv_states) {}
 
-    ~HeapKeyedStatedBackend() {
+    ~HeapKeyedStateBackend() {
         // TODO: delete all kv_states in m_registered_kv_states
         // TODO: clear STATE_FACTORIES
 

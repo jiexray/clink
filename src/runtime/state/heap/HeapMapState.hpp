@@ -29,6 +29,10 @@ public:
         throw std::runtime_error("Not implement HeapMapState()");
     }
 
+    // ~HeapMapState() {
+    //     std::cout << "HeapMapState dtor()" << std::endl;
+    // }
+
     HeapMapState(
             StateTable<K, N, std::map<UK, UV>>& state_table,
             const std::map<UK, UV>& default_value):

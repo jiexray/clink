@@ -6,6 +6,7 @@
 #include "StreamOperator.hpp"
 #include "Function.hpp"
 #include "Output.hpp"
+#include "ExecutionConfig.hpp"
 #include <iostream>
 
 template <class F, class OUT>
@@ -20,6 +21,7 @@ protected:
     std::shared_ptr<Output<OUT>>                    m_output;
 public:
     AbstractUdfStreamOperator(std::shared_ptr<F> user_function):m_user_function(user_function){}
+    
     virtual void                                    setup(std::shared_ptr<Output<OUT>> output) {
         this->m_output = output;
     }

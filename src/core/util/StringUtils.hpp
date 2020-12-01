@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 #include <sstream>
+#include <algorithm>
+#include <iterator>
 
 namespace StringUtils {
 
@@ -51,7 +53,9 @@ public:
 };
 
 template <class T>
-std::string to_string(T value);
+std::string to_string(T value) {
+    return value.to_string();
+}
 
 template<>
 std::string to_string<std::string>(std::string value) {
@@ -67,6 +71,24 @@ template <>
 std::string to_string<double>(double value) {
     return std::to_string(value);
 }
-}
 
+template <class T>
+std::string vec_to_string(const T& values) {
+    std::string str = "";
+    typedef typename T::value_type VEC_T;
+    for (int i = 0; i < values.size(); i++) {
+        if (i == 0) {
+            str += "{";
+        }
+        str += to_string<VEC_T>(values[i]);
+
+        if (i == values.size() - 1) {
+            str += "}";
+        } else {
+            str += ",";
+        }
+    }
+    return str;
+}
+}
 

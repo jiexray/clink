@@ -31,7 +31,6 @@ class InternalMapState: public MapState<UK, UV>, public virtual InternalKvState<
 //     bool contains(ConstParamUK key) override {return MapState<UK, UV>::contains(key);};
 
 //     virtual bool is_empty() override {return MapState<UK, UV>::is_empty()};
-
-//     virtual ~InternalMapState() = default;
+public:
 };
 

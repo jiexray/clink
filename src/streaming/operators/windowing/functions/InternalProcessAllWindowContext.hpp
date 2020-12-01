@@ -13,30 +13,42 @@ template <class IN, class OUT, class W>
 class InternalProcessAllWindowContext: public ProcessAllWindowFunctionContext<IN, OUT, W>
 {
 private:
-    W& m_window;
-    InternalWindowContext& m_internal_context;
+    const W* _window = nullptr;
+    InternalWindowFunctionContext* _internal_context = nullptr;
 public:
     InternalProcessAllWindowContext() {
-
     }
 
-    void set_window(W& window) {
-        m_window = window;
+    void set_window(const W& window) {
+        _window = &window;
     }
     
-    void set_internal_context (InternalWindowContext& internal_context) {
-        m_internal_context = internal_context;
+    void set_internal_context (InternalWindowFunctionContext& internal_context) {
+        _internal_context = &internal_context;
     }
 
-    W& window() override{
-        return m_window;
+    const W& window() const override{
+        assert(_window != nullptr);
+        return *_window;
     }
 
-    KeyedMapStateStore& window_state() override {
-        return m_internal_context.window_state();
+    KeyedMapStateStore& window_map_state() override {
+        assert(_internal_context != nullptr);
+        return _internal_context->window_map_state();
     }
 
-    KeyedMapStateStore& global_state() override {
-        return m_internal_context.global_state();
+    KeyedListStateStore& window_list_state() override {
+        assert(_internal_context != nullptr);
+        return _internal_context->window_list_state();
+    }
+
+    KeyedMapStateStore& global_map_state() override {
+        assert(_internal_context != nullptr);
+        return _internal_context->global_map_state();
+    }
+
+    KeyedListStateStore& global_list_state() override {
+        assert(_internal_context != nullptr);
+        return _internal_context->global_list_state();
     }
 };

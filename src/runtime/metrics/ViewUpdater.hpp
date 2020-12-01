@@ -26,7 +26,7 @@ private:
 public:
     ViewUpdater(PeriodicSchedulerPtr scheduler) {
         // add a periodically running task to MetricRegistry's scheduler
-        scheduler->add_task("ViewUpdater-timer", boost::bind(&ViewUpdater::run, this), View::UPDATE_INTERVAL_SECONDS);
+        scheduler->add_periodic_task("ViewUpdater-timer", boost::bind(&ViewUpdater::run, this), View::UPDATE_INTERVAL_SECONDS);
     }
 
     void                                notify_of_add_view(std::shared_ptr<View> view) {

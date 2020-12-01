@@ -4,6 +4,7 @@
 #pragma once
 #include <type_traits>
 #include <memory>
+#include <vector>
 
 class NullType {};
 struct EmptyType {};
@@ -25,11 +26,15 @@ template <> struct IsNullType<NullType>: std::true_type {};
 template<typename T> struct IsSharedPtr : std::false_type {};
 template<typename T> struct IsSharedPtr<std::shared_ptr<T>> : std::true_type {};
 
+template<typename T> struct IsVector : public std::false_type {};
+template<typename T, typename A> struct IsVector<std::vector<T, A>> : public std::true_type {};
+
 template <class T>
 class TemplateHelper {
 public:
     enum { is_null_type     = IsNullType<T>::value,
-           is_shared_ptr    = IsSharedPtr<T>::value};
+           is_shared_ptr    = IsSharedPtr<T>::value,
+           is_vector        = IsVector<T>::value};
 };
 
 

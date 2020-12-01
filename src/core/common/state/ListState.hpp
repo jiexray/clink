@@ -21,4 +21,9 @@ public:
       values to existing list of values. 
      */
     virtual void add_all(const std::vector<T>& values) = 0;
+
+    /**
+      Returns whether there is a list in the state.
+     */
+    virtual bool contains_list() = 0;
 };

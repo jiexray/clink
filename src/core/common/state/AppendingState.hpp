@@ -27,7 +27,7 @@ public:
       @return The operator state value corresponding to the current input or null
       if the state is empty.
      */
-    virtual ParamOUT get() = 0;
+    virtual ConstParamOUT get() = 0;
 
     /**
       Updates the operator state accessible by {@link #get()} by adding the given value

@@ -66,7 +66,7 @@ public:
 
     void put(ConstParamK key, ConstParamN ns, ConstParamS state) {
         if (this->m_ns_map.find(ns) == this->m_ns_map.end()) {
-            this->m_ns_map.insert(std::make_pair(ns, std::map<K, S>()));
+            this->m_ns_map[ns] = std::map<K, S>();
         }
         auto ret = this->m_ns_map[ns].insert(std::make_pair(key, state));
         if (ret.second == false) {

@@ -1,6 +1,7 @@
 #pragma once
 #include "Window.hpp"
 #include <string>
+#include <iostream>
 
 /**
   A Window that represents a time interval from start (inclusive) to end (exclusive).
@@ -11,7 +12,23 @@ private:
     long m_end;
     
 public:
-    TimeWindow(long start, long end): m_start(start), m_end(end) {}
+    TimeWindow() {
+        m_start = m_end = 0;
+    }
+
+    TimeWindow(long start, long end): m_start(start), m_end(end) {
+        std::cout << "create window: " << to_string() << std::endl;
+    }
+
+    TimeWindow(const TimeWindow& other) {
+        m_start = other.m_start;
+        m_end = other.m_end;
+        std::cout << "copy window: " << to_string() << std::endl;
+    }
+
+    ~TimeWindow() {
+        std::cout << "destory TimeWindow" << std::endl;
+    }
 
     long get_start() {
         return m_start;
@@ -21,7 +38,7 @@ public:
         return m_end;
     }
 
-    long max_timestamp() override {
+    long max_timestamp() const override {
         return m_end -1;
     }
 
@@ -29,7 +46,29 @@ public:
         return m_start == other.m_start && m_end == other.m_end;
     }
 
-    std::string to_string() {
+    TimeWindow& operator= (const TimeWindow& other) {
+        std::cout << "TimeWindow assign operator1" << std::endl;
+        if (this != (&other)) {
+            this->m_start = other.m_start;
+            this->m_end = other.m_end;
+        }
+        return *this;
+    }
+
+    TimeWindow& operator= (TimeWindow&& other) {
+        std::cout << "TimeWindow assign operator2" << std::endl;
+        if (this != (&other)) {
+            this->m_start = other.m_start;
+            this->m_end = other.m_end;
+        }
+        return *this;
+    }
+
+    bool operator <(const TimeWindow& other) const {
+        return m_start < other.m_start;
+    }
+
+    std::string to_string() const {
         return "TimeWindow{start=" + std::to_string(m_start) + ", end=" + std::to_string(m_end) + "}";
     }
 

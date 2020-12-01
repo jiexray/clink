@@ -23,7 +23,6 @@ public:
      */
     virtual void register_processing_time_timer(long time) = 0;
 
-
     /**
       Register a event time callback. When the current watermark passes the specified
       time Trigger::on_event_time(long, Window, TriggerContext) is called with the time
@@ -63,7 +62,7 @@ public:
       @param window The window to which the element is being added.
       @param ctx A context object that can be used to register time callbacks.
      */
-    virtual TriggerResult on_element(T* element, long timestamp, W& window, TriggerContext& ctx) = 0;
+    virtual TriggerResult on_element(T* element, long timestamp, const W& window, TriggerContext& ctx) = 0;
 
     /**
       Called when a processing-time timer that was set using the trigger context fires.
@@ -72,7 +71,7 @@ public:
       @param window The window for which the timer fired.
       @param ctx A context object that can be used to register timer callbacks.
      */
-    virtual TriggerResult on_processing_time(long time, W& window, TriggerContext& ctx) = 0;
+    virtual TriggerResult on_processing_time(long time, const W& window, TriggerContext& ctx) = 0;
 
     /**
       Called when an event-time timer that was set using the trigger context fires.
@@ -81,7 +80,7 @@ public:
       @param window The window for which the timer fire.
       @param ctx A context object that can be used to register timer callbacks.
      */
-    virtual TriggerResult on_event_time(long time, W& window, TriggerResult& ctx) = 0;
+    virtual TriggerResult on_event_time(long time, const W& window, TriggerContext& ctx) = 0;
 
     /**
       Clears any state that the trigger might still hold for the given window.
