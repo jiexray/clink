@@ -4,6 +4,7 @@
 #pragma once
 #include "TemplateHelper.hpp"
 #include <type_traits>
+#include "StateTransformationFunction.hpp"
 
 
 /**
@@ -90,4 +91,23 @@ public:
      for the specified key was found.
      */
     virtual ParamS      remove_and_get_old(const ParamK key, ConstParamN ns) = 0;
+
+    /**
+      Applies the given StateTransformationFunction to the state, using the given value as
+      second input argument. The result of StateTransformationFunction::apply() is then stored
+      as the new state. This function is basically an optimization for get-update-put-pattern.
+
+      @param key the key.
+      @param ns the namespace.
+      @param value the value to use in transforming the state.
+      @param transformation the transformation function.
+     */
+    template <class T>
+    void transform(
+            ConstParamK key, 
+            ConstParamN ns, 
+            typename TemplateHelperUtil::ParamOptimize<T>::const_type value, 
+            StateTransformationFunction<S, T>& transformation) {
+        throw std::runtime_error("StateMap not implement transform()");
+    }
 };

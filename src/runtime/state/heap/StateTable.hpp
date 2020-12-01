@@ -1,6 +1,7 @@
 #pragma once
 #include "InternalKeyContext.hpp"
 #include "StateMap.hpp"
+#include "StateTransformationFunction.hpp"
 
 /**
   Base class for state tables. Accesses to state are typically scoped by the currently active key, as provided
@@ -147,6 +148,26 @@ public:
         // TODO
     }
 
+    template <class T>
+    void transform(
+            ConstParamN ns, 
+            typename TemplateHelperUtil::ParamOptimize<T>::const_type value, 
+            StateTransformationFunction<S, T>& transformation) {
+        ConstParamK key = m_key_context.get_current_key();
+
+        int key_group = m_key_context.get_current_key_group_index();
+        StateMap<K, N, S>* state_map = get_map_for_key_group(key_group);
+
+        if (state_map == nullptr) {
+            throw std::runtime_error("key_group_index " + std::to_string(key_group) + " is out of scope");
+        }
+        if (dynamic_cast<NestedStateMap<K, N, S>*>(state_map) != nullptr) {
+            dynamic_cast<NestedStateMap<K, N, S>*>(state_map)->transform<T>(key, ns, value, transformation);
+        } else {
+            throw std::runtime_error("StateMap type unknown");
+        }
+    }
+
     // ------------------------------------------------------------------
     //  Internal interfaces
     // ------------------------------------------------------------------
@@ -155,7 +176,7 @@ private:
         StateMap<K, N, S>* state_map = get_map_for_key_group(key_group_index);
 
         if (state_map == nullptr) {
-            throw std::runtime_error("key_group_index" + std::to_string(key_group_index) + " is out of scope");
+            throw std::runtime_error("key_group_index " + std::to_string(key_group_index) + " is out of scope");
         }
 
         state_map->get(key, ns);

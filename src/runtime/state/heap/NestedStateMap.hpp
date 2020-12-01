@@ -68,10 +68,11 @@ public:
         if (this->m_ns_map.find(ns) == this->m_ns_map.end()) {
             this->m_ns_map[ns] = std::map<K, S>();
         }
-        auto ret = this->m_ns_map[ns].insert(std::make_pair(key, state));
-        if (ret.second == false) {
-            this->m_ns_map[ns][key] = state;
-        }
+        // auto ret = this->m_ns_map[ns].insert(std::make_pair(key, state));
+        // if (ret.second == false) {
+        //     this->m_ns_map[ns][key] = state;
+        // }
+        this->m_ns_map[ns][key] = state;
     }
 
     ParamS put_and_get_old(ConstParamK key, ConstParamN ns, ConstParamS state) override {
@@ -104,5 +105,27 @@ public:
         }
 
         return old_val;
+    }
+
+    template <class T>
+    void transform(
+            ConstParamK key, 
+            ConstParamN ns, 
+            typename TemplateHelperUtil::ParamOptimize<T>::const_type value, 
+            StateTransformationFunction<S, T>& transformation) {
+        if (this->m_ns_map.find(ns) == this->m_ns_map.end()) {
+            this->m_ns_map[ns] = std::map<K, S>();
+        }
+
+        S* new_state;
+
+        if (this->m_ns_map[ns].find(key) != this->m_ns_map[ns].end()) {
+            new_state = transformation.apply(&this->m_ns_map[ns][key], value);
+        } else {
+            new_state = transformation.apply(nullptr, value);
+        }
+
+        this->m_ns_map[ns][key] = *new_state;
+        delete new_state;
     }
 };

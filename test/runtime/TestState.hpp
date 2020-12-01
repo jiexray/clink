@@ -17,6 +17,8 @@
 #include "ProcessingTimeServiceImpl.hpp"
 #include "SystemProcessingTimeService.hpp"
 #include "Triggerable.hpp"
+#include "AggregateFunction.hpp"
+#include "HeapAggregatingState.hpp"
 #include <iostream>
 #include <string>
 #include <map>
@@ -34,6 +36,26 @@ struct MyState{
     }
     MyState(int ff0, int ff1): f0(ff0), f1(ff1){}
 };
+
+
+class TestAggregateFunction: public AggregateFunction<int, int, int> {
+public:
+    int* create_accumulator() {
+        return new int(0);
+    }
+
+    int* add(const int* value, const int* accumulator) {
+        if (value == nullptr || accumulator == nullptr) {
+            throw std::runtime_error("value or accumulate is nullptr");
+        }
+        return new int(*value + *accumulator);
+    }
+
+    int* get_result(const int* accumulator) {
+        return new int(*accumulator);
+    }
+};
+
 
 class TestState: public CxxTest::TestSuite
 {
@@ -301,25 +323,48 @@ public:
     }
 
 
-    void testInternalTimerService( void ) {
-        std::cout << "test testInternalTimerService()" << std::endl;
+    // void testInternalTimerService( void ) {
+    //     std::cout << "test testInternalTimerService()" << std::endl;
 
-        TestKeyContext<int> key_context(10);
-        SystemProcessingTimeService system_time_service;
-        ProcessingTimeServiceImpl time_service(system_time_service);
+    //     TestKeyContext<int> key_context(10);
+    //     SystemProcessingTimeService system_time_service;
+    //     ProcessingTimeServiceImpl time_service(system_time_service);
 
-        TestTriggerable<int, std::string> triggerable;
-        InternalTimerServiceImpl<int, std::string> timer_service(
-            KeyGroupRange(0, 10),
-            key_context,
-            time_service,
-            triggerable);
+    //     TestTriggerable<int, std::string> triggerable;
+    //     InternalTimerServiceImpl<int, std::string> timer_service(
+    //         KeyGroupRange(0, 10),
+    //         key_context,
+    //         time_service,
+    //         triggerable);
 
-        std::cout << "current timestamp: " << timer_service.current_processing_time() << std::endl;
-        timer_service.register_processing_time_timer("ns-1", timer_service.current_processing_time() + 500l);
-        timer_service.register_processing_time_timer("ns-2", timer_service.current_processing_time() + 500l);
+    //     std::cout << "current timestamp: " << timer_service.current_processing_time() << std::endl;
+    //     timer_service.register_processing_time_timer("ns-1", timer_service.current_processing_time() + 500l);
+    //     timer_service.register_processing_time_timer("ns-2", timer_service.current_processing_time() + 500l);
 
-        std::this_thread::sleep_for(std::chrono::seconds(2));
+    //     std::this_thread::sleep_for(std::chrono::seconds(2));
+    // }
+
+    void testAggregate( void ) {
+        std::cout << "test testAggregate()" << std::endl;
+
+        TestAggregateFunction agg_function;
+
+        InternalKeyContext<int>* key_context = new InternalKeyContextImpl<int>(KeyGroupRange(0, 10), 3);
+        NestedMapsStateTable<int, std::string, int> state_table(*key_context);
+
+        HeapAggregatingState<int, std::string, int, int, int> heap_aggregating_state(state_table, 0, agg_function);
+
+        heap_aggregating_state.set_current_namespace("ns-1");
+
+        heap_aggregating_state.add(10);
+        int state = heap_aggregating_state.get();
+        TS_ASSERT_EQUALS(state, 10);
+
+        heap_aggregating_state.add(11);
+        state = heap_aggregating_state.get();
+        TS_ASSERT_EQUALS(state, 21);
+
+        // heap_aggregating_state.add
     }
 };
 
