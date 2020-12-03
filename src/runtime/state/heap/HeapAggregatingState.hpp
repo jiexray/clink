@@ -3,6 +3,7 @@
 #include "AbstractHeapState.hpp"
 #include "InternalAggregatingState.hpp"
 #include "StateTransformationFunction.hpp"
+#include "AggregatingStateDescriptor.hpp"
 #include "AggregateFunction.hpp"
 
 template <class IN, class ACC, class OUT>
@@ -82,8 +83,20 @@ public:
         this->m_state_table.put(this->m_current_namespace, value_to_store);
     }
 
+    void add_internal(ConstParamIN value) override {
+        // throw std::runtime_error("")
+        this->add(value);
+    }
+
+    bool contains_internal() override {
+        if (!this->m_state_table.contains_key(this->m_current_namespace)) {
+            return false;
+        }
+        return true;
+    }
+
     /**
-      The return value need to be freed!
+      The return value need to be freed, if the value type is not fundamental types.
 
       TODO: change the return value type of get()
      */
@@ -101,13 +114,25 @@ public:
         // return *m_aggregate_transformation->get_agg_function().get_result(&accumulator);
     }
 
-    void add(ParamIN value) override {
+    void add(ConstParamIN value) override {
         if (&value == nullptr) {
             this->clear();
             return;
         }
 
         this->m_state_table.template transform<IN>(this->m_current_namespace, value, *m_aggregate_transformation);
+    }
+
+    template<class IS>
+    static IS* create(const StateDescriptor<AggregatingState<IN, OUT>, ACC>& state_desc, StateTable<K, N, ACC>& state_table) {
+        TemplateHelperUtil::CheckInherit<StateDescriptor<AggregatingState<IN, OUT>, ACC>, AggregatingStateDescriptor<IN, OUT, ACC>>::assert_inherit();
+        return (IS*)new HeapAggregatingState(state_table, state_desc.get_default_value(), (dynamic_cast<const AggregatingStateDescriptor<IN, OUT, ACC>*>(&state_desc))->get_aggregate_function());
+    }
+
+    template<class IS>
+    static IS* create_appending(const StateDescriptor<AppendingState<IN, OUT>, ACC>& state_desc, StateTable<K, N, ACC>& state_table) {
+        TemplateHelperUtil::CheckInherit<StateDescriptor<AggregatingState<IN, OUT>, ACC>, AggregatingStateDescriptor<IN, OUT, ACC>>::assert_inherit();
+        return (IS*)new HeapAggregatingState(state_table, state_desc.get_default_value(), (dynamic_cast<const AggregatingStateDescriptor<IN, OUT, ACC>*>(&state_desc))->get_aggregate_function());
     }
 };
 

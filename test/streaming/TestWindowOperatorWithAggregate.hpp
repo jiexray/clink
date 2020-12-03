@@ -12,12 +12,12 @@
 #include "InternalIterableProcessAllWindowFunction.hpp"
 #include "HeapListState.hpp"
 #include "AggregateFunction.hpp"
+#include "HeapAggregatingState.hpp"
 
 #include <iostream>
 #include <memory>
 #include <chrono>
 #include <thread>
-
 
 class TestWindowFunction: public ProcessAllWindowFunction<int, int, TimeWindow>{
     void process(
@@ -53,45 +53,46 @@ public:
     }
 };
 
-class TestWindowOperator: public CxxTest::TestSuite {
+class TestWindowOperatorWithAggregate: public CxxTest::TestSuite {
 public:
-    void testWindowOperatorCreate( void ) {
+    void testWindowOperatorWithAggFunction (void) {
+        std::cout << "test testWindowOperatorWithAggFunction()" << std::endl;
+
         TumblingProcessingTimeWindows<int> window_assigner(1000);
         TestWindowFunction window_func;
-        std::shared_ptr<InternalWindowFunction<std::vector<int>, int, int, TimeWindow>> internal_window_func = 
-                                                    std::make_shared<InternalIterableProcessAllWindowFunction<int, int, int, TimeWindow>>(window_func);
+        std::shared_ptr<InternalWindowFunction<int, int, int, TimeWindow>> internal_window_func =  
+                std::make_shared<InternalSingleValueProcessAllWindowFunction<int, int, int, TimeWindow>>(window_func);
+
         ProcessingTimeTrigger<int> trigger;
-        ListStateDescriptor<int> state_desc("window-operator");
+
+        TestAggregatFunction agg_function;
+        AggregatingStateDescriptor<int, int, int> state_desc("window-operator", agg_function, 0);
 
         // Create StateBackend
-        KvStateRegistry<int, TimeWindow, std::vector<int>> kv_state_registry;
+        KvStateRegistry<int, TimeWindow, int> kv_state_registry;
         int job_id = 0;
         int job_vertex_id = 0;
 
-        TaskKvStateRegistry<int, TimeWindow, std::vector<int>> task_kv_state_registry(kv_state_registry, job_id, job_vertex_id);
+        TaskKvStateRegistry<int, TimeWindow, int> task_kv_state_registry(kv_state_registry, job_id, job_vertex_id);
         ExecutionConfig execution_config;
         InternalKeyContext<int>* internal_key_context = new InternalKeyContextImpl<int>(KeyGroupRange(0, 10), 3);
 
-        HeapKeyedStateBackend<int, TimeWindow, std::vector<int>, AppendingState<int, std::vector<int>>, InternalAppendingState<int, TimeWindow, int, std::vector<int>, std::vector<int>>> heap_state_backend(
+        HeapKeyedStateBackend<int, TimeWindow, int, AppendingState<int, int>, InternalAppendingState<int, TimeWindow, int, int, int>> heap_state_backend(
                 task_kv_state_registry, 
                 execution_config,
                 *internal_key_context,
-                std::map<std::string, StateTable<int, TimeWindow, std::vector<int>>*>());
-    
+                std::map<std::string, StateTable<int, TimeWindow, int>*>());
+
         heap_state_backend.register_state_creator(
-            std::string(typeid(StateDescriptor<AppendingState<int, std::vector<int>>, std::vector<int>>).name()),
-            HeapListState<int, TimeWindow, int>::create_appending<InternalAppendingState<int, TimeWindow, int, std::vector<int>, std::vector<int>>>);
+            std::string(typeid(StateDescriptor<AppendingState<int, int>, int>).name()),
+            HeapAggregatingState<int, TimeWindow, int, int, int>::create_appending<InternalAppendingState<int, TimeWindow, int, int, int>>);
 
         heap_state_backend.set_current_key(101);
 
-        // ListState<int>& list_state = heap_state_backend.get_or_create_keyed_state(state_desc);
-
-        // Create InternalTimeServiceManager
         SystemProcessingTimeService system_time_service;
         ProcessingTimeServiceImpl time_service(system_time_service);
 
-
-        WindowOperator<int, int, std::vector<int>, int, TimeWindow>* window_operator = new WindowOperator<int, int, std::vector<int>, int, TimeWindow>(
+        WindowOperator<int, int, int, int, TimeWindow>* window_operator = new WindowOperator<int, int, int, int, TimeWindow>(
                 window_assigner,
                 internal_window_func,
                 trigger,
@@ -102,18 +103,25 @@ public:
 
         window_operator->open();
 
-        StreamRecordV2<int> int_record_1(1, TimeUtil::current_timestamp());
-        window_operator->process_element(&int_record_1);
+        for (int i = 0; i < 200; i++) {
+            StreamRecordV2<int> int_record_1(1, TimeUtil::current_timestamp());
+            window_operator->process_element(&int_record_1);
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
-        StreamRecordV2<int> int_record_2(2, TimeUtil::current_timestamp());
-        window_operator->process_element(&int_record_2);
+            std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        }
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
-        StreamRecordV2<int> int_record_3(3, TimeUtil::current_timestamp());
-        window_operator->process_element(&int_record_3);
+        // StreamRecordV2<int> int_record_1(1, TimeUtil::current_timestamp());
+        // window_operator->process_element(&int_record_1);
 
-        std::this_thread::sleep_for(std::chrono::seconds(5));
+        // std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        // StreamRecordV2<int> int_record_2(2, TimeUtil::current_timestamp());
+        // window_operator->process_element(&int_record_2);
+
+        // std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        // StreamRecordV2<int> int_record_3(3, TimeUtil::current_timestamp());
+        // window_operator->process_element(&int_record_3);
+
+        std::this_thread::sleep_for(std::chrono::seconds(20));
 
         delete window_operator;
     }

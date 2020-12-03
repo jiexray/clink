@@ -1,6 +1,7 @@
 #pragma once
 #include "InternalKeyContext.hpp"
 #include "StateMap.hpp"
+#include "NestedStateMap.hpp"
 #include "StateTransformationFunction.hpp"
 
 /**

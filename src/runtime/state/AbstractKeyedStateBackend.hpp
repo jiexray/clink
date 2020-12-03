@@ -136,6 +136,7 @@ public:
 
     ParamIS get_or_create_internal_keyed_state(const StateDescriptor<S, SV>& state_descriptor) override {
         InternalKvState<K, N, SV>* kv_state = nullptr;
+        TemplateHelperUtil::CheckInherit<InternalKvState<K, N, SV>, IS>::assert_inherit();
         if (this->m_key_value_states_by_name.find(state_descriptor.get_name()) == this->m_key_value_states_by_name.end()) {
             // TODO: create KvState with TtlStateFactory
             kv_state = this->create_internal_state(state_descriptor);

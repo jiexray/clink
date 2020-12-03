@@ -42,7 +42,7 @@ public:
     std::unique_ptr<Scheduler::OneTimeTask> register_timer(long timestamp, ProcessingTimeCallback callback) override {
         long delay = std::max(timestamp - get_current_processing_time(), 0l) + 1;
 
-        std::cout << "Register an one-time task, delay: " << delay << std::endl;
+        // std::cout << "Register an one-time task, delay: " << delay << std::endl;
         return m_timer_service->add_one_time_task("processing-timer-one-time", std::bind(callback, timestamp), delay);
     }
 

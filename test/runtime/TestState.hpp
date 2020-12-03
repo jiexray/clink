@@ -19,6 +19,7 @@
 #include "Triggerable.hpp"
 #include "AggregateFunction.hpp"
 #include "HeapAggregatingState.hpp"
+#include "AggregatingStateDescriptor.hpp"
 #include <iostream>
 #include <string>
 #include <map>
@@ -364,7 +365,114 @@ public:
         state = heap_aggregating_state.get();
         TS_ASSERT_EQUALS(state, 21);
 
-        // heap_aggregating_state.add
+        KvStateRegistry<int, std::string, int> kv_state_registry;
+        int job_id = 0;
+        int job_vertex_id = 0;
+
+        TaskKvStateRegistry<int, std::string, int> task_kv_state_registry(kv_state_registry, job_id, job_vertex_id);
+        ExecutionConfig execution_config;
+
+        HeapKeyedStateBackend<int, std::string, int, AggregatingState<int, int>, InternalAggregatingState<int, std::string, int, int, int>> heap_state_backend(
+                task_kv_state_registry, 
+                execution_config,
+                *key_context,
+                std::map<std::string, StateTable<int, std::string, int>*>());
+    
+        heap_state_backend.set_current_key(101);
+
+        heap_state_backend.register_state_creator(
+            std::string(typeid(StateDescriptor<AggregatingState<int, int>, int>).name()),
+            HeapAggregatingState<int, std::string, int, int, int>::create<InternalAggregatingState<int, std::string, int, int, int>>);
+        
+        AggregatingStateDescriptor<int, int, int> aggregating_state_desc("aggregating-state", agg_function, 1);
+        InternalAggregatingState<int, std::string, int, int, int>* aggregate_state = heap_state_backend.create_internal_state(aggregating_state_desc);
+        aggregate_state->set_current_namespace("ns-1");
+
+        aggregate_state->add(100);
+        state = aggregate_state->get();
+        TS_ASSERT_EQUALS(state, 100);
+
+        aggregate_state->add(101);
+        state = aggregate_state->get();
+        TS_ASSERT_EQUALS(state, 201);
+    }
+
+    void testAppendingState2(void) {
+        std::cout << "test testAppendingState2()" << std::endl;
+        KvStateRegistry<int, std::string, std::vector<int>> kv_state_registry;
+        int job_id = 0;
+        int job_vertex_id = 0;
+
+        TaskKvStateRegistry<int, std::string, std::vector<int>> task_kv_state_registry(kv_state_registry, job_id, job_vertex_id);
+        ExecutionConfig execution_config;
+        InternalKeyContext<int>* key_context = new InternalKeyContextImpl<int>(KeyGroupRange(0, 10), 3);
+
+        HeapKeyedStateBackend<int, std::string, std::vector<int>, AppendingState<int, std::vector<int>>, InternalAppendingState<int, std::string, int, std::vector<int>, std::vector<int>>> heap_stated_backend(
+                task_kv_state_registry, 
+                execution_config,
+                *key_context,
+                std::map<std::string, StateTable<int, std::string, std::vector<int>>*>());
+    
+        heap_stated_backend.set_current_key(101);
+
+        heap_stated_backend.register_state_creator(
+            // std::string(typeid(HeapMapState<int, std::string, int, int>).name()),
+            std::string(typeid(StateDescriptor<AppendingState<int, std::vector<int>>, std::vector<int>>).name()),
+            HeapListState<int, std::string, int>::create_appending<InternalListState<int, std::string, int>>);
+    
+        ListStateDescriptor<int> list_state_desc("list-state");
+        InternalAppendingState<int, std::string, int, std::vector<int>, std::vector<int>>* list_state = heap_stated_backend.create_internal_state(list_state_desc);
+        list_state->set_current_namespace("ns-1");
+
+        list_state->add_internal(1);
+        list_state->add_internal(2);
+
+        const std::vector<int>& cur_vec = list_state->get_internal();
+        TS_ASSERT_EQUALS(cur_vec.size(), 2);
+        TS_ASSERT_EQUALS(cur_vec[0], 1);
+        TS_ASSERT_EQUALS(cur_vec[1], 2);
+    }
+
+    void testAppendingState( void ) {
+        std::cout << "test testAppendingState()" << std::endl;
+        TestAggregateFunction agg_function;
+
+        KvStateRegistry<int, std::string, int> kv_state_registry;
+        int job_id = 0;
+        int job_vertex_id = 0;
+
+        TaskKvStateRegistry<int, std::string, int> task_kv_state_registry(kv_state_registry, job_id, job_vertex_id);
+        ExecutionConfig execution_config;
+        InternalKeyContext<int>* key_context = new InternalKeyContextImpl<int>(KeyGroupRange(0, 10), 3);
+
+        HeapKeyedStateBackend<int, std::string, int, AggregatingState<int, int>, InternalAggregatingState<int, std::string, int, int, int>> heap_state_backend(
+                task_kv_state_registry, 
+                execution_config,
+                *key_context,
+                std::map<std::string, StateTable<int, std::string, int>*>());
+
+        heap_state_backend.set_current_key(101);
+
+        heap_state_backend.register_state_creator(
+            std::string(typeid(StateDescriptor<AggregatingState<int, int>, int>).name()),
+            HeapAggregatingState<int, std::string, int, int, int>::create<InternalAggregatingState<int, std::string, int, int, int>>);
+        
+        AggregatingStateDescriptor<int, int, int> aggregating_state_desc("aggregating-state", agg_function, 1);
+
+        InternalAppendingState<int, std::string, int, int, int>* appending_state = heap_state_backend.create_internal_state(aggregating_state_desc);
+        appending_state->set_current_namespace("ns-1");
+
+        appending_state->update_internal(100);
+        int state = appending_state->get_internal();
+
+        TS_ASSERT_EQUALS(state, 100);
+
+        appending_state->update_internal(101);
+        state = appending_state->get_internal();
+        TS_ASSERT_EQUALS(state, 101);
+
+        appending_state->set_current_namespace("ns-2");
+
     }
 };
 

@@ -34,6 +34,6 @@ public:
 	  to the list of values. The next time {@link #get()} is called (for the same state
 	  partition) the returned state will represent the updated list.
      */
-    virtual void add(ParamIN value) = 0;
+    virtual void add(ConstParamIN value) = 0;
 };
 

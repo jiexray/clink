@@ -23,7 +23,7 @@ public:
     }
 
     TriggerResult on_processing_time(long time, const TimeWindow& window, TriggerContext& ctx) override {
-        return TriggerResult::FIRE;
+        return TriggerResult::FIRE_AND_PURGE;
     }
 
     TriggerResult on_event_time(long time, const TimeWindow& window, TriggerContext& ctx) override {

@@ -16,6 +16,7 @@ template <class K, class N, class IN, class SV, class OUT>
 class InternalAppendingState: 
     virtual public InternalKvState<K, N, SV> {
 private:
+    typedef typename TemplateHelperUtil::ParamOptimize<IN>::type ParamIN;
     typedef typename TemplateHelperUtil::ParamOptimize<SV>::type ParamSV;
     typedef typename TemplateHelperUtil::ParamOptimize<SV>::const_type ConstParamSV;
 public:
@@ -25,7 +26,14 @@ public:
     virtual ConstParamSV get_internal() = 0;
 
     /**
+      Add a value to the internal state.
+     */
+    virtual void add_internal(ParamIN value) = 0;
+
+    /**
       Update internally stored value.
      */
     virtual void update_internal(ParamSV value_to_store) = 0;
+
+    virtual bool contains_internal() = 0;
 };

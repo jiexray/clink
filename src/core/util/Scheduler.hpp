@@ -33,7 +33,7 @@ namespace Scheduler {
                 task(task), 
                 name(name), 
                 timer(ioService) {
-            SPDLOG_LOGGER_INFO(logger, "start OneTimeTask at {}", TimeUtil::current_timestamp());
+            SPDLOG_LOGGER_DEBUG(logger, "start OneTimeTask at {}", TimeUtil::current_timestamp());
             timer.expires_from_now(boost::posix_time::milliseconds(delay));
             timer.async_wait(boost::bind(
                 &OneTimeTask::execute, 
@@ -42,7 +42,6 @@ namespace Scheduler {
         }
 
         ~OneTimeTask() {
-            std::cout << "OneTimeTask dtor()" << std::endl;
         }
 
         void execute(boost::system::error_code const& e) {
@@ -60,7 +59,7 @@ namespace Scheduler {
           @return: whether there is a handler to cancel.
          */
         bool cancel() {
-            SPDLOG_LOGGER_INFO(logger, "OneTimeTask cancel name {}", name);
+            // SPDLOG_LOGGER_WARN(logger, "OneTimeTask cancel name {}", name);
             int handler_cnt = timer.cancel();
             return handler_cnt > 0;
         }
@@ -87,7 +86,7 @@ namespace Scheduler {
                 task(task), 
                 name(name), 
                 timer(ioService) {
-            SPDLOG_LOGGER_INFO(logger, "start PeriodicTask at {}", TimeUtil::current_timestamp());
+            SPDLOG_LOGGER_INFO(logger, "start PeriodicTask {} at {}", name, TimeUtil::current_timestamp());
             timer.expires_from_now(boost::posix_time::milliseconds(initial_delay));
             timer.async_wait(boost::bind(
                     &PeriodicTask::execute, 

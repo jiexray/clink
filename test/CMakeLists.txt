@@ -140,4 +140,8 @@ if(CXXTEST_FOUND)
   # core scheduler
   CXXTEST_ADD_TEST(unitest_core_scheduler core_scheduler.cpp ${CMAKE_CURRENT_SOURCE_DIR}/core/TestScheduler.hpp)
   target_link_libraries(unitest_core_scheduler core)
+
+  # streaming window operator with aggregate
+  CXXTEST_ADD_TEST(unitest_streaming_window_operator_with_agg streaming_window_operator_with_agg.cpp ${CMAKE_CURRENT_SOURCE_DIR}/streaming/TestWindowOperatorWithAggregate.hpp)
+  target_link_libraries(unitest_streaming_window_operator_with_agg streaming)
 endif()

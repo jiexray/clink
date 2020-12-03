@@ -29,13 +29,13 @@ public:
 
     void process(
             ConstParamK key, 
-            W& window, 
+            const W& window, 
             InternalWindowFunctionContext& context, 
-            IN* input, 
+            const IN& input, 
             std::shared_ptr<Collector<OUT>> out) {
         this->m_ctx->set_window(window);
         this->m_ctx->set_internal_context(context);
 
-        this->m_wrapped_function.process(*m_ctx, std::vector<IN*>{input}, out);
+        this->m_wrapped_function.process(*m_ctx, std::vector<IN>{input}, out);
     }
 };

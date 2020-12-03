@@ -45,29 +45,30 @@ public:
   A utility class for handling ProcessWindowFunction invocations. This can be reused by 
   setting the key and window fields.
  */
-template <class K, class IN, class W>
+template <class K, class IN, class ACC, class W>
 class WindowOperatorWindowContext : public InternalWindowFunctionContext {
 private:
     const W* _window;
 
-    PerWindowStateStore<K, IN, W>* m_window_state;
+    // PerWindowStateStore<K, IN, W>* m_window_state;
 
-    typedef KeyedStateBackend<K, W, std::vector<IN>, ListState<IN>, InternalListState<K, W, IN>> KeyedListStateBackendType;
+    // typedef KeyedStateBackend<K, W, std::vector<IN>, ListState<IN>, InternalListState<K, W, IN>> KeyedListStateBackendType;
+    typedef KeyedStateBackend<K, W, ACC, AppendingState<IN, ACC>, InternalAppendingState<K, W, IN, ACC, ACC>> KeyedStateBackendType;
 
     InternalTimerService<W>& m_internal_timer_service;
 public:
     WindowOperatorWindowContext(
             W* window, 
-            KeyedListStateBackendType& state_backend, 
+            KeyedStateBackendType& state_backend, 
             ExecutionConfig& execution_config,
             InternalTimerService<W>& internal_timer_service): 
             _window(window),
             m_internal_timer_service(internal_timer_service) {
-        m_window_state = new PerWindowStateStore<K, IN, W>(state_backend, execution_config);
+        // m_window_state = new PerWindowStateStore<K, IN, W>(state_backend, execution_config);
     }
 
     ~WindowOperatorWindowContext() {
-        delete m_window_state;
+        // delete m_window_state;
     }
 
     void set_window(const W& window) {
@@ -83,16 +84,17 @@ public:
     }
 
     KeyedMapStateStore& window_map_state() override {
-        throw std::runtime_error("Not implemented");
+        throw std::runtime_error("window_map_state() Not implemented");
     }
 
     KeyedListStateStore& window_list_state() override {
-        m_window_state->set_window(*_window);
-        return *m_window_state;
+        // m_window_state->set_window(*_window);
+        // return *m_window_state;
+        throw std::runtime_error("window_list_state() Not implemented");
     }
 
     KeyedMapStateStore& global_map_state() override {
-        throw std::runtime_error("Not implemented");
+        throw std::runtime_error("global_map_state() Not implemented");
     }
 
     KeyedListStateStore& global_list_state() override{
@@ -165,7 +167,7 @@ public:
     }
 
     void register_processing_time_timer(long time) override {
-        std::cout << "TriggerContext::register_processing_time_timer() window: " << this->_window->to_string() << ", trigger timestamp:" << time << std::endl;
+        // std::cout << "TriggerContext::register_processing_time_timer() window: " << this->_window->to_string() << ", trigger timestamp:" << time << std::endl;
         assert(this->_window != nullptr);
         m_internal_timer_service.register_processing_time_timer(*(this->_window), time);
     }
@@ -229,9 +231,10 @@ private:
     typedef typename TemplateHelperUtil::ParamOptimize<ACC>::type ParamACC;
     typedef typename TemplateHelperUtil::ParamOptimize<ACC>::const_type ConstParamACC;
 
-    typedef HeapKeyedStateBackend<K, W, std::vector<IN>, ListState<IN>, InternalListState<K, W, IN>> HeapKeyedStateBackendType;
-    typedef AbstractKeyedStateBackend<K, W, std::vector<IN>, ListState<IN>, InternalListState<K, W, IN>> AbstractKeyedStateBackendType;
-    typedef StreamOperatorStateHandlerImpl<K, W, std::vector<IN>, ListState<IN>, InternalListState<K, W, IN>> StreamOperatorStateHandlerType;
+
+    typedef HeapKeyedStateBackend<K, W, ACC, AppendingState<IN, ACC>, InternalAppendingState<K, W, IN, ACC, ACC>> HeapKeyedStateBackendType;
+    typedef AbstractKeyedStateBackend<K, W, ACC, AppendingState<IN, ACC>, InternalAppendingState<K, W, IN, ACC, ACC>> AbstractKeyedStateBackendType;
+    typedef StreamOperatorStateHandler<K, W, ACC, AppendingState<IN, ACC>, InternalAppendingState<K, W, IN, ACC, ACC>> StreamOperatorStateHandlerType;
 
     // -------------------------------------------------------------
     // Configuration values and user functions
@@ -240,20 +243,20 @@ private:
 
     Trigger<IN, W>& m_trigger;
 
-    const StateDescriptor<ListState<IN>, std::vector<int>>& m_window_state_descriptor;
+    const StateDescriptor<AppendingState<IN, ACC>, ACC>& m_window_state_descriptor;
 
     // -------------------------------------------------------------
     // State that is not checkpointed
     // -------------------------------------------------------------
 
     /** The state in which the window contexts is stored. Each window is a name space */
-    InternalListState<K, W, IN>& m_window_state;
+    InternalAppendingState<K, W, IN, ACC, ACC>& m_window_state;
 
     std::shared_ptr<TimestampedCollector<OUT>> m_timestamped_collector;
 
     WindowOperatorContext<K, IN, W>* m_trigger_context;
 
-    WindowOperatorWindowContext<K, IN, W>* m_process_context;
+    WindowOperatorWindowContext<K, IN, ACC, W>* m_process_context;
 
     WindowAssignerContext* m_window_assigner_context;
 
@@ -280,7 +283,7 @@ public:
             WindowAssigner<IN, W>& window_assigner,
             std::shared_ptr<InternalWindowFunction<ACC, OUT, K, W>> window_function,
             Trigger<IN, W>& trigger,
-            const StateDescriptor<ListState<IN>, std::vector<int>>& window_state_descriptor,
+            const StateDescriptor<AppendingState<IN, ACC>, ACC>& window_state_descriptor,
             HeapKeyedStateBackendType& keyed_state_backend,
             ExecutionConfig& execution_config,
             ProcessingTimeService& processing_time_service):
@@ -290,8 +293,7 @@ public:
             m_trigger(trigger),
             m_window_state_descriptor(window_state_descriptor),
             m_window_state(keyed_state_backend.get_or_create_internal_keyed_state(window_state_descriptor)),
-            m_processing_time_service(processing_time_service)
-            {
+            m_processing_time_service(processing_time_service) {
         _internal_timer_service = nullptr;
         // initialiize InternalTimeServiceManager
         m_time_service_manager = new InternalTimeServiceManager<K, W>(
@@ -321,7 +323,7 @@ public:
 
         _internal_timer_service = &get_internal_timer_service("window-timers", *this);
 
-        m_process_context = new WindowOperatorWindowContext<K, IN, W>(
+        m_process_context = new WindowOperatorWindowContext<K, IN, ACC, W>(
                 nullptr, 
                 this->m_state_handler->get_keyed_state_backend(),
                 this->m_state_handler->get_execution_config(),
@@ -336,8 +338,6 @@ public:
 
         m_window_assigner_context = new WindowOperatorWindowAssignerContext<W>(*_internal_timer_service);
 
-        // m_window_state = (InternalListState<K, W, IN>&)get_or_create_keyed_state(m_window_state_descriptor);
-
         // TODO: implement merging window assigner
     }
 
@@ -351,14 +351,14 @@ public:
 
         // TODO: implement merging window
         for (int i = 0; i < element_windows.size(); i++) {
-            std::cout << "process_element(), assigning window: " << element_windows[i].to_string() << std::endl;
+            // std::cout << "process_element(), assigning window: " << element_windows[i].to_string() << std::endl;
             // drop if the window is already late
             if (is_window_late(element_windows[i])) {
                 continue;
             }
             is_skipped_element = false;
             m_window_state.set_current_namespace(element_windows[i]);
-            m_window_state.add(element->val);
+            m_window_state.add_internal(element->val);
 
             m_trigger_context->set_key(key);
             m_trigger_context->set_window(element_windows[i]);
@@ -366,10 +366,10 @@ public:
             TriggerResult trigger_result = m_trigger_context->on_element(element);
 
             if (trigger_result == TriggerResult::FIRE || trigger_result == TriggerResult::FIRE_AND_PURGE) {
-                if (m_window_state.contains_list()) {
-                    ConstParamACC contents = m_window_state.get();
+                if (m_window_state.contains_internal()) {
+                    ConstParamACC contents = m_window_state.get_internal();
                     // TODO: emit window_result:
-                    std::cout << "process_element() emit_window_contents(): " << StringUtils::vec_to_string<ACC>(contents) << std::endl;
+                    std::cout << "on_processing_time() emit_window_contents(): " << StringUtils::to_string<ACC>(contents) << std::endl;
                     // emit_window_contents(element_windows[i], contents);
                 }
             }
@@ -379,7 +379,6 @@ public:
             }
             // register_clearup_timer(element_windows[i]);
         }
-        std::cout << "finish process_element" << std::endl;
     }
 
     // function in Triggerable
@@ -392,9 +391,9 @@ public:
         TriggerResult trigger_result = m_trigger_context->on_event_time(timer.get_timestamp());
 
         if (trigger_result == TriggerResult::FIRE || trigger_result == TriggerResult::FIRE_AND_PURGE) {
-            if (m_window_state.contains_list()) {
-                ConstParamACC contents = m_window_state.get();
-                std::cout << "on_event_time() emit_window_contents(): " << StringUtils::vec_to_string<ACC>(contents) << std::endl;
+            if (m_window_state.contains_internal()) {
+                ConstParamACC contents = m_window_state.get_internal();
+                std::cout << "on_processing_time() emit_window_contents(): " << StringUtils::to_string<ACC>(contents) << std::endl;
                 // emit_window_contents(timer.get_namespace(), contents);
             }
         }
@@ -405,7 +404,7 @@ public:
     }
 
     void on_processing_time(const InternalTimer<K, W>& timer) override {
-        std::cout << "WindowOperator::on_processing_time(), timestamp:" << TimeUtil::current_timestamp() << ", window: " << timer.get_namespace().to_string() << std::endl;
+        // std::cout << "WindowOperator::on_processing_time(), timestamp:" << TimeUtil::current_timestamp() << ", window: " << timer.get_namespace().to_string() << std::endl;
         m_trigger_context->set_key(timer.get_key());
         m_trigger_context->set_window(timer.get_namespace());
 
@@ -414,15 +413,17 @@ public:
         TriggerResult trigger_result = m_trigger_context->on_processing_time(timer.get_timestamp());
 
         if (trigger_result == TriggerResult::FIRE || trigger_result == TriggerResult::FIRE_AND_PURGE) {
-            if (m_window_state.contains_list()) {
-                ConstParamACC contents = m_window_state.get();
-                std::cout << "on_processing_time() emit_window_contents(): " << StringUtils::vec_to_string<ACC>(contents) << std::endl;
+            if (m_window_state.contains_internal()) {
+                ConstParamACC contents = m_window_state.get_internal();
+                std::cout << "on_processing_time() emit_window_contents(): " << StringUtils::to_string<ACC>(contents) << std::endl;
                 // emit_window_contents(timer.get_namespace(), contents);
             }
         }
 
         if (trigger_result == PURGE || trigger_result == FIRE_AND_PURGE) {
-            m_window_state.clear();
+            if (m_window_state.contains_internal()) {
+                m_window_state.clear();
+            }
         }
     }
 
@@ -438,9 +439,6 @@ public:
         return m_time_service_manager->get_internal_timer_service(name, triggerable);
     }
 
-    ListState<IN>& get_or_create_keyed_state(const StateDescriptor<ListState<IN>, std::vector<int>>& window_state_descriptor) {
-        return m_state_handler->get_or_create_keyed_state(window_state_descriptor);
-    } 
 
     const AbstractKeyedStateBackendType& get_keyed_state_backend() {
         return m_state_handler->get_keyed_state_backend();

@@ -77,7 +77,6 @@ public:
     }
 
     void on_processing_time(long time) {
-        std::cout << "InternalTimerServiceImpl on_processing_time()" << std::endl;
         while(!this->m_processing_time_timers_queue.empty()) {
             const InternalTimer<K, N>& timer = this->m_processing_time_timers_queue.top();
             if (timer.get_timestamp() <= time) {

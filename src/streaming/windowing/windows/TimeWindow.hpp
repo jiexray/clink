@@ -17,17 +17,17 @@ public:
     }
 
     TimeWindow(long start, long end): m_start(start), m_end(end) {
-        std::cout << "create window: " << to_string() << std::endl;
+        // std::cout << "create window: " << to_string() << std::endl;
     }
 
     TimeWindow(const TimeWindow& other) {
         m_start = other.m_start;
         m_end = other.m_end;
-        std::cout << "copy window: " << to_string() << std::endl;
+        // std::cout << "copy window: " << to_string() << std::endl;
     }
 
     ~TimeWindow() {
-        std::cout << "destory TimeWindow" << std::endl;
+        // std::cout << "destory TimeWindow" << std::endl;
     }
 
     long get_start() {
@@ -47,7 +47,7 @@ public:
     }
 
     TimeWindow& operator= (const TimeWindow& other) {
-        std::cout << "TimeWindow assign operator1" << std::endl;
+        // std::cout << "TimeWindow assign operator1" << std::endl;
         if (this != (&other)) {
             this->m_start = other.m_start;
             this->m_end = other.m_end;
@@ -56,7 +56,7 @@ public:
     }
 
     TimeWindow& operator= (TimeWindow&& other) {
-        std::cout << "TimeWindow assign operator2" << std::endl;
+        // std::cout << "TimeWindow assign operator2" << std::endl;
         if (this != (&other)) {
             this->m_start = other.m_start;
             this->m_end = other.m_end;

@@ -9,5 +9,5 @@
 template <class K, class N, class T>
 class InternalListState: 
     public ListState<T>, 
-    virtual public InternalAppendingState<K, N, T, std::vector<T>, ListState<T>> {};
+    virtual public InternalAppendingState<K, N, T, std::vector<T>, std::vector<T>> {};
 

@@ -38,11 +38,19 @@ public:
         this->m_state_table.put(this->m_current_namespace, value_to_store);
     }
 
+    void add_internal(ConstParamV value) override {
+        this->add(value);
+    }
+
+    bool contains_internal() override {
+        return this->contains_list();
+    }
+
     ConstParamSV get() override {
         return this->get_internal();
     }
 
-    void add(ConstParamV value) {
+    void add(ConstParamV value) override {
         if (!this->m_state_table.contains_key(this->m_current_namespace)) {
             this->m_state_table.put(this->m_current_namespace, std::vector<V>());
         }
@@ -77,6 +85,11 @@ public:
                 previous_state.push_back(values[i]);
             }
         }
+    }
+
+    template<class IS>
+    static IS* create_appending(const StateDescriptor<AppendingState<V, std::vector<V>>, std::vector<V>>& state_desc, StateTable<K, N, std::vector<V>>& state_table) {
+        return (IS*)new HeapListState(state_table, state_desc.get_default_value());
     }
 
     template<class IS>
