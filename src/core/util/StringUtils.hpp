@@ -7,6 +7,7 @@
 #include <sstream>
 #include <algorithm>
 #include <iterator>
+#include "TemplateHelper.hpp"
 
 namespace StringUtils {
 
@@ -53,24 +54,25 @@ public:
 };
 
 template <class T>
-std::string to_string(T value) {
+inline std::string to_string(typename TemplateHelperUtil::ParamOptimize<T>::const_type value) {
     return value.to_string();
 }
 
 template<>
-std::string to_string<std::string>(std::string value) {
+inline std::string to_string<int>(int value) {
+    return std::to_string(value);
+}
+
+template<>
+inline std::string to_string<double>(double value) {
+    return std::to_string(value);
+}
+
+template<>
+inline std::string to_string<std::string>(const std::string& value) {
     return value;
 }
 
-template <>
-std::string to_string<int>(int value) {
-    return std::to_string(value);
-}
-
-template <>
-std::string to_string<double>(double value) {
-    return std::to_string(value);
-}
 
 template <class T>
 std::string vec_to_string(const T& values) {

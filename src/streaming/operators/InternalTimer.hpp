@@ -1,5 +1,6 @@
 #pragma once
 #include "TemplateHelper.hpp"
+#include <string>
 
 /**
   Internal interface for in-flight timers.
@@ -24,4 +25,6 @@ public:
     virtual ConstParamN get_namespace() const = 0;
 
     virtual ~InternalTimer() = default;
+
+    virtual std::string to_string() const = 0;
 };

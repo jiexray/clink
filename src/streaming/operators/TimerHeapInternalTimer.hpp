@@ -1,6 +1,7 @@
 #pragma once
 #include "InternalTimer.hpp"
 #include <string>
+#include <functional>
 #include "StringUtils.hpp"
 
 /**
@@ -15,9 +16,8 @@ private:
     typedef typename TemplateHelperUtil::ParamOptimize<K>::const_type ConstParamK;
     typedef typename TemplateHelperUtil::ParamOptimize<N>::const_type ConstParamN;
 
-    ConstParamK m_key;
-    ConstParamN m_namespace;
-    // N m_namespace;
+    K m_key;
+    N m_namespace;
     long m_timestamp;
 public:
     TimerHeapInternalTimer(long timestamp, ConstParamK key, ConstParamN ns): 
@@ -44,7 +44,7 @@ public:
         return m_namespace;
     }
 
-    bool operator==(const TimerHeapInternalTimer& other) {
+    bool operator==(const TimerHeapInternalTimer& other) const {
         if (this == &other) {
             return true;
         }
@@ -56,20 +56,18 @@ public:
 
     TimerHeapInternalTimer& operator=(const TimerHeapInternalTimer& other) {
         if (this != &other) {
-        //    this->m_key = other.m_key;
-        //    this->m_namespace = other.m_namespace;
+           this->m_key = other.m_key;
+           this->m_namespace = other.m_namespace;
            this->m_timestamp = other.m_timestamp;
-        //    this->m_namespace = other.m_namespace;
         }  
         return *this;
     }
 
     TimerHeapInternalTimer& operator=(TimerHeapInternalTimer&& other) {
         if (this != &other) {
-        //    this->m_key = other.m_key;
-        //    this->m_namespace = other.m_namespace;
+           this->m_key = other.m_key;
+           this->m_namespace = other.m_namespace;
            this->m_timestamp = other.m_timestamp;
-        //    this->m_namespace = other.m_namespace;
         }  
         return *this;
     }
@@ -82,11 +80,28 @@ public:
         return this->m_timestamp > other.m_timestamp;
     }
 
-    std::string to_string() {
+    std::string to_string() const override {
         return "Timer{timestamp=" + std::to_string(m_timestamp) + 
                 ", key=" + StringUtils::to_string<K>(m_key) + 
-                ", namespace=" + StringUtils::to_string<N>(m_namespace) +
+                ", namespace=" + m_namespace.to_string() +
                 "}";
     }
+
 };
+
+namespace std {
+    template <class K, class N>
+    struct hash<TimerHeapInternalTimer<K, N>> {
+        std::size_t operator()(const TimerHeapInternalTimer<K, N>& obj) const {
+            return std::hash<std::string>()(obj.to_string());
+        } 
+    };
+}
+
+// namespace StringUtils {
+//     template <class K, class N>
+//     inline std::string to_string<TimerHeapInternalTimer<K, N>>(const TimerHeapInternalTimer<K, N>& timer) {
+//         return timer.to_string();
+//     }
+// }
 

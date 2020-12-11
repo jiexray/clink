@@ -13,6 +13,7 @@
 #include "ForwardPartitioner.hpp"
 #include "RebalancePartitioner.hpp"
 #include "SimpleUdfStreamOperatorFactory.hpp"
+#include "WindowOperatorFactory.hpp"
 #include "StreamMap.hpp"
 #include "StreamSource.hpp"
 #include "StreamSink.hpp"
@@ -63,6 +64,11 @@ public:
                                                                     std::shared_ptr<StreamOperatorFactory<OUT>> operator_factory);
     template <class IN, class OUT = NullType, bool IS_SINK = false>
     std::shared_ptr<StreamOperatorFactory<OUT>> get_operator_factory(std::string key);
+
+    template <class K, class IN, class ACC, class OUT>
+    void                                        set_window_operator_factory(std::string key, std::shared_ptr<StreamOperatorFactory<OUT>> operator_factory);
+    template <class K, class IN, class ACC, class OUT>
+    std::shared_ptr<StreamOperatorFactory<OUT>> get_window_operator_factory(std::string key);
 
     template <class IN, class OUT = NullType>                          
     void                                        set_stream_operator(std::string key,
@@ -226,9 +232,9 @@ inline std::shared_ptr<StreamEdge<T>> Configuration::get_edge(std::string key){
     }
 }
 
-//------------------------------------------------------
-// Stream operator factory configuration
-//------------------------------------------------------
+/**
+  Stream operator factory configuration
+ */
 template <class IN, class OUT>
 inline void Configuration::set_operator_factory(std::string key, 
                                         std::shared_ptr<StreamOperatorFactory<OUT>> operator_factory){
@@ -271,6 +277,39 @@ inline std::shared_ptr<StreamOperatorFactory<OUT>> Configuration::get_operator_f
             return gen_factory;
         } else {
             throw std::runtime_error("Stream operator factory deserializtion not support other stream operator factory except for SimpleStreamOperatorFactory.");
+        }
+    } else {
+        return nullptr;
+    }
+}
+
+template <class K, class IN, class ACC, class OUT>
+inline void Configuration::set_window_operator_factory(std::string key, std::shared_ptr<StreamOperatorFactory<OUT>> operator_factory) {
+    if (this->m_conf_data.find(key) != this->m_conf_data.end()) {
+        throw std::runtime_error("key " + key + " has already inserted into the conf_data");
+    }
+
+    if (std::dynamic_pointer_cast<WindowOperatorFactory<K, IN, ACC, OUT>>(operator_factory) != nullptr) {
+        std::shared_ptr<WindowOperatorFactory<K, IN, ACC, OUT>> window_operator_factory = std::dynamic_pointer_cast<WindowOperatorFactory<K, IN, ACC, OUT>>(operator_factory);
+        char* window_operator_factory_in_char = new char[sizeof(WindowOperatorFactory<K, IN, ACC, OUT>) + 1];
+        memcpy(window_operator_factory_in_char, window_operator_factory.get(), sizeof(WindowOperatorFactory<K, IN, ACC, OUT>));
+        this->m_conf_data.insert(std::make_pair(key, window_operator_factory_in_char));
+    } else {
+        throw std::runtime_error("Not support other stream operator factory except for WindowOperatorFactory.");
+    }
+}
+
+template <class K, class IN, class ACC, class OUT>
+inline std::shared_ptr<StreamOperatorFactory<OUT>> Configuration::get_window_operator_factory(std::string key) {
+    if (m_conf_data.find(key) != m_conf_data.end()) {
+        StreamOperatorFactory<OUT> *operator_factory = (StreamOperatorFactory<OUT>*)m_conf_data[key];
+
+        if (dynamic_cast<WindowOperatorFactory<K, IN, ACC, OUT>*>(operator_factory) != nullptr) {
+            std::shared_ptr<WindowOperatorFactory<K, IN, ACC, OUT>> gen_factory = std::make_shared<WindowOperatorFactory<K, IN, ACC, OUT>>(
+                    *(dynamic_cast<WindowOperatorFactory<K, IN, ACC, OUT>*>(operator_factory)));
+            return gen_factory;
+        } else {
+            throw std::runtime_error("Stream operator factory deserializtion not support other stream operator factory except for WindowOperatorFactory.");
         }
     } else {
         return nullptr;

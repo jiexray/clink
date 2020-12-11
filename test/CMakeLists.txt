@@ -144,4 +144,12 @@ if(CXXTEST_FOUND)
   # streaming window operator with aggregate
   CXXTEST_ADD_TEST(unitest_streaming_window_operator_with_agg streaming_window_operator_with_agg.cpp ${CMAKE_CURRENT_SOURCE_DIR}/streaming/TestWindowOperatorWithAggregate.hpp)
   target_link_libraries(unitest_streaming_window_operator_with_agg streaming)
+
+  # streaming window operator factory
+  CXXTEST_ADD_TEST(unitest_streaming_window_operator_factory streaming_window_operator_factory.cpp ${CMAKE_CURRENT_SOURCE_DIR}/streaming/TestWindowOperatorFactory.hpp)
+  target_link_libraries(unitest_streaming_window_operator_factory streaming)
+
+  # streaming window operator with event time
+  CXXTEST_ADD_TEST(unitest_streaming_window_operator_with_event_time streaming_window_operator_with_event_time.cpp ${CMAKE_CURRENT_SOURCE_DIR}/streaming/TestWindowOperatorWithEventTime.hpp)
+  target_link_libraries(unitest_streaming_window_operator_with_event_time streaming)
 endif()

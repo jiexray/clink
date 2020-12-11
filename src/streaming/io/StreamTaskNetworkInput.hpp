@@ -67,7 +67,7 @@ public:
                 if (result == DeserializationResult::INTERMEDIATE_RECORD_FROM_BUFFER || result == DeserializationResult::LAST_RECORD_FROM_BUFFER) {
                     
                     StreamRecordV2<T>* new_record = this->m_current_record_deserializer->get_instance();
-                    output->emit_record(new_record);
+                    process_element(new_record, output);
                     // commit one record read, maybe it is a none-copy read
                     this->m_current_record_deserializer->read_commit();
 
@@ -102,6 +102,16 @@ public:
             } else {
                 return InputStatus::NOTHING_AVAILABLE;
             }
+        }
+    }
+
+    void process_element(StreamRecordV2<T>* record_or_mark, std::shared_ptr<DataOutput<T>> output) {
+        if (record_or_mark->type == StreamRecordType::NORMAL) {
+            output->emit_record(record_or_mark);
+        } else if (record_or_mark->type == StreamRecordType::WATERMARK) {
+            output->emit_watermark(record_or_mark);
+        } else {
+            throw std::runtime_error("Unknown type of StreamRecordType");
         }
     }
 

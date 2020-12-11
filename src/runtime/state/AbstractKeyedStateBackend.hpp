@@ -6,6 +6,8 @@
 #include "ExecutionConfig.hpp"
 #include "InternalKeyContext.hpp"
 #include "KeyGroupRangeAssignment.hpp"
+#include "StateTable.hpp"
+#include "NestedMapsStateTable.hpp"
 #include <vector>
 #include <map>
 #include <unordered_map>
@@ -34,6 +36,7 @@ private:
     typedef typename TemplateHelperUtil::ParamOptimize<SV>::const_type ConstParamSV;
     typedef typename TemplateHelperUtil::ParamOptimize<S>::const_type ConstParamS;
     typedef typename TemplateHelperUtil::ParamOptimize<IS>::const_type ConstParamIS;
+    typedef typename std::function<IS*(const StateDescriptor<S, SV> &, StateTable<K, N, SV>&)> StateCreator;
 
     /** Listeners to change of m_key_context */
     std::vector<KeySelectionListener<K>*>   m_key_selection_listeners;
@@ -52,11 +55,13 @@ protected:
     KeyGroupRange m_key_group_range;
 
     /** KvStateRegistry helper for this task*/
-    TaskKvStateRegistry<K, N, SV>& m_kv_state_registry;
+    // TaskKvStateRegistry<K, N, SV>& m_kv_state_registry;
 
     ExecutionConfig& m_execution_config;
 
-    InternalKeyContext<K>& m_key_context;
+    InternalKeyContext<K>* m_key_context;
+
+    std::map<std::string, StateCreator> STATE_FACTORIES;
 
     void notify_key_selected(ConstParamK new_key) {
         for (int i = 0; i < m_key_selection_listeners.size(); i++) {
@@ -65,13 +70,14 @@ protected:
     }
 public:
     AbstractKeyedStateBackend(
-            TaskKvStateRegistry<K, N, SV>& kv_state_registry, 
+            // TaskKvStateRegistry<K, N, SV>& kv_state_registry, 
             ExecutionConfig& execution_config, 
-            InternalKeyContext<K>& key_context):
-            m_kv_state_registry(kv_state_registry),
+            InternalKeyContext<K>* key_context):
+            // m_kv_state_registry(kv_state_registry),
             m_execution_config(execution_config),
             m_key_context(key_context){
-        m_number_of_key_groups = key_context.get_number_of_key_groups();
+        m_key_group_range = key_context->get_key_group_range();
+        m_number_of_key_groups = key_context->get_number_of_key_groups();
 
         TemplateHelperUtil::CheckInherit<State, S>::assert_inherit();
         TemplateHelperUtil::CheckInherit<InternalKvState<K, N, SV>, IS>::assert_inherit();
@@ -94,16 +100,19 @@ public:
             this->m_key_value_states_by_name.erase(it);
         }
         this->m_key_value_states_by_name.clear();
+
+        // TODO: free key_context
+        delete m_key_context;
     }
 
     void set_current_key(ConstParamK new_key) override{
         notify_key_selected(new_key);
-        this->m_key_context.set_current_key(new_key);
-        this->m_key_context.set_current_key_group_index(KeyGroupRangeAssignment::assign_to_key_group<K>(new_key, m_number_of_key_groups));
+        this->m_key_context->set_current_key(new_key);
+        this->m_key_context->set_current_key_group_index(KeyGroupRangeAssignment::assign_to_key_group<K>(new_key, m_number_of_key_groups));
     }
 
     ConstParamK get_current_key() const override {
-        return this->m_key_context.get_current_key();
+        return this->m_key_context->get_current_key();
     }
 
     void register_key_selection_listener(KeySelectionListener<K>* listener) override {
@@ -172,8 +181,16 @@ public:
         return state;
     }
 
+    bool register_state_creator(const std::string& type_id, StateCreator creator) {
+        return STATE_FACTORIES.insert(std::make_pair(type_id, creator)).second;
+    }
+
     /* Properties */
     const KeyGroupRange& get_key_group_range() {
         return this->m_key_group_range;
+    }
+
+    int get_total_number_of_key_groups() {
+        return m_key_context->get_number_of_key_groups();
     }
 };

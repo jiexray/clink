@@ -27,6 +27,10 @@ public:
         return StateDescriptor<ListState<T>, std::vector<T>>::get_name();
     }
 
+    std::string get_state_descriptor_id() const override {
+        return std::string(typeid(ListStateDescriptor<T>).name());
+    }
+
     ConstParamT get_default_value() const {
         return StateDescriptor<ListState<T>, std::vector<T>>::get_default_value();
     }

@@ -16,9 +16,12 @@ public:
         TemplateHelperUtil::CheckInherit<Function, T>::assert_inherit();
     }
 
+    ~WrappingFunction() {
+        delete &m_wrapped_function;
+    }
+
     T& get_wrapped_function() {
         return m_wrapped_function;
     }
 
-    virtual ~WrappingFunction() = default;
 };

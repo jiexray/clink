@@ -3,6 +3,8 @@
 #include "InternalWindowFunction.hpp"
 #include "ProcessAllWindowFunction.hpp"
 #include "InternalProcessAllWindowContext.hpp"
+#include <memory>
+#include <functional>
 
 /**
   Internal window function for wrapping a ProcessAllWindowFunction that takes an Interable
@@ -15,6 +17,7 @@ class InternalSingleValueProcessAllWindowFunction:
 private:
     typedef typename TemplateHelperUtil::ParamOptimize<K>::type ParamK;
     typedef typename TemplateHelperUtil::ParamOptimize<K>::const_type ConstParamK;
+    typedef std::function<ProcessAllWindowFunction<IN, OUT, W>*(void)> ProcessAllWindowFunctionCreator;
 
     InternalProcessAllWindowContext<IN, OUT, W>* m_ctx = nullptr;
 public:
@@ -37,5 +40,9 @@ public:
         this->m_ctx->set_internal_context(context);
 
         this->m_wrapped_function.process(*m_ctx, std::vector<IN>{input}, out);
+    }
+
+    static std::shared_ptr<InternalWindowFunction<IN, OUT, K, W>> create(ProcessAllWindowFunctionCreator func_creator) {
+        return std::make_shared<InternalSingleValueProcessAllWindowFunction<IN, OUT, K, W>>(*func_creator());
     }
 };

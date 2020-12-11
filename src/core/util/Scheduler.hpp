@@ -18,7 +18,6 @@
 #include "LoggerFactory.hpp"
 
 namespace Scheduler {
-    std::shared_ptr<spdlog::logger> logger = LoggerFactory::get_logger("Scheduler");
     // TODO: cancel a Task
     class OneTimeTask: boost::noncopyable {
     public:
@@ -27,30 +26,11 @@ namespace Scheduler {
         OneTimeTask(boost::asio::io_service& ioService, 
                 std::string const& name, 
                 long delay, 
-                handler_fn task):
-                ioService(ioService), 
-                delay(delay), 
-                task(task), 
-                name(name), 
-                timer(ioService) {
-            SPDLOG_LOGGER_DEBUG(logger, "start OneTimeTask at {}", TimeUtil::current_timestamp());
-            timer.expires_from_now(boost::posix_time::milliseconds(delay));
-            timer.async_wait(boost::bind(
-                &OneTimeTask::execute, 
-                this, 
-                boost::asio::placeholders::error));
-        }
+                handler_fn task);
 
-        ~OneTimeTask() {
-        }
+        ~OneTimeTask() {}
 
-        void execute(boost::system::error_code const& e) {
-            if (e != boost::asio::error::operation_aborted) {
-                task();
-            } else {
-                SPDLOG_LOGGER_WARN(logger, "OneTimeTask execution error {}", e.message());
-            }
-        }
+        void execute(boost::system::error_code const& e);
 
         /**
           Note: we have no guarantee that the timer will be cancelled, if the deadline is very close to the
@@ -58,11 +38,7 @@ namespace Scheduler {
         
           @return: whether there is a handler to cancel.
          */
-        bool cancel() {
-            // SPDLOG_LOGGER_WARN(logger, "OneTimeTask cancel name {}", name);
-            int handler_cnt = timer.cancel();
-            return handler_cnt > 0;
-        }
+        bool cancel();
     private:
         boost::asio::io_service& ioService;
         boost::asio::deadline_timer timer;
@@ -79,37 +55,11 @@ namespace Scheduler {
                 std::string const& name, 
                 long interval, 
                 long initial_delay,
-                handler_fn task): 
-                ioService(ioService), 
-                interval(interval), 
-                initial_delay(initial_delay),
-                task(task), 
-                name(name), 
-                timer(ioService) {
-            SPDLOG_LOGGER_INFO(logger, "start PeriodicTask {} at {}", name, TimeUtil::current_timestamp());
-            timer.expires_from_now(boost::posix_time::milliseconds(initial_delay));
-            timer.async_wait(boost::bind(
-                    &PeriodicTask::execute, 
-                    this, 
-                    boost::asio::placeholders::error));
-        }
+                handler_fn task);
 
-        void execute(boost::system::error_code const& e) {
-            if (e != boost::asio::error::operation_aborted) {
-                task();
-                timer.expires_at(timer.expires_at() + boost::posix_time::milliseconds(interval));
-                timer.async_wait(boost::bind(
-                        &PeriodicTask::execute, this, 
-                        boost::asio::placeholders::error));
-            } else {
-                SPDLOG_LOGGER_DEBUG(logger, "PeriodicTask execution error {}", e.message());
-            }
-        }
+        void execute(boost::system::error_code const& e);
 
-        bool cancel() {
-            int handler_cnt = timer.cancel();
-            return handler_cnt > 0;
-        }
+        bool cancel();
 
     private:
         boost::asio::io_service& ioService;
@@ -122,21 +72,9 @@ namespace Scheduler {
 
     class PeriodicScheduler : boost::noncopyable {
     public:
-        void worker_run() {
-            this->m_io_service.run();
-        }
+        void worker_run();
 
-        void run() {
-            SPDLOG_LOGGER_INFO(logger, "Start PeriodicScheduler with {} worker threads", m_num_of_thread);
-            for (int i = 0; i < m_num_of_thread; i++) {
-                // m_worker_threads.create_thread([this]() {
-                //     SPDLOG_LOGGER_INFO(logger, "[{}] executor thread start", std::this_thread::get_id());
-                //     this->m_io_service.run();
-                //     SPDLOG_LOGGER_INFO(logger, "[{}] executor thread finish", std::this_thread::get_id());
-                // });
-                m_worker_threads.create_thread(std::bind(&PeriodicScheduler::worker_run, this));
-            }
-        }
+        void run();
 
         /**
           Add periodical executing task.
@@ -150,15 +88,7 @@ namespace Scheduler {
             std::string const& name, 
                 PeriodicTask::handler_fn const& task,
                 int interval,
-                int initial_delay = 0) {
-            tasks.push_back(
-                    std::make_unique<PeriodicTask>(
-                    std::ref(m_io_service), 
-                    name, 
-                    interval, 
-                    initial_delay,
-                    task));
-        }
+                int initial_delay = 0);
 
         /**
           Add one-time executing task.
@@ -170,26 +100,13 @@ namespace Scheduler {
         std::unique_ptr<OneTimeTask> add_one_time_task(
                 std::string const& name,
                 PeriodicTask::handler_fn const& task,
-                long delay) {
-            return std::make_unique<OneTimeTask>(
-                    std::ref(m_io_service),
-                    name, 
-                    delay,
-                    task);
-        }
+                long delay);
 
-        void stop() {
-            m_io_service.stop();
-            delete m_io_service_work;
-            m_worker_threads.join_all();
-        }
+        void stop();
 
-        PeriodicScheduler(): PeriodicScheduler(1) {}
+        PeriodicScheduler();
 
-        PeriodicScheduler(int num_of_thread):
-                m_num_of_thread(num_of_thread) {
-            m_io_service_work = new boost::asio::io_service::work(m_io_service);
-        }
+        PeriodicScheduler(int num_of_thread);
 
     private:
         int m_num_of_thread;

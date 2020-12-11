@@ -37,5 +37,9 @@ public:
     std::string to_string() override {
         return "ProcessingTimeTrigger()";
     }
+
+    static Trigger<T, TimeWindow>* create() {
+        return new ProcessingTimeTrigger<T>();
+    }
 };
 

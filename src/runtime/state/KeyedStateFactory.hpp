@@ -20,5 +20,7 @@ public:
      */
     // TODO: optimize the return type
     virtual IS* create_internal_state(const StateDescriptor<S, SV>& state_desc) = 0;
+
+    virtual ~KeyedStateFactory() = default;
 };
 

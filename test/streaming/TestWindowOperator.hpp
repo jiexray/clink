@@ -73,9 +73,8 @@ public:
         InternalKeyContext<int>* internal_key_context = new InternalKeyContextImpl<int>(KeyGroupRange(0, 10), 3);
 
         HeapKeyedStateBackend<int, TimeWindow, std::vector<int>, AppendingState<int, std::vector<int>>, InternalAppendingState<int, TimeWindow, int, std::vector<int>, std::vector<int>>> heap_state_backend(
-                task_kv_state_registry, 
                 execution_config,
-                *internal_key_context,
+                internal_key_context,
                 std::map<std::string, StateTable<int, TimeWindow, std::vector<int>>*>());
     
         heap_state_backend.register_state_creator(
@@ -92,13 +91,14 @@ public:
 
 
         WindowOperator<int, int, std::vector<int>, int, TimeWindow>* window_operator = new WindowOperator<int, int, std::vector<int>, int, TimeWindow>(
-                window_assigner,
+                &window_assigner,
                 internal_window_func,
-                trigger,
-                state_desc,
-                heap_state_backend,
+                &trigger,
+                &state_desc,
+                &heap_state_backend,
                 execution_config,
                 time_service);
+
 
         window_operator->open();
 

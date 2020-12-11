@@ -4,7 +4,6 @@
 
 enum StateDescriptorType {
     UNKNOWN,
-    VALUE,
     LIST,
     REDUCING,
     FOLDING,
@@ -50,5 +49,7 @@ public:
     }
 
     virtual StateDescriptorType        get_type() = 0;
+
+    virtual std::string get_state_descriptor_id() const = 0;
 };
 

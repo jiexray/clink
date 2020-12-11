@@ -83,6 +83,7 @@ target_link_libraries(buffer core)
 target_sources(core
   PRIVATE
     core/config/Constant.cpp
+    core/util/Scheduler.cpp
 )
 target_include_directories(core PUBLIC
   ${ALL_INCLUDE_DIRS}

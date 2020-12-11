@@ -91,6 +91,7 @@ public:
         remove_and_get_old(key, ns);
     }
 
+    // TODO: return value cannot be reference, dangerous for free
     ParamS remove_and_get_old(ConstParamK key, ConstParamN ns) override {
         if (!contains_key(key, ns)) {
             throw std::invalid_argument("Unknown <key, namespace>: (" + StringUtils::to_string<K>(key) + ", " + StringUtils::to_string<N>(ns) + ")");

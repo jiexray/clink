@@ -43,5 +43,9 @@ public:
     std::string to_string() {
         return "TumblingProcessingTimeWindows(" + std::to_string(m_size) + ")";
     }
+
+    static TumblingProcessingTimeWindows<T>* create(long size, long offset) {
+        return new TumblingProcessingTimeWindows<T>(size, offset);
+    }
 };
 

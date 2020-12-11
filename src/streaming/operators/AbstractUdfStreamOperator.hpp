@@ -8,6 +8,7 @@
 #include "Output.hpp"
 #include "ExecutionConfig.hpp"
 #include <iostream>
+#include "StreamRecordV2.hpp"
 
 template <class F, class OUT>
 class AbstractUdfStreamOperator : virtual public StreamOperator<OUT>

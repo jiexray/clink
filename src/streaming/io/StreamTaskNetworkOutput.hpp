@@ -35,6 +35,10 @@ public:
         this->m_operator->process_element(stream_record);
     }
 
+    void emit_watermark(StreamRecordV2<IN>* watermark) {
+        this->m_operator->process_watermark(watermark);
+    }
+
     void close() override {
         m_operator->close();
     }

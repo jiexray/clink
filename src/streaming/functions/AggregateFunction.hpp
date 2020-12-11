@@ -20,6 +20,8 @@ public:
     /**
       Create a new accumulator, starting a new aggregate.
 
+      Note: the return value is located in heap, and the space must be released by caller!  
+
       @return A new accumulator, corresponding to an empty aggregate.
      */
     virtual ACC* create_accumulator() = 0;
@@ -28,6 +30,8 @@ public:
       Adds the given input value to the given accumulator, returning the
       new accumulator value.
 
+      Note: the return value is located in heap, and the space must be released by caller!  
+
       @param value The value to add
       @param accumulator The accumulator to add the value to
      */
@@ -35,6 +39,8 @@ public:
 
     /**
       Gets the result of the aggregation from the accumulator.
+
+      Note: the return value is located in heap, and the space must be released by caller!  
 
       @param accumulator The accumulator of the aggregation.
       @return The final aggregation result.

@@ -20,6 +20,9 @@
 #include "AggregateFunction.hpp"
 #include "HeapAggregatingState.hpp"
 #include "AggregatingStateDescriptor.hpp"
+#include "HeapPriorityQueueSet.hpp"
+#include "InternalTimer.hpp"
+#include "TimeWindow.hpp"
 #include <iostream>
 #include <string>
 #include <map>
@@ -54,6 +57,10 @@ public:
 
     int* get_result(const int* accumulator) {
         return new int(*accumulator);
+    }
+
+    static AggregateFunction<int, int, int>* create() {
+        return new TestAggregateFunction();
     }
 };
 
@@ -143,18 +150,16 @@ public:
         InternalKeyContext<int>* key_context = new InternalKeyContextImpl<int>(KeyGroupRange(0, 10), 3);
 
         HeapKeyedStateBackend<int, std::string, std::map<int, int>, MapState<int, int>, InternalMapState<int, std::string, int, int>> heap_stated_backend(
-                task_kv_state_registry, 
                 execution_config,
-                *key_context,
+                key_context,
                 std::map<std::string, StateTable<int, std::string, std::map<int, int>>*>());
     
+        MapStateDescriptor<int, int> map_state_desc("map-state");
 
         heap_stated_backend.register_state_creator(
-            // std::string(typeid(HeapMapState<int, std::string, int, int>).name()),
-            std::string(typeid(StateDescriptor<MapState<int, int>, std::map<int, int>>).name()) ,
+            map_state_desc.get_state_descriptor_id(),
             HeapMapState<int, std::string, int, int>::create<InternalMapState<int, std::string, int, int>>);
 
-        MapStateDescriptor<int, int> map_state_desc("map-state");
         InternalMapState<int, std::string, int, int>* map_state = heap_stated_backend.create_internal_state(map_state_desc);
         // HeapMapState<int, std::string, int, int>* map_state = dynamic_cast<HeapMapState<int, std::string, int, int>*>(heap_stated_backend.create_internal_state(map_state_desc));
         TS_ASSERT_EQUALS(map_state == nullptr, false);
@@ -259,19 +264,18 @@ public:
         InternalKeyContext<int>* key_context = new InternalKeyContextImpl<int>(KeyGroupRange(0, 10), 3);
 
         HeapKeyedStateBackend<int, std::string, std::vector<int>, ListState<int>, InternalListState<int, std::string, int>> heap_stated_backend(
-                task_kv_state_registry, 
                 execution_config,
-                *key_context,
+                key_context,
                 std::map<std::string, StateTable<int, std::string, std::vector<int>>*>());
     
         heap_stated_backend.set_current_key(101);
 
+        ListStateDescriptor<int> list_state_desc("list-state");
+
         heap_stated_backend.register_state_creator(
-            // std::string(typeid(HeapMapState<int, std::string, int, int>).name()),
-            std::string(typeid(StateDescriptor<ListState<int>, std::vector<int>>).name()),
+            list_state_desc.get_state_descriptor_id(),
             HeapListState<int, std::string, int>::create<InternalListState<int, std::string, int>>);
 
-        ListStateDescriptor<int> list_state_desc("list-state");
         InternalListState<int, std::string, int>* list_state = heap_stated_backend.create_internal_state(list_state_desc);
         list_state->set_current_namespace("ns-1");
 
@@ -373,18 +377,18 @@ public:
         ExecutionConfig execution_config;
 
         HeapKeyedStateBackend<int, std::string, int, AggregatingState<int, int>, InternalAggregatingState<int, std::string, int, int, int>> heap_state_backend(
-                task_kv_state_registry, 
                 execution_config,
-                *key_context,
+                key_context,
                 std::map<std::string, StateTable<int, std::string, int>*>());
     
         heap_state_backend.set_current_key(101);
 
+        AggregatingStateDescriptor<int, int, int> aggregating_state_desc("aggregating-state", TestAggregateFunction::create(), 1);
+
         heap_state_backend.register_state_creator(
-            std::string(typeid(StateDescriptor<AggregatingState<int, int>, int>).name()),
+            aggregating_state_desc.get_state_descriptor_id(),
             HeapAggregatingState<int, std::string, int, int, int>::create<InternalAggregatingState<int, std::string, int, int, int>>);
         
-        AggregatingStateDescriptor<int, int, int> aggregating_state_desc("aggregating-state", agg_function, 1);
         InternalAggregatingState<int, std::string, int, int, int>* aggregate_state = heap_state_backend.create_internal_state(aggregating_state_desc);
         aggregate_state->set_current_namespace("ns-1");
 
@@ -408,19 +412,18 @@ public:
         InternalKeyContext<int>* key_context = new InternalKeyContextImpl<int>(KeyGroupRange(0, 10), 3);
 
         HeapKeyedStateBackend<int, std::string, std::vector<int>, AppendingState<int, std::vector<int>>, InternalAppendingState<int, std::string, int, std::vector<int>, std::vector<int>>> heap_stated_backend(
-                task_kv_state_registry, 
                 execution_config,
-                *key_context,
+                key_context,
                 std::map<std::string, StateTable<int, std::string, std::vector<int>>*>());
     
         heap_stated_backend.set_current_key(101);
 
+        ListStateDescriptor<int> list_state_desc("list-state");
+
         heap_stated_backend.register_state_creator(
-            // std::string(typeid(HeapMapState<int, std::string, int, int>).name()),
-            std::string(typeid(StateDescriptor<AppendingState<int, std::vector<int>>, std::vector<int>>).name()),
+            list_state_desc.get_state_descriptor_id(),
             HeapListState<int, std::string, int>::create_appending<InternalListState<int, std::string, int>>);
     
-        ListStateDescriptor<int> list_state_desc("list-state");
         InternalAppendingState<int, std::string, int, std::vector<int>, std::vector<int>>* list_state = heap_stated_backend.create_internal_state(list_state_desc);
         list_state->set_current_namespace("ns-1");
 
@@ -446,18 +449,18 @@ public:
         InternalKeyContext<int>* key_context = new InternalKeyContextImpl<int>(KeyGroupRange(0, 10), 3);
 
         HeapKeyedStateBackend<int, std::string, int, AggregatingState<int, int>, InternalAggregatingState<int, std::string, int, int, int>> heap_state_backend(
-                task_kv_state_registry, 
                 execution_config,
-                *key_context,
+                key_context,
                 std::map<std::string, StateTable<int, std::string, int>*>());
 
         heap_state_backend.set_current_key(101);
 
+        AggregatingStateDescriptor<int, int, int> aggregating_state_desc("aggregating-state", TestAggregateFunction::create(), 1);
+
         heap_state_backend.register_state_creator(
-            std::string(typeid(StateDescriptor<AggregatingState<int, int>, int>).name()),
+            aggregating_state_desc.get_state_descriptor_id(),
             HeapAggregatingState<int, std::string, int, int, int>::create<InternalAggregatingState<int, std::string, int, int, int>>);
         
-        AggregatingStateDescriptor<int, int, int> aggregating_state_desc("aggregating-state", agg_function, 1);
 
         InternalAppendingState<int, std::string, int, int, int>* appending_state = heap_state_backend.create_internal_state(aggregating_state_desc);
         appending_state->set_current_namespace("ns-1");
@@ -472,7 +475,50 @@ public:
         TS_ASSERT_EQUALS(state, 101);
 
         appending_state->set_current_namespace("ns-2");
-
     }
+
+    void testHeapPriorityQueueSet( void ) {
+        std::cout << "test testHeapPriorityQueueSet()" << std::endl;
+
+        HeapPriorityQueueSet<TimerHeapInternalTimer<int, TimeWindow>> pq_set(10, KeyGroupRange(0, 10), 20);
+
+        TS_ASSERT_EQUALS(pq_set.empty(), true);
+
+        bool is_heap_changed = pq_set.add(TimerHeapInternalTimer<int, TimeWindow>(10000, 10, TimeWindow(1000, 2000)));
+        TS_ASSERT_EQUALS(is_heap_changed, true);
+        is_heap_changed = pq_set.add(TimerHeapInternalTimer<int, TimeWindow>(10000, 10, TimeWindow(1000, 2000)));
+        TS_ASSERT_EQUALS(is_heap_changed, false);
+
+        const TimerHeapInternalTimer<int, TimeWindow>& head_element = pq_set.top();
+        TS_ASSERT_EQUALS(head_element.get_key(), 10);
+        TS_ASSERT_EQUALS(head_element.get_timestamp(), 10000);
+        TS_ASSERT_EQUALS(head_element.get_namespace().get_start(), 1000);
+        TS_ASSERT_EQUALS(head_element.get_namespace().get_end(), 2000);
+
+        is_heap_changed = pq_set.add(TimerHeapInternalTimer<int, TimeWindow>(10001, 10, TimeWindow(1000, 2000)));
+        TS_ASSERT_EQUALS(is_heap_changed, false);
+
+        const TimerHeapInternalTimer<int, TimeWindow>& head_element_2 = pq_set.top();
+        TS_ASSERT_EQUALS(head_element_2.get_key(), 10);
+        TS_ASSERT_EQUALS(head_element_2.get_timestamp(), 10000);
+        TS_ASSERT_EQUALS(head_element_2.get_namespace().get_start(), 1000);
+        TS_ASSERT_EQUALS(head_element_2.get_namespace().get_end(), 2000);
+
+        is_heap_changed = pq_set.add(TimerHeapInternalTimer<int, TimeWindow>(9999, 10, TimeWindow(999, 1999)));
+        TS_ASSERT_EQUALS(is_heap_changed, true);
+
+        const TimerHeapInternalTimer<int, TimeWindow>& head_element_3 = pq_set.top();
+        TS_ASSERT_EQUALS(head_element_3.get_key(), 10);
+        TS_ASSERT_EQUALS(head_element_3.get_timestamp(), 9999);
+        TS_ASSERT_EQUALS(head_element_3.get_namespace().get_start(), 999);
+        TS_ASSERT_EQUALS(head_element_3.get_namespace().get_end(), 1999);
+
+        pq_set.pop();
+        const TimerHeapInternalTimer<int, TimeWindow>& head_element_4 = pq_set.top();
+        TS_ASSERT_EQUALS(head_element_4.get_key(), 10);
+        TS_ASSERT_EQUALS(head_element_4.get_timestamp(), 10000);
+        TS_ASSERT_EQUALS(head_element_4.get_namespace().get_start(), 1000);
+        TS_ASSERT_EQUALS(head_element_4.get_namespace().get_end(), 2000);
+    } 
 };
 

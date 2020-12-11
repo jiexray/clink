@@ -13,6 +13,7 @@ class DataOutput
 private:
 public:
     virtual void emit_record(StreamRecordV2<T>* stream_record) = 0;
+    virtual void emit_watermark(StreamRecordV2<T>* watermark) = 0;
     virtual void close() {}
     virtual void set_num_records_in(std::shared_ptr<Counter>) {}
 };

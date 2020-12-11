@@ -5,6 +5,7 @@
 #include <type_traits>
 #include <memory>
 #include <vector>
+#include <string>
 
 class NullType {};
 struct EmptyType {};

@@ -2,6 +2,7 @@
 #include "Window.hpp"
 #include <string>
 #include <iostream>
+#include "StringUtils.hpp"
 
 /**
   A Window that represents a time interval from start (inclusive) to end (exclusive).
@@ -30,16 +31,16 @@ public:
         // std::cout << "destory TimeWindow" << std::endl;
     }
 
-    long get_start() {
+    long get_start() const {
         return m_start;
     }
 
-    long get_end() {
+    long get_end() const {
         return m_end;
     }
 
     long max_timestamp() const override {
-        return m_end -1;
+        return m_end - 1;
     }
 
     bool operator ==(const TimeWindow& other) const {
@@ -77,3 +78,9 @@ public:
     }
 };
 
+namespace StringUtils {
+    template <>
+    inline std::string to_string<TimeWindow>(const TimeWindow& obj) {
+        return obj.to_string();
+    }
+}

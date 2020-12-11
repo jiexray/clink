@@ -17,6 +17,7 @@
 #include "InternalTimerServiceImpl.hpp"
 #include "InternalTimeServiceManager.hpp"
 #include "TemplateHelper.hpp"
+#include "LoggerFactory.hpp"
 #include <string>
 #include <memory>
 
@@ -221,7 +222,8 @@ public:
  */
 template<class K, class IN, class ACC, class OUT, class W>
 class WindowOperator: 
-    public AbstractUdfStreamOperator<InternalWindowFunction<ACC, OUT, K, W>, OUT>,
+    // public AbstractUdfStreamOperator<InternalWindowFunction<ACC, OUT, K, W>, OUT>,
+    public AbstractUdfStreamOperator<Function, OUT>,
     public OneInputStreamOperator<IN, OUT>,
     public Triggerable<K, W>,
     public KeyContext<K> {
@@ -239,11 +241,11 @@ private:
     // -------------------------------------------------------------
     // Configuration values and user functions
     // -------------------------------------------------------------
-    WindowAssigner<IN, W>& m_window_assigner;
+    WindowAssigner<IN, W>* m_window_assigner;
 
-    Trigger<IN, W>& m_trigger;
+    Trigger<IN, W>* m_trigger;
 
-    const StateDescriptor<AppendingState<IN, ACC>, ACC>& m_window_state_descriptor;
+    StateDescriptor<AppendingState<IN, ACC>, ACC>* m_window_state_descriptor;
 
     // -------------------------------------------------------------
     // State that is not checkpointed
@@ -263,6 +265,8 @@ private:
     // -------------------------------------------------------------
     // Ought to be placed in AbstractStreamOperator
     // -------------------------------------------------------------
+    AbstractKeyedStateBackendType* m_keyed_state_backend;
+
     StreamOperatorStateHandlerType* m_state_handler;
 
     InternalTimeServiceManager<K, W>* m_time_service_manager;
@@ -277,27 +281,34 @@ private:
     // -------------------------------------------------------------
     ProcessingTimeService& m_processing_time_service;
 
+    std::shared_ptr<spdlog::logger> m_logger = LoggerFactory::get_logger("WindowOperator");
+
+    // just for test:
+    long _sum_counter = 0l;
 public:
 
     WindowOperator(
-            WindowAssigner<IN, W>& window_assigner,
+            WindowAssigner<IN, W>* window_assigner,
             std::shared_ptr<InternalWindowFunction<ACC, OUT, K, W>> window_function,
-            Trigger<IN, W>& trigger,
-            const StateDescriptor<AppendingState<IN, ACC>, ACC>& window_state_descriptor,
-            HeapKeyedStateBackendType& keyed_state_backend,
+            Trigger<IN, W>* trigger,
+            StateDescriptor<AppendingState<IN, ACC>, ACC>* window_state_descriptor,
+            AbstractKeyedStateBackendType* keyed_state_backend,
             ExecutionConfig& execution_config,
             ProcessingTimeService& processing_time_service):
-            AbstractUdfStreamOperator<InternalWindowFunction<ACC, OUT, K, W>, OUT>(window_function),
-            m_state_handler(new StreamOperatorStateHandlerType(keyed_state_backend, execution_config)),
+            // AbstractUdfStreamOperator<InternalWindowFunction<ACC, OUT, K, W>, OUT>(window_function),
+            AbstractUdfStreamOperator<Function, OUT>(window_function),
+            m_state_handler(new StreamOperatorStateHandlerType(*keyed_state_backend, execution_config)),
             m_window_assigner(window_assigner),
             m_trigger(trigger),
             m_window_state_descriptor(window_state_descriptor),
-            m_window_state(keyed_state_backend.get_or_create_internal_keyed_state(window_state_descriptor)),
+            m_keyed_state_backend(keyed_state_backend),
+            m_window_state(keyed_state_backend->get_or_create_internal_keyed_state(*window_state_descriptor)),
             m_processing_time_service(processing_time_service) {
         _internal_timer_service = nullptr;
         // initialiize InternalTimeServiceManager
         m_time_service_manager = new InternalTimeServiceManager<K, W>(
-                keyed_state_backend.get_key_group_range(),    // key_group_range
+                keyed_state_backend->get_key_group_range(),    // key_group_range
+                keyed_state_backend->get_total_number_of_key_groups(),
                 *this,    // key-context, the operator
                 m_processing_time_service);    // ProcessingTimeService
     }
@@ -316,6 +327,7 @@ public:
         }
 
         delete m_time_service_manager;
+        // TODO: free WindowAssigner, Trigger, StateDescriptor
     }
 
     void open() override {
@@ -333,7 +345,7 @@ public:
                 this->m_state_handler->get_keyed_state_backend().get_current_key(), // key
                 nullptr, // window
                 *_internal_timer_service, // internal timer service
-                this->m_trigger); // Trigger
+                *this->m_trigger); // Trigger
 
 
         m_window_assigner_context = new WindowOperatorWindowAssignerContext<W>(*_internal_timer_service);
@@ -341,19 +353,34 @@ public:
         // TODO: implement merging window assigner
     }
 
+    void process_watermark(StreamRecordV2<IN>* watermark) override {
+        assert(watermark->type == StreamRecordType::WATERMARK);
+        if (m_time_service_manager != nullptr) {
+            m_time_service_manager->advance_watermark(watermark->timestamp);
+        }
+
+        // TODO: emit the watermark through outpu
+        // m_output.emit_watermark(watermark);
+    }
+
     void process_element(StreamRecordV2<IN>* element) override {
-        std::vector<W> element_windows = m_window_assigner.assign_windows(&element->val, element->timestamp, *m_window_assigner_context);
+        std::vector<W> element_windows = m_window_assigner->assign_windows(&element->val, element->timestamp, *m_window_assigner_context);
 
         ConstParamK key = this->get_keyed_state_backend().get_current_key();
 
         // if element is handled by none of assigned element_windows
         bool is_skipped_element = true;
 
+
         // TODO: implement merging window
         for (int i = 0; i < element_windows.size(); i++) {
-            // std::cout << "process_element(), assigning window: " << element_windows[i].to_string() << std::endl;
+            // std::cout << "WindowOperator::prcess_element() element timestamp: " << element->timestamp << ", assigning window: " << element_windows[i].to_string() << std::endl;
             // drop if the window is already late
             if (is_window_late(element_windows[i])) {
+                std::cout << "WindowOperator::prcess_element() window late element timestamp: " 
+                        << element->timestamp << ", assigning window: " 
+                        << element_windows[i].to_string() << ", watermark: " 
+                        << _internal_timer_service->current_watermark() << std::endl;
                 continue;
             }
             is_skipped_element = false;
@@ -369,13 +396,15 @@ public:
                 if (m_window_state.contains_internal()) {
                     ConstParamACC contents = m_window_state.get_internal();
                     // TODO: emit window_result:
-                    std::cout << "on_processing_time() emit_window_contents(): " << StringUtils::to_string<ACC>(contents) << std::endl;
+                    std::cout << "process_element() emit_window_contents(): " << StringUtils::to_string<ACC>(contents) << std::endl;
                     // emit_window_contents(element_windows[i], contents);
                 }
             }
 
             if (trigger_result == PURGE || trigger_result == FIRE_AND_PURGE) {
-                m_window_state.clear();
+                if (m_window_state.contains_internal()) {
+                    m_window_state.clear();
+                }
             }
             // register_clearup_timer(element_windows[i]);
         }
@@ -390,16 +419,24 @@ public:
 
         TriggerResult trigger_result = m_trigger_context->on_event_time(timer.get_timestamp());
 
+        SPDLOG_LOGGER_TRACE(m_logger, "on_event_time() trigger timer: {}, trigger_result: {}", timer.to_string(), trigger_result);
         if (trigger_result == TriggerResult::FIRE || trigger_result == TriggerResult::FIRE_AND_PURGE) {
             if (m_window_state.contains_internal()) {
                 ConstParamACC contents = m_window_state.get_internal();
-                std::cout << "on_processing_time() emit_window_contents(): " << StringUtils::to_string<ACC>(contents) << std::endl;
+                _sum_counter += contents;
+                std::cout << "on_event_time() emit_window_contents(): " << StringUtils::to_string<ACC>(contents) << ", accumulate all contents: " << _sum_counter << std::endl;
+                // SPDLOG_LOGGER_DEBUG(m_logger, "on_event_time() emit_window_contents(): {}, accumulate all contents: {}, timer: {}",
+                //         StringUtils::to_string<ACC>(contents),
+                //         _sum_counter, 
+                //         timer.to_string());
                 // emit_window_contents(timer.get_namespace(), contents);
             }
         }
 
         if (trigger_result == PURGE || trigger_result == FIRE_AND_PURGE) {
-            m_window_state.clear();
+            if (m_window_state.contains_internal()) {
+                m_window_state.clear();
+            }
         }
     }
 
@@ -415,7 +452,8 @@ public:
         if (trigger_result == TriggerResult::FIRE || trigger_result == TriggerResult::FIRE_AND_PURGE) {
             if (m_window_state.contains_internal()) {
                 ConstParamACC contents = m_window_state.get_internal();
-                std::cout << "on_processing_time() emit_window_contents(): " << StringUtils::to_string<ACC>(contents) << std::endl;
+                SPDLOG_LOGGER_DEBUG(m_logger, "on_processing_time() trigger time: {}, emit_window_contents(): {}", timer.get_timestamp(), StringUtils::to_string<ACC>(contents));
+                // std::cout << "on_processing_time() trigger time: " << timer.get_timestamp() << ", emit_window_contents(): " << StringUtils::to_string<ACC>(contents) << std::endl;
                 // emit_window_contents(timer.get_namespace(), contents);
             }
         }
@@ -428,7 +466,7 @@ public:
     }
 
     bool is_window_late(W& window) {
-        return (m_window_assigner.is_event_time() && (window.max_timestamp() <= _internal_timer_service->current_watermark()));
+        return (m_window_assigner->is_event_time() && (window.max_timestamp() <= _internal_timer_service->current_watermark()));
     }
 
     // -------------------------------------------------------------
@@ -446,10 +484,12 @@ public:
 
     void set_current_key(ConstParamK key) override {
         // TODO: implement set_current_key()
+
     }
 
     ConstParamK get_current_key() {
         // TODO: implement get_current_key()
+        return m_state_handler->get_current_key();
     }
 
 protected:
@@ -459,7 +499,7 @@ protected:
             return;
         }
 
-        if (m_window_assigner.is_event_time()) {
+        if (m_window_assigner->is_event_time()) {
             m_trigger_context->register_event_time_timer(clearup_time);
         } else {
             m_trigger_context->register_processing_time_timer(clearup_time);
@@ -470,7 +510,7 @@ private:
     void emit_window_contents(const W& window, ConstParamACC contents) {
         m_timestamped_collector->set_timestamp(window.max_timestamp());
         m_process_context->set_window(window);
-        std::shared_ptr<InternalWindowFunction<ACC, OUT, K, W>> window_func = std::dynamic_pointer_cast<InternalWindowFunction<ACC, OUT, K, W>>(this->m_user_function);
+        std::shared_ptr<InternalWindowFunction<ACC, OUT, K, W>> window_func =  std::dynamic_pointer_cast<InternalWindowFunction<ACC, OUT, K, W>>(this->m_user_function);
         window_func->process(m_trigger_context->get_key(), window, *m_process_context, contents, m_timestamped_collector);
     }
 };

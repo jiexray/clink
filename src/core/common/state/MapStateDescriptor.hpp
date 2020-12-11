@@ -18,5 +18,9 @@ public:
     StateDescriptorType get_type() override {
         return StateDescriptorType::MAP;
     }
+
+    std::string get_state_descriptor_id() const {
+        return std::string(typeid(MapStateDescriptor<UK, UV>).name());
+    }
 };
 

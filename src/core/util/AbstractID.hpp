@@ -4,21 +4,21 @@
 #include <sstream>
 #include <ctime>
 
-long lrand()
-{
-    if (sizeof(int) < sizeof(long))
-        return (static_cast<long>(rand()) << (sizeof(int) * 8)) |
-               rand();
-
-    return rand();
-}
-
 class AbstractID {
 private:
     long upper_part;
     long lower_part;
 
     std::string hex_string = "";
+
+    long lrand()
+    {
+        if (sizeof(int) < sizeof(long))
+            return (static_cast<long>(rand()) << (sizeof(int) * 8)) |
+                rand();
+
+        return rand();
+    }
 
 public:
     AbstractID() {

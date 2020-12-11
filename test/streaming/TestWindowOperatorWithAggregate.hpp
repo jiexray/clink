@@ -20,6 +20,7 @@
 #include <thread>
 
 class TestWindowFunction: public ProcessAllWindowFunction<int, int, TimeWindow>{
+public:
     void process(
             ProcessAllWindowFunctionContext<int, int, TimeWindow>& context, 
             const std::vector<int>& elements, 
@@ -31,11 +32,14 @@ class TestWindowFunction: public ProcessAllWindowFunction<int, int, TimeWindow>{
 
     }
     void close() {
+    }
 
+    static ProcessAllWindowFunction<int, int, TimeWindow>* create() {
+        return new TestWindowFunction();
     }
 };
 
-class TestAggregatFunction: public AggregateFunction<int, int, int> {
+class TestAggregateFunction: public AggregateFunction<int, int, int> {
 public:
     int* create_accumulator() {
         return new int(0);
@@ -51,6 +55,10 @@ public:
     int* get_result(const int* accumulator) {
         return new int(*accumulator);
     }
+
+    static AggregateFunction<int, int, int>* create() {
+        return new TestAggregateFunction();
+    }
 };
 
 class TestWindowOperatorWithAggregate: public CxxTest::TestSuite {
@@ -65,26 +73,19 @@ public:
 
         ProcessingTimeTrigger<int> trigger;
 
-        TestAggregatFunction agg_function;
-        AggregatingStateDescriptor<int, int, int> state_desc("window-operator", agg_function, 0);
+        AggregatingStateDescriptor<int, int, int> state_desc("window-operator", TestAggregateFunction::create(), 0);
 
         // Create StateBackend
-        KvStateRegistry<int, TimeWindow, int> kv_state_registry;
-        int job_id = 0;
-        int job_vertex_id = 0;
-
-        TaskKvStateRegistry<int, TimeWindow, int> task_kv_state_registry(kv_state_registry, job_id, job_vertex_id);
         ExecutionConfig execution_config;
         InternalKeyContext<int>* internal_key_context = new InternalKeyContextImpl<int>(KeyGroupRange(0, 10), 3);
 
         HeapKeyedStateBackend<int, TimeWindow, int, AppendingState<int, int>, InternalAppendingState<int, TimeWindow, int, int, int>> heap_state_backend(
-                task_kv_state_registry, 
                 execution_config,
-                *internal_key_context,
+                internal_key_context,
                 std::map<std::string, StateTable<int, TimeWindow, int>*>());
 
         heap_state_backend.register_state_creator(
-            std::string(typeid(StateDescriptor<AppendingState<int, int>, int>).name()),
+            state_desc.get_state_descriptor_id(),
             HeapAggregatingState<int, TimeWindow, int, int, int>::create_appending<InternalAppendingState<int, TimeWindow, int, int, int>>);
 
         heap_state_backend.set_current_key(101);
@@ -93,11 +94,11 @@ public:
         ProcessingTimeServiceImpl time_service(system_time_service);
 
         WindowOperator<int, int, int, int, TimeWindow>* window_operator = new WindowOperator<int, int, int, int, TimeWindow>(
-                window_assigner,
+                &window_assigner,
                 internal_window_func,
-                trigger,
-                state_desc,
-                heap_state_backend,
+                &trigger,
+                &state_desc,
+                &heap_state_backend,
                 execution_config,
                 time_service);
 

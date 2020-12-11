@@ -4,6 +4,7 @@
 #include <memory>
 #include "Collector.hpp"
 #include "TemplateHelper.hpp"
+#include "Function.hpp"
 
 /**
   A context for InternalWindowFunction
@@ -31,7 +32,7 @@ public:
   @param <KEY> The type of the key.
  */
 template <class IN, class OUT, class K, class W>
-class InternalWindowFunction {
+class InternalWindowFunction: public Function {
 private:
     typedef typename TemplateHelperUtil::ParamOptimize<K>::type ParamK;
     typedef typename TemplateHelperUtil::ParamOptimize<K>::const_type ConstParamK;
