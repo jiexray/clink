@@ -69,7 +69,7 @@ public:
       @param state:     the state. Can be null.
       @return the state of any previous mapping with the specified key or null if there was no such mapping.
      */
-    virtual ParamS      put_and_get_old(const ParamK key, ConstParamN ns, ConstParamS state) = 0;
+    virtual S      put_and_get_old(const ParamK key, ConstParamN ns, ConstParamS state) = 0;
 
     /**
       Removes the mapping for the composite of active key and given ns. This method should be preferred 
@@ -90,7 +90,7 @@ public:
      @return the state of the removed mapping of null if no mapping 
      for the specified key was found.
      */
-    virtual ParamS      remove_and_get_old(const ParamK key, ConstParamN ns) = 0;
+    virtual S           remove_and_get_old(const ParamK key, ConstParamN ns) = 0;
 
     /**
       Applies the given StateTransformationFunction to the state, using the given value as

@@ -87,6 +87,13 @@ public:
      */
     virtual void clear(W& window, TriggerContext& ctx) = 0;
 
+    /**
+      Pre-determine whether the element is need for trigger setup, and short-cut the #on_element() processing.
+     */
+    virtual bool before_element(const W& window) {
+        return true;
+    }
+
     virtual std::string to_string() = 0;
 };
 

@@ -19,6 +19,7 @@ private:
 
 public:
     virtual long get_timestamp() const = 0;
+    virtual void set_timestamp(long) = 0;
 
     virtual ConstParamK get_key() const = 0;
 

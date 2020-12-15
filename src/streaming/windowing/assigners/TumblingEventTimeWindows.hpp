@@ -15,29 +15,24 @@ private:
     long m_size;
     long m_offset;
 
-    int _current_ts = -1;
-    long _mid_ts_counter = 0;
-    long _total_counter = 0;
+    std::vector<TimeWindow> m_windows;
 public:
     TumblingEventTimeWindows(long size, long offset): m_size(size), m_offset(offset) {
 
     }
 
-    std::vector<TimeWindow> assign_windows(T* element, long timestamp, WindowAssignerContext& context) override {
-        // _total_counter++;
-        // if (timestamp % m_size == _current_ts) {
-        //     _mid_ts_counter++;
-        // } else {
-        //     if (_current_ts != -1) {
-        //         std::cout << "timestamp " << _current_ts << " emit " << _mid_ts_counter << " records, total " << _total_counter << std::endl;
-        //     } 
-        //     _mid_ts_counter = 0;
-        //     _current_ts = timestamp % m_size;
-        // }
-
-
+    void assign_windows(T* element, long timestamp, WindowAssignerContext& context) override {
         long start = TimeWindow::get_window_start_with_offset(timestamp, m_offset, m_size);
-        return std::vector<TimeWindow>{TimeWindow(start, start + m_size)};
+        if (m_windows.empty()) {
+            m_windows.emplace_back(start, start + m_size);
+        } else {
+            m_windows[0].set_start(start);
+            m_windows[0].set_end(start + m_size);
+        }
+    }
+
+    const std::vector<TimeWindow>& get_assigned_windows() {
+        return m_windows;
     }
 
     Trigger<T, TimeWindow>* get_default_trigger() {

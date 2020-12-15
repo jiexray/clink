@@ -43,6 +43,8 @@ private:
 
     static std::shared_ptr<spdlog::logger> m_logger;
 
+    TimerHeapInternalTimer<K, N> m_reused_internal_timer;
+
 public:
     InternalTimerServiceImpl(
             const KeyGroupRange& local_key_group_range, 
@@ -98,24 +100,15 @@ public:
 
     void register_processing_time_timer(ConstParamN ns, long time) override {
         // check the integrity of next_timer and timer_queues
-        if (m_next_timer == nullptr && !m_processing_time_timers_queue->empty()) {
+        // if (m_next_timer == nullptr && !m_processing_time_timers_queue->empty()) {
             // SPDLOG_LOGGER_WARN(m_logger, "next_timer is not set (nullptr), while timer queue is not empty (top timer {}), register time {}", m_processing_time_timers_queue->top().get_timestamp(), time);
-        }
+        // }
 
         long next_trigger_time = m_processing_time_timers_queue->empty() ? 
                                     LONG_MAX:
                                     m_processing_time_timers_queue->top().get_timestamp();
 
         m_processing_time_timers_queue->add(TimerHeapInternalTimer<K, N>(time, m_key_context.get_current_key(), ns));
-        // m_processing_time_timers_queue->emplace(time, m_key_context.get_current_key(), ns);  // (1)
-
-        long next_trigger_time_after_insertion = m_processing_time_timers_queue->empty() ? 
-                                    LONG_MAX:
-                                    m_processing_time_timers_queue->top().get_timestamp();
-
-        if (next_trigger_time != LONG_MAX) {
-            assert(next_trigger_time == next_trigger_time_after_insertion);
-        }
 
         if (time < next_trigger_time) { // (3)
             // register a earlier timer to notify the trigger processing-time arrived
@@ -134,6 +127,11 @@ public:
     }
 
     void register_event_time_timer(ConstParamN ns, long time) override {
+        m_reused_internal_timer.set_timestamp(time);
+
+        if (m_event_time_timers_queue->contains(m_reused_internal_timer)) {
+            return;
+        }
         // this->m_event_time_timers_queue->emplace(time, m_key_context.get_current_key(), ns);
         this->m_event_time_timers_queue->add(TimerHeapInternalTimer<K, N>(time, m_key_context.get_current_key(), ns));
     }

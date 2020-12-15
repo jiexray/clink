@@ -3,6 +3,7 @@
 #include "Trigger.hpp"
 #include <vector>
 #include <string>
+#include <memory>
 
 class WindowAssignerContext {
 public:
@@ -26,7 +27,8 @@ public:
       @param timestamp The timestamp of the element.
       @param context The WindowAssignerContext in which the assigner operates.
      */
-    virtual std::vector<W> assign_windows(T* element, long timestamp, WindowAssignerContext& context) = 0;
+    virtual void assign_windows(T* element, long timestamp, WindowAssignerContext& context) = 0;
+    virtual const std::vector<W>& get_assigned_windows() = 0;
 
     /**
       Return the default trigger associated with this WindowAssigner.

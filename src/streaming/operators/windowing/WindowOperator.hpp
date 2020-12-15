@@ -18,6 +18,10 @@
 #include "InternalTimeServiceManager.hpp"
 #include "TemplateHelper.hpp"
 #include "LoggerFactory.hpp"
+
+#include "HeapAggregatingState.hpp"
+#include "EventTimeTrigger.hpp"
+
 #include <string>
 #include <memory>
 
@@ -143,8 +147,8 @@ public:
             m_trigger(trigger) {
     }
 
-    void set_window(const W& window) {
-        this->_window = &window;
+    void set_window(const W* window) {
+        this->_window = window;
     }
 
     const W& get_window() {
@@ -244,6 +248,7 @@ private:
     WindowAssigner<IN, W>* m_window_assigner;
 
     Trigger<IN, W>* m_trigger;
+    EventTimeTrigger<IN>* m_direct_trigger;
 
     StateDescriptor<AppendingState<IN, ACC>, ACC>* m_window_state_descriptor;
 
@@ -253,6 +258,7 @@ private:
 
     /** The state in which the window contexts is stored. Each window is a name space */
     InternalAppendingState<K, W, IN, ACC, ACC>& m_window_state;
+    HeapAggregatingState<K, W, IN, ACC, ACC>* _direct_window_state;
 
     std::shared_ptr<TimestampedCollector<OUT>> m_timestamped_collector;
 
@@ -285,6 +291,7 @@ private:
 
     // just for test:
     long _sum_counter = 0l;
+    long _window_counter = 0l;
 public:
 
     WindowOperator(
@@ -311,6 +318,8 @@ public:
                 keyed_state_backend->get_total_number_of_key_groups(),
                 *this,    // key-context, the operator
                 m_processing_time_service);    // ProcessingTimeService
+        _direct_window_state = dynamic_cast<HeapAggregatingState<K, W, IN, ACC, ACC>*>(&m_window_state);
+        m_direct_trigger = dynamic_cast<EventTimeTrigger<IN>*>(m_trigger);
     }
 
     ~WindowOperator() {
@@ -364,13 +373,15 @@ public:
     }
 
     void process_element(StreamRecordV2<IN>* element) override {
-        std::vector<W> element_windows = m_window_assigner->assign_windows(&element->val, element->timestamp, *m_window_assigner_context);
+        _window_counter += 1;
+
+        m_window_assigner->assign_windows(&element->val, element->timestamp, *m_window_assigner_context);
+        const std::vector<W>& element_windows = m_window_assigner->get_assigned_windows();
 
         ConstParamK key = this->get_keyed_state_backend().get_current_key();
 
         // if element is handled by none of assigned element_windows
         bool is_skipped_element = true;
-
 
         // TODO: implement merging window
         for (int i = 0; i < element_windows.size(); i++) {
@@ -384,13 +395,19 @@ public:
                 continue;
             }
             is_skipped_element = false;
-            m_window_state.set_current_namespace(element_windows[i]);
-            m_window_state.add_internal(element->val);
+            _direct_window_state->set_current_namespace(element_windows[i]);
+            _direct_window_state->add(element->val);
 
             m_trigger_context->set_key(key);
-            m_trigger_context->set_window(element_windows[i]);
+            m_trigger_context->set_window(&element_windows[i]);
 
-            TriggerResult trigger_result = m_trigger_context->on_element(element);
+
+            TriggerResult trigger_result = TriggerResult::CONTINUE;
+            if (m_trigger->before_element(element_windows[i])) {
+                trigger_result = m_trigger_context->on_element(element);
+            }
+
+            // TriggerResult trigger_result = m_trigger_context->on_element(element);
 
             if (trigger_result == TriggerResult::FIRE || trigger_result == TriggerResult::FIRE_AND_PURGE) {
                 if (m_window_state.contains_internal()) {
@@ -408,17 +425,21 @@ public:
             }
             // register_clearup_timer(element_windows[i]);
         }
+        m_trigger_context->set_window(nullptr);
     }
 
     // function in Triggerable
     void on_event_time(const InternalTimer<K, W>& timer) override {
+        std::cout << "on_event_time() window_counter: " << _window_counter << ", for TimeWindow: " << StringUtils::to_string<W>(timer.get_namespace()) << std::endl;
+        _window_counter = 0;
+
         m_trigger_context->set_key(timer.get_key());
-        m_trigger_context->set_window(timer.get_namespace());
+        m_trigger_context->set_window(&timer.get_namespace());
 
         m_window_state.set_current_namespace(m_trigger_context->get_window());
 
         TriggerResult trigger_result = m_trigger_context->on_event_time(timer.get_timestamp());
-
+        
         SPDLOG_LOGGER_TRACE(m_logger, "on_event_time() trigger timer: {}, trigger_result: {}", timer.to_string(), trigger_result);
         if (trigger_result == TriggerResult::FIRE || trigger_result == TriggerResult::FIRE_AND_PURGE) {
             if (m_window_state.contains_internal()) {
@@ -429,21 +450,27 @@ public:
                 //         StringUtils::to_string<ACC>(contents),
                 //         _sum_counter, 
                 //         timer.to_string());
-                // emit_window_contents(timer.get_namespace(), contents);
+                // emit_window_contents(timer.get_namespace(), contents);    
+
+                if (trigger_result == TriggerResult::FIRE_AND_PURGE) {
+                    m_window_state.clear();
+                } 
             }
         }
 
-        if (trigger_result == PURGE || trigger_result == FIRE_AND_PURGE) {
-            if (m_window_state.contains_internal()) {
-                m_window_state.clear();
-            }
-        }
+        // if (trigger_result == PURGE || trigger_result == FIRE_AND_PURGE) {
+        //     if (m_window_state.contains_internal()) {
+        //         m_window_state.clear();
+        //     }
+        // }
+
+        m_trigger_context->set_window(nullptr);
     }
 
     void on_processing_time(const InternalTimer<K, W>& timer) override {
         // std::cout << "WindowOperator::on_processing_time(), timestamp:" << TimeUtil::current_timestamp() << ", window: " << timer.get_namespace().to_string() << std::endl;
         m_trigger_context->set_key(timer.get_key());
-        m_trigger_context->set_window(timer.get_namespace());
+        m_trigger_context->set_window(&timer.get_namespace());
 
         m_window_state.set_current_namespace(m_trigger_context->get_window());
 
@@ -463,9 +490,11 @@ public:
                 m_window_state.clear();
             }
         }
+
+        m_trigger_context->set_window(nullptr);
     }
 
-    bool is_window_late(W& window) {
+    bool is_window_late(const W& window) {
         return (m_window_assigner->is_event_time() && (window.max_timestamp() <= _internal_timer_service->current_watermark()));
     }
 

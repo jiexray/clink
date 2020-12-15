@@ -35,8 +35,16 @@ public:
         return m_start;
     }
 
+    void set_start(long start) {
+        m_start = start;
+    }
+
     long get_end() const {
         return m_end;
+    }
+
+    long set_end(long end) {
+        m_end = end;
     }
 
     long max_timestamp() const override {
@@ -66,6 +74,8 @@ public:
     }
 
     bool operator <(const TimeWindow& other) const {
+        if (m_start == other.m_start) 
+            return m_end < other.m_end;
         return m_start < other.m_start;
     }
 
@@ -77,6 +87,18 @@ public:
         return timestamp - (timestamp - offset + window_size) % window_size;
     }
 };
+
+namespace std {
+    template<>
+    struct hash<TimeWindow> {
+        std::hash<long> m_long_hash;
+
+        std::size_t operator()(const TimeWindow& obj) const {
+            // return m_long_hash(obj.get_start() * 13 + obj.get_end() * 17);
+            return obj.get_start();
+        } 
+    };
+}
 
 namespace StringUtils {
     template <>

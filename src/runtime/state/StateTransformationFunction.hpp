@@ -21,6 +21,9 @@ public:
       @param previous_state The previous state that is the basis for the transformation, can be nullptr.
       @param value The value that the implementation applies to the old state to obtain the new state.
       @return the new state, computed by applying the given transformation function.
+
+      Note: when implement a StateTransformationFunction, you'd better create it as a stateful class,
+      where there is a temporary member in the function to be reused by #apply() function.
      */
-    virtual S* apply(S* previous_state, ConstParamT value) = 0;
+    virtual S apply(S* previous_state, ConstParamT value) = 0;
 };

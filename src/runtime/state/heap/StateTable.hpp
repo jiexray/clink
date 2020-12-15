@@ -180,7 +180,7 @@ private:
             throw std::runtime_error("key_group_index " + std::to_string(key_group_index) + " is out of scope");
         }
 
-        state_map->get(key, ns);
+        return state_map->get(key, ns);
     }
 
     bool contains_key(ConstParamK key, int key_group_index, ConstParamN ns) {

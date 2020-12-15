@@ -50,19 +50,19 @@ public:
 
 class TestAggregateFunction: public AggregateFunction<int, int, int> {
 public:
-    int* create_accumulator() {
-        return new int(0);
+    int create_accumulator() {
+        return 0;
     }
 
-    int* add(const int* value, const int* accumulator) {
+    int add(const int* value, const int* accumulator) {
         if (value == nullptr || accumulator == nullptr) {
             throw std::runtime_error("value or accumulate is nullptr");
         }
-        return new int(*value + *accumulator);
+        return *value + *accumulator;
     }
 
-    int* get_result(const int* accumulator) {
-        return new int(*accumulator);
+    int get_result(const int* accumulator) {
+        return *accumulator;
     }
 
     static AggregateFunction<int, int, int>* create() {
@@ -173,17 +173,22 @@ public:
 
         std::dynamic_pointer_cast<AbstractUdfStreamOperator<Function, int>>(window_operator)->open();
 
-        int total_record = 20000000;
+        int total_record = 100000000;
         int one_burst = 200000;
         int burst_interval = 1000;
 
+        StreamRecordV2<int> int_record_1(1, TimeUtil::current_timestamp());
+        StreamRecordV2<int> watermark(TimeUtil::current_timestamp() - 20);
+
+
+
         for (int i = 1; i <= total_record; i++) {
-            StreamRecordV2<int> int_record_1(1, TimeUtil::current_timestamp());
+            int_record_1.timestamp = TimeUtil::current_timestamp();
             std::dynamic_pointer_cast<OneInputStreamOperator<int, int>>(window_operator)->process_element(&int_record_1);
 
             if (i % 1000 == 0) {
                 // std::this_thread::sleep_for(std::chrono::milliseconds(10));
-                StreamRecordV2<int> watermark(TimeUtil::current_timestamp() - 50);
+                watermark.timestamp = TimeUtil::current_timestamp() - 50;
                 std::dynamic_pointer_cast<OneInputStreamOperator<int, int>>(window_operator)->process_watermark(&watermark);
             }
 
@@ -193,10 +198,10 @@ public:
         }
 
         std::this_thread::sleep_for(std::chrono::seconds(1));
-        StreamRecordV2<int> watermark(TimeUtil::current_timestamp());
+        watermark.timestamp = TimeUtil::current_timestamp();
         std::dynamic_pointer_cast<OneInputStreamOperator<int, int>>(window_operator)->process_watermark(&watermark);
 
-        std::this_thread::sleep_for(std::chrono::seconds(5));
+        std::this_thread::sleep_for(std::chrono::seconds(2));
     }
 };
 

@@ -17,6 +17,8 @@
   intended to be used by user applications. These internal methods are considered of limited use to 
   users and only confusing, and are usually no regarded as stable across releases.
 
+  Note: Every operator to InternalState, need to call set_current_namespace()!
+
   @param <K>: type of key
   @param <N>: type of ns
   @param <S>: type of state

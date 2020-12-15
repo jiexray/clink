@@ -9,7 +9,9 @@
 
 #include "StateMap.hpp"
 #include "StringUtils.hpp"
+#include "TimeWindowBasedHashMap.hpp"
 #include <map>
+#include <unordered_map>
 
 template <class K, class N, class S>
 class NestedStateMap: public StateMap<K, N, S>
@@ -22,10 +24,12 @@ private:
     typedef typename TemplateHelperUtil::ParamOptimize<N>::const_type ConstParamN;
     typedef typename TemplateHelperUtil::ParamOptimize<S>::const_type ConstParamS;
 
-    std::map<N, std::map<K, S>>     m_ns_map;
+    std::map<N, std::map<K, S>> m_ns_map;
     typedef typename std::map<N, std::map<K, S>> nsMap;
     typedef typename nsMap::iterator nsMapIter;
 public:
+
+    NestedStateMap() {}
 
     // ----------------------------------------------------
     //  Public API from StateMap
@@ -41,48 +45,26 @@ public:
     }
 
     ParamS get(ConstParamK key, ConstParamN ns) override {
-        if (this->m_ns_map.find(ns) != this->m_ns_map.end()) {
-            if (m_ns_map[ns].find(key) == m_ns_map[ns].end()) {
-                throw std::invalid_argument("Unknown key: " + StringUtils::to_string<K>(key));
-            } else {
-                return m_ns_map[ns][key];
-            }
-        } else {
-            throw std::invalid_argument("Unknown namespace: " + StringUtils::to_string<N>(ns));
-        }
+        return m_ns_map[ns][key];
     }
 
+    // TODO: fix the #contains_key(), stl containers do not need this function.
     bool contains_key(ConstParamK key, ConstParamN ns) override {
-        if (this->m_ns_map.find(ns) != this->m_ns_map.end()) {
-            if (m_ns_map[ns].find(key) == m_ns_map[ns].end()) {
-                return false;
-            } else {
-                return true;
-            }
-        } else {
-            return false;
-        }
+        return true;
     }
 
     void put(ConstParamK key, ConstParamN ns, ConstParamS state) {
-        if (this->m_ns_map.find(ns) == this->m_ns_map.end()) {
-            this->m_ns_map[ns] = std::map<K, S>();
-        }
-        // auto ret = this->m_ns_map[ns].insert(std::make_pair(key, state));
-        // if (ret.second == false) {
-        //     this->m_ns_map[ns][key] = state;
-        // }
         this->m_ns_map[ns][key] = state;
     }
 
-    ParamS put_and_get_old(ConstParamK key, ConstParamN ns, ConstParamS state) override {
-        if (contains_key(key, ns) == false) {
+    S put_and_get_old(ConstParamK key, ConstParamN ns, ConstParamS state) override {
+        if (m_ns_map[ns].find(key) == m_ns_map[ns].end()) {
             throw std::invalid_argument("Unknown <key, namespace>: (" + StringUtils::to_string<K>(key) + ", " + StringUtils::to_string<N>(ns) + ")");
         }
 
-        ParamS old_val = this->m_ns_map[ns][key];
+        S old_val = this->m_ns_map[ns][key];
 
-        this->m_ns_map[ns].insert(std::make_pair(key, state));
+        this->m_ns_map[ns][key] = state;
 
         return old_val;
     }
@@ -91,13 +73,12 @@ public:
         remove_and_get_old(key, ns);
     }
 
-    // TODO: return value cannot be reference, dangerous for free
-    ParamS remove_and_get_old(ConstParamK key, ConstParamN ns) override {
-        if (!contains_key(key, ns)) {
+    S remove_and_get_old(ConstParamK key, ConstParamN ns) override {
+        if (m_ns_map[ns].find(key) == m_ns_map[ns].end()) {
             throw std::invalid_argument("Unknown <key, namespace>: (" + StringUtils::to_string<K>(key) + ", " + StringUtils::to_string<N>(ns) + ")");
         }
 
-        ParamS old_val = this->m_ns_map[ns][key];
+        S old_val = this->m_ns_map[ns][key];
 
         this->m_ns_map[ns].erase(key);
 
@@ -114,19 +95,8 @@ public:
             ConstParamN ns, 
             typename TemplateHelperUtil::ParamOptimize<T>::const_type value, 
             StateTransformationFunction<S, T>& transformation) {
-        if (this->m_ns_map.find(ns) == this->m_ns_map.end()) {
-            this->m_ns_map[ns] = std::map<K, S>();
-        }
-
-        S* new_state;
-
-        if (this->m_ns_map[ns].find(key) != this->m_ns_map[ns].end()) {
-            new_state = transformation.apply(&this->m_ns_map[ns][key], value);
-        } else {
-            new_state = transformation.apply(nullptr, value);
-        }
-
-        this->m_ns_map[ns][key] = *new_state;
-        delete new_state;
+        std::map<K, S>& map_for_ns = this->m_ns_map[ns];
+        S& pre_val = map_for_ns[key];
+        pre_val = transformation.apply(&pre_val, value);
     }
 };

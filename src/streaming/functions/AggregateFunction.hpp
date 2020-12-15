@@ -24,7 +24,7 @@ public:
 
       @return A new accumulator, corresponding to an empty aggregate.
      */
-    virtual ACC* create_accumulator() = 0;
+    virtual ACC create_accumulator() = 0;
 
     /**
       Adds the given input value to the given accumulator, returning the
@@ -35,7 +35,7 @@ public:
       @param value The value to add
       @param accumulator The accumulator to add the value to
      */
-    virtual ACC* add(const IN* value, const ACC* accumulator) = 0;
+    virtual ACC add(const IN* value, const ACC* accumulator) = 0;
 
     /**
       Gets the result of the aggregation from the accumulator.
@@ -45,6 +45,6 @@ public:
       @param accumulator The accumulator of the aggregation.
       @return The final aggregation result.
      */
-    virtual OUT* get_result(const ACC* accumulator) = 0;
+    virtual OUT get_result(const ACC* accumulator) = 0;
 };
 

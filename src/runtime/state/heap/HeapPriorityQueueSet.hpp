@@ -10,6 +10,7 @@
 #include <set>
 #include <unordered_set>
 #include <unordered_map>
+#include <bitset>
 
 /**
   A heap-based priority queue (minimum heap) with set semantics, based on std::priority_queue. The heap 
@@ -26,9 +27,8 @@ private:
 
     KeyGroupRange m_key_group_range;
 
-    std::unordered_set<T>* m_deduplication_maps_by_key_group;
+    std::set<T>* m_deduplication_maps_by_key_group;
 
-    // std::unordered_map<T, T>* m_deduplication_maps_by_key_group;
 
     int m_total_number_of_key_group;
 
@@ -42,15 +42,19 @@ public:
             m_key_group_range(key_group_range) {
         int key_groups_in_local_range = key_group_range.get_number_of_key_groups();
         int deduplication_set_size = 1 + minimum_capacity / key_groups_in_local_range;
-        m_deduplication_maps_by_key_group = new std::unordered_set<T>[key_groups_in_local_range];
+        m_deduplication_maps_by_key_group = new std::set<T>[key_groups_in_local_range];
     }
 
     ~HeapPriorityQueueSet() {
-        delete[] m_deduplication_maps_by_key_group;
     }
 
     bool empty() {
         return m_internal_min_heap.empty();
+    }
+
+    bool contains(ConstParamT element) {
+        std::set<T>& key_group_set = get_dedup_map_for_element(element);
+        return key_group_set.find(element) != key_group_set.end();
     }
 
     /**
@@ -74,7 +78,6 @@ public:
         } else {
             return false;
         }
-        // m_internal_min_heap.push(element);
     }
 
     /**
@@ -102,7 +105,7 @@ public:
         return m_internal_min_heap.top();
     }
 
-    std::unordered_set<T>& get_dedup_map_for_element(ConstParamT element) {
+    std::set<T>& get_dedup_map_for_element(ConstParamT element) {
         // TODO: implement KeyExtractor, current, use the fisrt key_group in key_group_range
         int key_group = m_key_group_range.get_start_key_group();
         return m_deduplication_maps_by_key_group[key_group - m_key_group_range.get_start_key_group()];

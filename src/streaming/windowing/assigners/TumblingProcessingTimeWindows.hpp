@@ -15,6 +15,7 @@ private:
     long m_size;
     long m_offset;
 
+    std::vector<TimeWindow> m_windows;
 public:
     /**
       Create a tumbling processing-time window.
@@ -24,12 +25,21 @@ public:
      */
     TumblingProcessingTimeWindows(long size, long offset = 0): m_size(size), m_offset(offset) {}
 
-    std::vector<TimeWindow> assign_windows(
+    void assign_windows(
             T* element, long timestamp, 
             WindowAssignerContext& context) override {
         long now = context.get_current_processing_time();
         long start = TimeWindow::get_window_start_with_offset(now, m_offset, m_size);
-        return std::vector<TimeWindow>{TimeWindow(start, start + m_size)};
+        if (m_windows.empty()) {
+            m_windows.emplace_back(start, start + m_size);
+        } else {
+            m_windows[0].set_start(start);
+            m_windows[0].set_end(start + m_size);
+        }
+    }
+
+    const std::vector<TimeWindow>& get_assigned_windows() {
+        return m_windows;
     }
 
     Trigger<T, TimeWindow>* get_default_trigger() override {

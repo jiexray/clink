@@ -15,18 +15,14 @@ private:
     typedef typename TemplateHelperUtil::ParamOptimize<ACC>::ret_ptr_type RetACC;
 
     AggregateFunction<IN, ACC, OUT>& m_agg_function;
+
 public:
     AggregateTransformation(AggregateFunction<IN, ACC, OUT>& agg_function): m_agg_function(agg_function){}
 
-    ACC* apply(ACC* accumulator, ConstParamIN value) override {
+    ACC apply(ACC* accumulator, ConstParamIN value) override {
         if (accumulator == nullptr) {
-            ACC* tmp_accumulator = m_agg_function.create_accumulator();
-            if (tmp_accumulator == nullptr) {
-                throw std::runtime_error("AggregateFunction cannot initialize a empty accumulator");
-            }
-            ACC* res = m_agg_function.add(&value, tmp_accumulator);
-            delete tmp_accumulator;
-            return res;
+            ACC tmp_accumulator = m_agg_function.create_accumulator();
+            return m_agg_function.add(&value, &tmp_accumulator);
         } else {
             return m_agg_function.add(&value, accumulator);
         }
@@ -102,16 +98,7 @@ public:
      */
     ConstParamOUT get() override {
         ConstParamACC accumulator = get_internal();
-        OUT* res = m_aggregate_transformation->get_agg_function().get_result(&accumulator);
-
-        if (std::is_fundamental<OUT>::value) {
-            OUT res_val = *res;
-            delete res;
-            return res_val;
-        } else {
-            return *res;
-        }
-        // return *m_aggregate_transformation->get_agg_function().get_result(&accumulator);
+        return m_aggregate_transformation->get_agg_function().get_result(&accumulator);
     }
 
     void add(ConstParamIN value) override {
