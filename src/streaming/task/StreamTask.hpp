@@ -20,6 +20,10 @@
 #include "Constant.hpp"
 #include "LoggerFactory.hpp"
 #include "CompletableFuture.hpp"
+
+#include "ProcessingTimeServiceImpl.hpp"
+#include "SystemProcessingTimeService.hpp"
+
 #include <memory>
 #include <unistd.h>
 
@@ -42,10 +46,18 @@ protected:
     std::shared_ptr<spdlog::logger>             m_logger;
     std::shared_ptr<TaskMetricGroup>            m_task_metric_group;
 
+    ProcessingTimeService*                      m_processing_time_service;
+    SystemProcessingTimeService*                m_system_time_service;
+
 public:
     // for test
     StreamTask() {};
     StreamTask(std::shared_ptr<Environment> env);
+
+    virtual ~StreamTask() {
+        delete m_system_time_service;
+        delete m_processing_time_service;
+    }
 
     /* Life cycle methods */
     virtual void                                init() {};
@@ -119,6 +131,9 @@ inline StreamTask<OUT>::StreamTask(std::shared_ptr<Environment> env): AbstractIn
     m_is_running = true;
     m_configuration = std::make_shared<StreamConfig>(env->get_task_configuration());
     m_logger = LoggerFactory::get_logger("StreamTask");
+
+    m_system_time_service = new SystemProcessingTimeService();
+    m_processing_time_service = new ProcessingTimeServiceImpl(*m_system_time_service);
 
     std::shared_ptr<StreamEdge<OUT>> edge = m_configuration->get_out_edge<OUT>();
 

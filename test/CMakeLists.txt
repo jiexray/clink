@@ -152,4 +152,8 @@ if(CXXTEST_FOUND)
   # streaming window operator with event time
   CXXTEST_ADD_TEST(unitest_streaming_window_operator_with_event_time streaming_window_operator_with_event_time.cpp ${CMAKE_CURRENT_SOURCE_DIR}/streaming/TestWindowOperatorWithEventTime.hpp)
   target_link_libraries(unitest_streaming_window_operator_with_event_time streaming)
+
+  # runtime window sum
+  CXXTEST_ADD_TEST(unitest_runtime_window_sum runtime_window_sum.cpp ${CMAKE_CURRENT_SOURCE_DIR}/runtime/TestWindowSum.hpp)
+  target_link_libraries(unitest_runtime_window_sum runtime)
 endif()

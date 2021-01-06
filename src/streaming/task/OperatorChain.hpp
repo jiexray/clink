@@ -8,6 +8,7 @@
 #include "CountingOutput.hpp"
 #include "Environment.hpp"
 #include "StreamConfig.hpp"
+#include "ProcessingTimeServiceImpl.hpp"
 // template <class OUT> class StreamOperatorFactory;
 
 template <class OUT>
@@ -39,7 +40,10 @@ public:
 
     OperatorChain(std::shared_ptr<ResultWriter<OUT>> result_writer, 
             std::shared_ptr<StreamOperatorFactory<OUT>> operator_factory,
-            OperatorMetricGroupPtr operator_metric_group);
+            OperatorMetricGroupPtr operator_metric_group,
+            std::shared_ptr<TaskInfo> task_info,
+            ExecutionConfig& execution_config,
+            ProcessingTimeService& processing_time_service);
 
     std::shared_ptr<ResultWriterOutput<OUT>>    create_result_stream_output();
 
@@ -57,8 +61,11 @@ template <class OUT>
 inline OperatorChain<OUT>::OperatorChain(
         std::shared_ptr<ResultWriter<OUT>> result_writer, 
         std::shared_ptr<StreamOperatorFactory<OUT>> operator_factory, 
-        OperatorMetricGroupPtr operator_metric_group):
-m_result_writer(result_writer) {
+        OperatorMetricGroupPtr operator_metric_group,
+        std::shared_ptr<TaskInfo> task_info,
+        ExecutionConfig& execution_config,
+        ProcessingTimeService& processing_time_service):
+        m_result_writer(result_writer) {
     this->m_stream_output = create_result_stream_output();
 
     this->m_core_operator_metric_group = operator_metric_group;
@@ -67,7 +74,10 @@ m_result_writer(result_writer) {
             std::make_shared<StreamOperatorParameters<OUT>>(
                     std::make_shared<CountingOutput<OUT>>(
                         this->m_stream_output, 
-                        this->m_core_operator_metric_group->get_IO_metric_group()->get_records_out_counter())));
+                        this->m_core_operator_metric_group->get_IO_metric_group()->get_records_out_counter()),
+                    processing_time_service,  // ProcessTimeService
+                    execution_config,  // ExecutionConfig
+                    task_info  )); // TaskInfo
     this->m_core_operator->open();
 }
 

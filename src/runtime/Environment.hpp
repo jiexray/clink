@@ -10,7 +10,7 @@
 #include "Configuration.hpp"
 #include "TaskInfo.hpp"
 #include "TaskMetricGroup.hpp"
-// #include "ExecutionConfig.hpp"
+#include "ExecutionConfig.hpp"
 
 class Configuration;
 
@@ -29,6 +29,6 @@ public:
     virtual std::shared_ptr<TaskInfo>           get_task_info() = 0;
     virtual std::shared_ptr<TaskMetricGroup>    get_metric_group() = 0;
 
-    // virtual ExecutionConfig&                    get_execution_config() = 0;
+    virtual ExecutionConfig&                    get_execution_config() = 0;
 };
 

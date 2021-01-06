@@ -3,6 +3,7 @@
  */
 #pragma once
 #include "Function.hpp"
+#include "StreamRecordV2.hpp"
 #include <memory>
 
 template <class T> class SourceContext;
@@ -22,6 +23,9 @@ class SourceContext
 {
 public:
     virtual void collect(OUT* element) = 0;
+    virtual void collect_with_timestamp(OUT* element, long timestamp) = 0;
+
+    virtual void emit_watermark(long timestamp) = 0;
 };
 
 

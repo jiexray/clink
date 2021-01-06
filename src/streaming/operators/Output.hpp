@@ -15,9 +15,10 @@ class Output : public Collector<T>
 {
 public:
     void collect(T* val) override {
-        StreamRecordV2<T>* new_record = new StreamRecordV2<T>(*val);
-        collect(new_record);
-        delete new_record;
+        // StreamRecordV2<T>* new_record = new StreamRecordV2<T>(*val, 0l);
+        StreamRecordV2<T> new_record(*val, 0l);
+        collect(&new_record);
+        // delete new_record;
     }
 
     virtual void    collect(StreamRecordV2<T>* record) = 0;

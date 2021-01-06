@@ -19,6 +19,7 @@ private:
     std::shared_ptr<Configuration>          m_task_configuration;
     std::shared_ptr<TaskInfo>               m_task_info;
     TaskMetricGroupPtr                      m_metrics;
+    ExecutionConfig                         m_execution_config;
 
 public:
     RuntimeEnvironment(int job_id, int job_vertex_id, int execution_id, 
@@ -62,4 +63,5 @@ public:
     std::shared_ptr<Configuration>          get_task_configuration() {return m_task_configuration;}
     std::shared_ptr<TaskInfo>               get_task_info() {return m_task_info;}
     std::shared_ptr<TaskMetricGroup>        get_metric_group() {return m_metrics;}
+    ExecutionConfig&                        get_execution_config() {return m_execution_config;}
 };

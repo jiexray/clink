@@ -44,19 +44,19 @@ struct MyState{
 
 class TestAggregateFunction: public AggregateFunction<int, int, int> {
 public:
-    int* create_accumulator() {
-        return new int(0);
+    int create_accumulator() {
+        return 0;
     }
 
-    int* add(const int* value, const int* accumulator) {
+    int add(const int* value, const int* accumulator) {
         if (value == nullptr || accumulator == nullptr) {
             throw std::runtime_error("value or accumulate is nullptr");
         }
-        return new int(*value + *accumulator);
+        return *value + *accumulator;
     }
 
-    int* get_result(const int* accumulator) {
-        return new int(*accumulator);
+    int get_result(const int* accumulator) {
+        return *accumulator;
     }
 
     static AggregateFunction<int, int, int>* create() {

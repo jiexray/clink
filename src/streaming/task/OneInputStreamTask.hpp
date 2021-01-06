@@ -11,6 +11,10 @@
 #include "StreamTaskNetworkInputFactory.hpp"
 #include "TemplateHelper.hpp"
 #include "OperatorMetricGroup.hpp"
+#include "MemoryStateBackend.hpp"
+#include "TimeWindow.hpp"
+#include "AppendingState.hpp"
+#include "InternalAppendingState.hpp"
 
 template <class IN, class OUT = NullType> class OneInputStreamTask;
 
@@ -19,15 +23,39 @@ class OneInputStreamTask: public StreamTask<OUT>
 {
 private:
     typedef std::shared_ptr<OperatorMetricGroup>    OperatorMetricGroupPtr;
+    // TODO: add ACC type
+    typedef MemoryStateBackend<IN, TimeWindow, IN, AppendingState<IN, IN>, InternalAppendingState<IN, TimeWindow, IN, IN, IN>> MemoryStateBackendType;
+
+    MemoryStateBackendType* m_state_backend;
 public:
     // TODO: initialize StreamTask
-    OneInputStreamTask(std::shared_ptr<Environment> env): StreamTask<OUT>(env) {}
+    OneInputStreamTask(std::shared_ptr<Environment> env): StreamTask<OUT>(env) {
+        m_state_backend = new MemoryStateBackendType();
+    }
+
+    ~OneInputStreamTask() {
+        delete m_state_backend;
+    }
 
     void                        init() {
         OperatorMetricGroupPtr operator_metric_group = this->m_task_metric_group->get_or_add_operator(this->m_configuration->get_operator_id(), this->m_configuration->get_operator_name());
-        std::shared_ptr<StreamOperatorFactory<OUT>> operator_factory = this->m_configuration->template get_stream_operator_factory<IN, OUT, TemplateHelper<OUT>::is_null_type>();
+        std::shared_ptr<StreamOperatorFactory<OUT>> operator_factory;
+        if (this->m_configuration->is_window_operator()) {
+            // TODO: add ACC type
+            operator_factory = this->m_configuration->template get_window_operator_factory<IN, OUT, IN>();
+            std::dynamic_pointer_cast<WindowOperatorFactory<IN, IN, IN, OUT>>(operator_factory)->set_state_backend(*m_state_backend);
+        } else {
+            operator_factory = this->m_configuration->template get_stream_operator_factory<IN, OUT, TemplateHelper<OUT>::is_null_type>();
+        }
+        
 
-        this->m_operator_chain = std::make_shared<OperatorChain<OUT>>(this->get_result_writer(), operator_factory, operator_metric_group);
+        this->m_operator_chain = std::make_shared<OperatorChain<OUT>>(
+                this->get_result_writer(), 
+                operator_factory, 
+                operator_metric_group,
+                this->get_environment()->get_task_info(), // task-info
+                this->get_environment()->get_execution_config(), // execution-config
+                *this->m_processing_time_service); // processing-time-service
         this->m_head_operator = this->m_operator_chain->get_head_operator();        
 
         int number_of_inputs = this->m_configuration->get_number_of_inputs();
@@ -68,7 +96,14 @@ public:
         // this->m_operator_chain = std::make_shared<OperatorChain<OUT>>(this->shared_from_this(), 
         //                                                             this->get_result_writer(), 
         //                                                             operator_factory);
-        this->m_operator_chain = std::make_shared<OperatorChain<OUT>>(this->get_result_writer(), operator_factory, operator_metric_group);
+        // this->m_operator_chain = std::make_shared<OperatorChain<OUT>>(this->get_result_writer(), operator_factory, operator_metric_group);
+        this->m_operator_chain = std::make_shared<OperatorChain<OUT>>(
+                this->get_result_writer(), 
+                operator_factory, 
+                operator_metric_group,
+                this->get_environment()->get_task_info(), // task-info
+                this->get_environment()->get_execution_config(), // execution-config
+                *this->m_processing_time_service); // processing-time-service
         this->m_head_operator = this->m_operator_chain->get_head_operator();
         
 

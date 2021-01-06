@@ -30,7 +30,15 @@ inline void SourceStreamTask<OUT>::init() {
     OperatorMetricGroupPtr operator_metric_group = this->m_task_metric_group->get_or_add_operator(this->m_configuration->get_operator_id(), this->m_configuration->get_operator_name());
     std::shared_ptr<StreamOperatorFactory<OUT>> operator_factory = this->m_configuration->template get_stream_operator_factory<std::string, OUT>();
 
-    this->m_operator_chain = std::make_shared<OperatorChain<OUT>>(this->get_result_writer(), operator_factory, operator_metric_group);
+    // this->m_operator_chain = std::make_shared<OperatorChain<OUT>>(this->get_result_writer(), operator_factory, operator_metric_group);
+
+    this->m_operator_chain = std::make_shared<OperatorChain<OUT>>(
+                this->get_result_writer(), 
+                operator_factory, 
+                operator_metric_group,
+                this->get_environment()->get_task_info(), // task-info
+                this->get_environment()->get_execution_config(), // execution-config
+                *this->m_processing_time_service); // processing-time-service
 
     if (this->m_operator_chain == nullptr) {
         throw std::runtime_error("Fail to create OperatorChain when initializing SourceStreamTask");

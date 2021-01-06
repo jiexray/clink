@@ -2,7 +2,7 @@
  * Source contexts for various stream time characteristics.
  */
 #pragma once
-#include "../functions/SourceFunction.hpp"
+#include "SourceFunction.hpp"
 #include "Output.hpp"
 
 enum TimeCharacteristic {
@@ -45,10 +45,24 @@ private:
 public:
     NonTimestampContext(std::shared_ptr<Output<OUT>> output): m_output(output) {}
     void collect(OUT* element) override {
+        collect_with_timestamp(element, 0l);
+    }
+
+    void collect_with_timestamp(OUT* element, long timestamp) override {
         if (this->m_output == nullptr) {
             std::cout << "[ERROR]Output in SourceContext is null" << std::endl;
             return;
         }
-        m_output->collect(element);
+        StreamRecordV2<OUT> new_record(*element, timestamp);
+        m_output->collect(&new_record);
+    }
+
+    void emit_watermark(long timestamp) override {
+        if (this->m_output == nullptr) {
+            std::cout << "[ERROR]Output in SourceContext is null" << std::endl;
+            return;
+        }
+        StreamRecordV2<OUT> watermark(timestamp);
+        m_output->emit_watermark(&watermark);
     }
 };

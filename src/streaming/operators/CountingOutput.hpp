@@ -19,9 +19,13 @@ private:
 public:
     CountingOutput(OutputPtr output, CounterPtr counter): m_output(output), m_num_records_out(counter) {}
 
-    void                                    collect(StreamRecordV2<OUT>* record) {
+    void                                    collect(StreamRecordV2<OUT>* record) override {
         m_num_records_out->inc();
         m_output->collect(record);
+    }
+
+    void                                    emit_watermark(StreamRecordV2<OUT>* mark) override {
+        m_output->emit_watermark(mark);
     }
 };
 

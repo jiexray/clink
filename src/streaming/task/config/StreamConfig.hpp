@@ -19,6 +19,7 @@ public:
     static std::string                          OPERATOR_FACTORY;
     static std::string                          OPERATOR_ID;
     static std::string                          OPERATOR_NAME;
+    static std::string                          OPERATOR_IS_WINDOW;
     static std::string                          BUFFER_TIMEOUT;
 
     static long                                 DEFAULT_TIMEOUT;
@@ -30,10 +31,13 @@ public:
     int                                         get_number_of_inputs();
     template <class IN, class OUT, bool IS_SINK = false>
     std::shared_ptr<StreamOperatorFactory<OUT>> get_stream_operator_factory();
+    template <class IN, class OUT, class ACC>
+    std::shared_ptr<StreamOperatorFactory<OUT>> get_window_operator_factory();
 
     std::string                                 get_operator_id();
     std::string                                 get_operator_name();
     long                                        get_buffer_timeout();
+    bool                                        is_window_operator();
 };
 
 template <class OUT>
@@ -51,6 +55,11 @@ inline std::shared_ptr<StreamOperatorFactory<OUT>> StreamConfig::get_stream_oper
     return m_config->get_operator_factory<IN, OUT, IS_SINK>(StreamConfig::OPERATOR_FACTORY);
 }
 
+template <class IN, class OUT, class ACC>
+inline std::shared_ptr<StreamOperatorFactory<OUT>> StreamConfig::get_window_operator_factory() {
+    return m_config->get_window_operator_factory<IN, IN, ACC, OUT>(StreamConfig::OPERATOR_FACTORY);
+}
+
 inline std::string StreamConfig::get_operator_id() {
     return std::string(*(m_config->get_value<std::string>(StreamConfig::OPERATOR_ID)));
 }
@@ -62,4 +71,13 @@ inline std::string StreamConfig::get_operator_name() {
 inline long StreamConfig::get_buffer_timeout() {
     // TODO: get buffer timeout from Configuration;
     return  DEFAULT_TIMEOUT;
+}
+
+inline bool StreamConfig::is_window_operator() {
+    std::shared_ptr<int> is_window = m_config->get_value<int>(StreamConfig::OPERATOR_IS_WINDOW);
+    if (is_window == nullptr) {
+        return false;
+    } else {
+        return *is_window == 1;
+    }
 }

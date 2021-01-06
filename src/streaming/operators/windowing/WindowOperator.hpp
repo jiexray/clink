@@ -414,7 +414,7 @@ public:
                     ConstParamACC contents = m_window_state.get_internal();
                     // TODO: emit window_result:
                     std::cout << "process_element() emit_window_contents(): " << StringUtils::to_string<ACC>(contents) << std::endl;
-                    // emit_window_contents(element_windows[i], contents);
+                    emit_window_contents(element_windows[i], contents);
                 }
             }
 
@@ -450,7 +450,7 @@ public:
                 //         StringUtils::to_string<ACC>(contents),
                 //         _sum_counter, 
                 //         timer.to_string());
-                // emit_window_contents(timer.get_namespace(), contents);    
+                emit_window_contents(timer.get_namespace(), contents);    
 
                 if (trigger_result == TriggerResult::FIRE_AND_PURGE) {
                     m_window_state.clear();
@@ -481,7 +481,7 @@ public:
                 ConstParamACC contents = m_window_state.get_internal();
                 SPDLOG_LOGGER_DEBUG(m_logger, "on_processing_time() trigger time: {}, emit_window_contents(): {}", timer.get_timestamp(), StringUtils::to_string<ACC>(contents));
                 // std::cout << "on_processing_time() trigger time: " << timer.get_timestamp() << ", emit_window_contents(): " << StringUtils::to_string<ACC>(contents) << std::endl;
-                // emit_window_contents(timer.get_namespace(), contents);
+                emit_window_contents(timer.get_namespace(), contents);
             }
         }
 
